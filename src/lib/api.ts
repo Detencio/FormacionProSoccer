@@ -13,20 +13,27 @@ const api: AxiosInstance = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth-storage')
-    if (token) {
+    // Obtener el token desde localStorage (Zustand persist)
+    const authStorage = localStorage.getItem('auth-storage')
+    if (authStorage) {
       try {
-        const authData = JSON.parse(token)
+        const authData = JSON.parse(authStorage)
         if (authData.state?.token) {
           config.headers.Authorization = `Bearer ${authData.state.token}`
+          console.log('API: Token agregado a la petición:', authData.state.token.substring(0, 20) + '...')
+        } else {
+          console.log('API: No se encontró token en auth-storage')
         }
       } catch (error) {
-        console.error('Error parsing auth token:', error)
+        console.error('API: Error parsing auth token:', error)
       }
+    } else {
+      console.log('API: No se encontró auth-storage en localStorage')
     }
     return config
   },
   (error) => {
+    console.error('API: Error en request interceptor:', error)
     return Promise.reject(error)
   }
 )
@@ -34,13 +41,28 @@ api.interceptors.request.use(
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => {
+    console.log('API: Respuesta exitosa:', response.config.url)
     return response
   },
   (error) => {
+    console.error('API: Error en respuesta:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message
+    })
+    
     if (error.response?.status === 401) {
       // Handle unauthorized access
+      console.log('API: 401 Unauthorized, limpiando localStorage')
       localStorage.removeItem('auth-storage')
-      window.location.href = '/login'
+      // Solo redirigir si no estamos ya en login
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    } else if (error.response?.status === 403) {
+      console.log('API: 403 Forbidden - Token inválido o expirado')
+      // Para desarrollo, no limpiar el localStorage en 403
+      // Solo log para debug
     }
     return Promise.reject(error)
   }

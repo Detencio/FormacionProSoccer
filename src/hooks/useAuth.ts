@@ -9,7 +9,7 @@ export const useAuth = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { setUser, clearUser } = useAuthStore()
+  const { setUser, clearUser, user, token, isAuthenticated } = useAuthStore()
 
   // Login
   const login = async (data: { email: string; password: string }) => {
@@ -69,5 +69,8 @@ export const useAuth = () => {
     logout,
     loading,
     error,
+    user,
+    token,
+    isAuthenticated,
   }
 } 

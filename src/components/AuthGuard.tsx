@@ -1,54 +1,60 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useAuthStore } from '@/store/authStore'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import { useEffect, useState } from 'react'
 
 interface AuthGuardProps {
   children: React.ReactNode
-  requireAuth?: boolean
-  redirectTo?: string
 }
 
-export default function AuthGuard({ 
-  children, 
-  requireAuth = true, 
-  redirectTo = '/login' 
-}: AuthGuardProps) {
-  const { isAuthenticated, loading } = useAuth()
+export default function AuthGuard({ children }: AuthGuardProps) {
+  const { user, token, isAuthenticated, isLoading } = useAuthStore()
   const router = useRouter()
+  const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    if (!loading) {
-      if (requireAuth && !isAuthenticated) {
-        router.push(redirectTo)
-      } else if (!requireAuth && isAuthenticated) {
-        router.push('/dashboard')
-      }
-    }
-  }, [isAuthenticated, loading, requireAuth, redirectTo, router])
+    console.log('AuthGuard: Checking authentication...', {
+      user,
+      token,
+      isAuthenticated,
+      isLoading
+    })
 
-  // Mostrar loading mientras se verifica la autenticación
-  if (loading) {
+    // Si está cargando, esperar
+    if (isLoading) {
+      console.log('AuthGuard: Still loading...')
+      return
+    }
+
+    // Si no está autenticado, redirigir al login
+    if (!isAuthenticated || !user || !token) {
+      console.log('AuthGuard: Not authenticated, redirecting to login')
+      router.push('/login')
+      return
+    }
+
+    console.log('AuthGuard: Authenticated, allowing access')
+    setIsChecking(false)
+  }, [user, token, isAuthenticated, isLoading, router])
+
+  // Mostrar loading mientras verifica
+  if (isLoading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticación...</p>
+          <div className="mt-4 text-sm text-gray-500">
+            <p>Estado: {isAuthenticated ? 'Autenticado' : 'No autenticado'}</p>
+            <p>Usuario: {user ? 'Presente' : 'No presente'}</p>
+            <p>Token: {token ? 'Presente' : 'No presente'}</p>
+          </div>
         </div>
       </div>
     )
   }
 
-  // Si no requiere autenticación y el usuario está autenticado, no mostrar nada
-  if (!requireAuth && isAuthenticated) {
-    return null
-  }
-
-  // Si requiere autenticación y el usuario no está autenticado, no mostrar nada
-  if (requireAuth && !isAuthenticated) {
-    return null
-  }
-
+  // Si está autenticado, mostrar el contenido
   return <>{children}</>
 } 

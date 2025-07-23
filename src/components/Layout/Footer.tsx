@@ -1,109 +1,90 @@
 'use client'
 
-import {
-  Box,
-  Container,
-  Stack,
-  Text,
-  Link,
-  useColorModeValue,
-  HStack,
-  VStack,
-} from '@chakra-ui/react'
 import { FaFutbol, FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'
 
 export default function Footer() {
-  const bg = useColorModeValue('gray.50', 'gray.900')
-  const color = useColorModeValue('gray.600', 'gray.400')
-
   return (
-    <Box bg={bg} color={color} mt="auto">
-      <Container maxW="container.xl" py={8}>
-        <Stack direction={{ base: 'column', md: 'row' }} spacing={8} justify="space-between" align="center">
+    <footer className="bg-gray-50 text-gray-600 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
           {/* Logo and Description */}
-          <VStack align="start" spacing={4}>
-            <HStack>
-              <FaFutbol size={20} color="#0073E6" />
-              <Text fontWeight="bold" fontSize="lg" color="brand.600">
+          <div className="flex flex-col items-start space-y-4">
+            <div className="flex items-center">
+              <FaFutbol size={20} className="text-brand-600 mr-2" />
+              <span className="font-bold text-lg text-brand-600">
                 Formación ProSoccer
-              </Text>
-            </HStack>
-            <Text fontSize="sm" maxW="300px">
+              </span>
+            </div>
+            <p className="text-sm max-w-xs">
               La plataforma digital integral para el fútbol amateur. 
               Organiza partidos, gestiona equipos y fortalece la camaradería deportiva.
-            </Text>
-          </VStack>
+            </p>
+          </div>
 
           {/* Links */}
-          <Stack direction={{ base: 'column', sm: 'row' }} spacing={6}>
-            <VStack align="start" spacing={2}>
-              <Text fontWeight="bold" fontSize="sm">
-                Producto
-              </Text>
-              <Link href="/features" fontSize="sm" _hover={{ color: 'brand.500' }}>
+          <div className="flex flex-col sm:flex-row space-y-6 sm:space-y-0 sm:space-x-6">
+            <div className="flex flex-col space-y-2">
+              <span className="font-bold text-sm">Producto</span>
+              <a href="/features" className="text-sm hover:text-brand-500 transition-colors">
                 Características
-              </Link>
-              <Link href="/pricing" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/pricing" className="text-sm hover:text-brand-500 transition-colors">
                 Precios
-              </Link>
-              <Link href="/demo" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/demo" className="text-sm hover:text-brand-500 transition-colors">
                 Demo
-              </Link>
-            </VStack>
+              </a>
+            </div>
 
-            <VStack align="start" spacing={2}>
-              <Text fontWeight="bold" fontSize="sm">
-                Soporte
-              </Text>
-              <Link href="/help" fontSize="sm" _hover={{ color: 'brand.500' }}>
+            <div className="flex flex-col space-y-2">
+              <span className="font-bold text-sm">Soporte</span>
+              <a href="/help" className="text-sm hover:text-brand-500 transition-colors">
                 Ayuda
-              </Link>
-              <Link href="/contact" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/contact" className="text-sm hover:text-brand-500 transition-colors">
                 Contacto
-              </Link>
-              <Link href="/docs" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/docs" className="text-sm hover:text-brand-500 transition-colors">
                 Documentación
-              </Link>
-            </VStack>
+              </a>
+            </div>
 
-            <VStack align="start" spacing={2}>
-              <Text fontWeight="bold" fontSize="sm">
-                Legal
-              </Text>
-              <Link href="/privacy" fontSize="sm" _hover={{ color: 'brand.500' }}>
+            <div className="flex flex-col space-y-2">
+              <span className="font-bold text-sm">Legal</span>
+              <a href="/privacy" className="text-sm hover:text-brand-500 transition-colors">
                 Privacidad
-              </Link>
-              <Link href="/terms" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/terms" className="text-sm hover:text-brand-500 transition-colors">
                 Términos
-              </Link>
-              <Link href="/cookies" fontSize="sm" _hover={{ color: 'brand.500' }}>
+              </a>
+              <a href="/cookies" className="text-sm hover:text-brand-500 transition-colors">
                 Cookies
-              </Link>
-            </VStack>
-          </Stack>
-        </Stack>
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* Bottom Section */}
-        <Box borderTop={1} borderStyle="solid" borderColor={useColorModeValue('gray.200', 'gray.700')} pt={8} mt={8}>
-          <Stack direction={{ base: 'column', md: 'row' }} justify="space-between" align="center" spacing={4}>
-            <Text fontSize="sm">
+        <div className="border-t border-gray-200 pt-8 mt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-sm">
               © 2024 Formación ProSoccer. Todos los derechos reservados.
-            </Text>
+            </p>
             
-            <HStack spacing={4}>
-              <Link href="https://github.com/Detencio" isExternal>
+            <div className="flex space-x-4">
+              <a href="https://github.com/Detencio" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">
                 <FaGithub size={18} />
-              </Link>
-              <Link href="https://twitter.com/formacionpro" isExternal>
+              </a>
+              <a href="https://twitter.com/formacionpro" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">
                 <FaTwitter size={18} />
-              </Link>
-              <Link href="https://linkedin.com/company/formacionpro" isExternal>
+              </a>
+              <a href="https://linkedin.com/company/formacionpro" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">
                 <FaLinkedin size={18} />
-              </Link>
-            </HStack>
-          </Stack>
-        </Box>
-      </Container>
-    </Box>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   )
 } 
