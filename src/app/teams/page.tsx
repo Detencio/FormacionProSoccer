@@ -367,7 +367,7 @@ export default function TeamsPage() {
     if (confirm('¿Estás seguro de que quieres eliminar este jugador?')) {
       setTeams(prev => prev.map(team => 
         team.id === teamId 
-          ? { ...team, players: team.players.filter(p => p.id !== playerId) }
+          ? { ...team, players: team.players.filter((p: any) => p.id !== playerId) }
           : team
       ))
     }
@@ -380,15 +380,15 @@ export default function TeamsPage() {
       // Actualizar jugador existente
       setTeams(prev => prev.map(team => 
         team.id === selectedTeamId 
-          ? { ...team, players: team.players.map(p => 
-              p.id === editingPlayer.id ? { ...p, ...formData } : p
-            )}
+                      ? { ...team, players: team.players.map((p: any) => 
+                p.id === editingPlayer.id ? { ...p, ...formData } : p
+              )}
           : team
       ))
     } else {
       // Crear nuevo jugador
       const newPlayer = {
-        id: Math.max(...teams.flatMap(t => t.players).map(p => p.id)) + 1,
+        id: Math.max(...teams.flatMap(t => t.players).map((p: any) => p.id)) + 1,
         ...formData
       }
       setTeams(prev => prev.map(team => 
@@ -485,8 +485,8 @@ export default function TeamsPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team) => (
-          <div key={team.id} className="bg-white rounded-lg shadow-md p-6">
+        {teams.map((team, index) => (
+          <div key={`team-${team.id}-${index}`} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-start gap-3">
                 {team.logo_url && (
@@ -538,7 +538,7 @@ export default function TeamsPage() {
               </div>
               
               <div className="space-y-2">
-                {team.players.map((player) => (
+                {team.players.map((player: any) => (
                   <div key={player.id} className="p-3 bg-gray-50 rounded border">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
@@ -801,8 +801,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               required
             >
               <option value="">Seleccionar país</option>
-              {countries.map((country) => (
-                <option key={country.id} value={country.id}>
+              {countries.map((country, index) => (
+                <option key={`team-country-${country.id}-${index}`} value={country.id}>
                   {country.name}
                 </option>
               ))}
@@ -821,8 +821,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               disabled={!formData.country}
             >
               <option value="">Seleccionar ciudad</option>
-              {availableCities.map((city) => (
-                <option key={city.id} value={city.id}>
+              {availableCities.map((city, index) => (
+                <option key={`team-city-${city.id}-${index}`} value={city.id}>
                   {city.name}
                 </option>
               ))}
@@ -841,8 +841,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               disabled={!formData.city}
             >
               <option value="">Seleccionar comuna</option>
-              {availableCommunes.map((commune) => (
-                <option key={commune.id} value={commune.id}>
+              {availableCommunes.map((commune, index) => (
+                <option key={`team-commune-${commune.id}-${index}`} value={commune.id}>
                   {commune.name}
                 </option>
               ))}

@@ -42,7 +42,8 @@ export default function DebugPage() {
       lastName: 'User',
       email: 'admin@prosoccer.com',
       role: 'admin',
-      createdAt: new Date().toISOString()
+      createdAt: new Date(),
+      updatedAt: new Date()
     }, 'fake-token-123')
     alert('Usuario establecido manualmente')
   }

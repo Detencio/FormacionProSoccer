@@ -137,11 +137,6 @@ export default function RegisterPlayerPage() {
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
             {/* Header con gradiente */}
             <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-8 text-center">
-              <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto mb-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
               <h1 className="text-3xl font-bold mb-2">Registrar Jugador en el Sistema</h1>
               <p className="text-blue-100 text-lg">
                 Crea una cuenta de usuario para un jugador y asígnalo a un equipo
@@ -149,42 +144,6 @@ export default function RegisterPlayerPage() {
             </div>
 
             <div className="p-8">
-              {/* Info box mejorado */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 rounded-lg p-6 mb-8">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-3">¿Qué hace esta función?</h3>
-                    <ul className="text-blue-700 space-y-2">
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                        <strong>Crea una cuenta de usuario</strong> con el email proporcionado
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                        <strong>Asigna el jugador a un equipo</strong> específico
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                        <strong>Genera contraseña por defecto</strong> (123456)
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                        <strong>El jugador podrá iniciar sesión</strong> y ver solo su equipo
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                        <strong>Diferente de "Agregar Jugador"</strong> que solo agrega datos sin cuenta
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
               {message && (
                 <div className={`mb-6 p-4 rounded-lg border-l-4 ${
                   message.includes('Error') 
@@ -203,54 +162,35 @@ export default function RegisterPlayerPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Información Personal */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Información Personal
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Información Personal</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Nombre Completo *
                       </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={formData.full_name}
-                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                          placeholder="Ingresa el nombre completo"
-                          required
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                      </div>
+                      <input
+                        type="text"
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Ingresa el nombre completo"
+                        required
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Email *
                       </label>
-                      <div className="relative">
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                          placeholder="jugador@ejemplo.com"
-                          required
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                          </svg>
-                        </div>
-                      </div>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="jugador@ejemplo.com"
+                        required
+                      />
                     </div>
                   </div>
 
@@ -266,8 +206,8 @@ export default function RegisterPlayerPage() {
                         required
                       >
                         <option value="">Selecciona un país</option>
-                        {countries.map((country) => (
-                          <option key={country.code} value={country.code}>
+                        {countries.map((country, index) => (
+                          <option key={`country-${country.code}-${index}`} value={country.code}>
                             {country.name}
                           </option>
                         ))}
@@ -278,20 +218,13 @@ export default function RegisterPlayerPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Teléfono
                       </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                          placeholder="+34 600 000 000"
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                        </div>
-                      </div>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="+34 600 000 000"
+                      />
                     </div>
                   </div>
 
@@ -346,12 +279,7 @@ export default function RegisterPlayerPage() {
 
                 {/* Asignación de Equipo */}
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Asignación de Equipo
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Asignación de Equipo</h3>
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -364,8 +292,8 @@ export default function RegisterPlayerPage() {
                       required
                     >
                       <option value="">Selecciona un equipo</option>
-                      {teams.map((team) => (
-                        <option key={team.id} value={team.id}>
+                      {teams.map((team, index) => (
+                        <option key={`register-team-${team.id}-${index}`} value={team.id}>
                           {team.name}
                         </option>
                       ))}
@@ -380,12 +308,7 @@ export default function RegisterPlayerPage() {
 
                 {/* Foto del Jugador */}
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Foto del Jugador
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Foto del Jugador</h3>
                   
                   <div className="flex items-center space-x-4">
                     <div className="flex-1">
@@ -407,82 +330,46 @@ export default function RegisterPlayerPage() {
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Información Importante */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-lg p-6">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-lg font-semibold text-yellow-800 mb-3">Información importante:</h3>
-                    <ul className="text-yellow-700 space-y-2">
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                        Se creará una cuenta de usuario con el email proporcionado
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                        La contraseña por defecto será: <strong>123456</strong>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                        El jugador deberá cambiar su contraseña en el primer inicio de sesión
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                        El jugador solo podrá ver información de su equipo asignado
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                        <strong>Diferente de "Agregar Jugador"</strong> que solo agrega datos sin cuenta
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Botones de Acción */}
-              <div className="flex gap-4 pt-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Registrando...
-                    </div>
-                  ) : (
+                {/* Botones de Acción */}
+                <div className="flex gap-4 pt-6">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Registrando...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Crear Cuenta de Jugador
+                      </div>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/teams')}
+                    className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  >
                     <div className="flex items-center justify-center">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Crear Cuenta de Jugador
+                      Cancelar
                     </div>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/teams')}
-                  className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  <div className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Cancelar
-                  </div>
-                </button>
-              </div>
-            </form>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

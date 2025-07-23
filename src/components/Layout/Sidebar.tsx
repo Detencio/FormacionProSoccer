@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAuthStore } from '@/store/authStore'
 
 interface MenuItem {
   name: string
@@ -69,7 +68,6 @@ const menuItems: MenuItem[] = [
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
-  const { user, logout } = useAuthStore()
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -108,23 +106,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* User Info */}
-      {user && !isCollapsed && (
-        <div className="p-4 border-b border-blue-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="font-semibold text-sm">
-                {user.email?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user.email}</p>
-              <p className="text-xs text-blue-200 truncate">{user.role}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => (
@@ -159,19 +140,6 @@ export default function Sidebar() {
               <p>Soccer Management</p>
             </div>
           </div>
-        )}
-        {user && (
-          <button
-            onClick={logout}
-            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-blue-100 hover:bg-blue-700 hover:text-white transition-colors ${
-              isCollapsed ? 'justify-center' : ''
-            }`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            {!isCollapsed && <span className="text-sm">Cerrar Sesión</span>}
-          </button>
         )}
       </div>
     </div>

@@ -22,7 +22,8 @@ export interface AuthResponse {
     email: string
     phone?: string
     role: 'user' | 'admin'
-    createdAt: string
+    createdAt: Date
+    updatedAt: Date
   }
   token: string
   refreshToken: string
@@ -46,7 +47,8 @@ class AuthService {
             lastName: 'Sistema',
             email: data.email,
             role: 'admin',
-            createdAt: new Date().toISOString()
+            createdAt: new Date(),
+            updatedAt: new Date()
           },
           token: 'fake-jwt-token-for-testing',
           refreshToken: 'fake-refresh-token'
