@@ -1,12 +1,10 @@
 'use client'
 
-import { Box, Heading, Text } from '@chakra-ui/react'
-
 export default function PaymentsPage() {
   return (
-    <Box p={8} textAlign="center">
-      <Heading size="lg" color="brand.600">Pagos y Cuotas</Heading>
-      <Text mt={4}>Aquí se gestionarán los pagos y cuotas del equipo.</Text>
-    </Box>
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold text-brand-600">Pagos y Cuotas</h1>
+      <p className="mt-4 text-gray-600">Aquí se gestionarán los pagos y cuotas del equipo.</p>
+    </div>
   )
 } 

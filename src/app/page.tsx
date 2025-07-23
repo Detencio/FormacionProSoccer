@@ -1,103 +1,86 @@
 'use client'
 
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  Button,
-  VStack,
-  HStack,
-} from '@chakra-ui/react'
 import { FaFutbol } from 'react-icons/fa'
+import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
   return (
-    <Box>
+    <div>
       {/* Hero Section */}
-      <Box
-        bg="linear-gradient(135deg, brand.500 0%, brand.600 100%)"
-        color="white"
-        py={20}
-      >
-        <Container maxW="container.xl">
-          <VStack spacing={8} textAlign="center">
-            <FaFutbol size={64} />
-            <Heading
-              as="h1"
-              size="2xl"
-              fontWeight="bold"
-              lineHeight="1.2"
-            >
+      <section className="bg-gradient-to-br from-brand-500 to-brand-600 text-white py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center space-y-8 text-center">
+            <FaFutbol size={64} className="text-white" />
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
               Formación ProSoccer
-            </Heading>
-            <Text fontSize="xl" maxW="2xl">
+            </h1>
+            <p className="text-xl max-w-2xl">
               La plataforma digital integral para el fútbol amateur. 
               Organiza partidos, gestiona equipos y fortalece la camaradería 
               deportiva de manera sencilla y profesional.
-            </Text>
-            <HStack spacing={4}>
-              <Button size="lg" colorScheme="whiteAlpha" variant="solid">
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100">
                 Comenzar Ahora
               </Button>
-              <Button size="lg" variant="outline" color="white" _hover={{ bg: 'whiteAlpha.200' }}>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-600">
                 Ver Demo
               </Button>
-            </HStack>
-          </VStack>
-        </Container>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
-      <Box py={20} bg="white">
-        <Container maxW="container.xl">
-          <VStack spacing={16}>
-            <VStack spacing={4} textAlign="center">
-              <Heading as="h2" size="xl" color="brand.600">
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center space-y-16">
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-brand-600">
                 Todo lo que necesitas para tu equipo
-              </Heading>
-              <Text fontSize="lg" color="gray.600" maxW="2xl">
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl">
                 Una plataforma completa diseñada específicamente para el fútbol amateur, 
                 con todas las herramientas necesarias para organizar tu equipo.
-              </Text>
-            </VStack>
+              </p>
+            </div>
 
-            <VStack spacing={8}>
-              <Box p={6} bg="white" borderRadius="lg" boxShadow="md" textAlign="center" w="full" maxW="md">
-                <VStack spacing={4}>
-                  <Box p={4} bg="brand.100" borderRadius="full" color="brand.600">
+            <div className="flex flex-col items-center space-y-8">
+              <div className="p-6 bg-white rounded-lg shadow-md text-center w-full max-w-md">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="p-4 bg-brand-100 rounded-full text-brand-600">
                     <FaFutbol size={24} />
-                  </Box>
-                  <Heading as="h3" size="md" color="gray.800">
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800">
                     Organización de Partidos
-                  </Heading>
-                  <Text color="gray.600" fontSize="sm">
+                  </h3>
+                  <p className="text-gray-600 text-sm">
                     Crea y gestiona partidos de manera sencilla e intuitiva
-                  </Text>
-                </VStack>
-              </Box>
-            </VStack>
-          </VStack>
-        </Container>
-      </Box>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
-      <Box bg="gray.50" py={20}>
-        <Container maxW="container.xl">
-          <VStack spacing={8} textAlign="center">
-            <Heading as="h2" size="xl" color="brand.600">
+      <section className="bg-gray-50 py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center space-y-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-600">
               ¿Listo para transformar tu equipo?
-            </Heading>
-            <Text fontSize="lg" color="gray.600" maxW="2xl">
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl">
               Únete a cientos de equipos que ya están usando Formación ProSoccer 
               para organizar sus partidos y fortalecer la camaradería.
-            </Text>
-            <Button size="lg" colorScheme="brand">
+            </p>
+            <Button size="lg" className="bg-brand-600 hover:bg-brand-700">
               Crear Mi Equipo
             </Button>
-          </VStack>
-        </Container>
-      </Box>
-    </Box>
+          </div>
+        </div>
+      </section>
+    </div>
   )
 } 

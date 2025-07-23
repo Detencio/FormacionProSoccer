@@ -10,8 +10,8 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (user: User, token: string) => void
-  logout: () => void
+  setUser: (user: User) => void
+  clearUser: () => void
   setLoading: (loading: boolean) => void
   updateUser: (user: User) => void
 }
@@ -28,15 +28,14 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
 
       // Actions
-      login: (user: User, token: string) =>
+      setUser: (user: User) =>
         set({
           user,
-          token,
           isAuthenticated: true,
           isLoading: false,
         }),
 
-      logout: () =>
+      clearUser: () =>
         set({
           user: null,
           token: null,
