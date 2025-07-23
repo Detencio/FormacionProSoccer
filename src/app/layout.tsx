@@ -1,9 +1,6 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from 'react-hot-toast'
 import type { Metadata } from 'next'
-import Header from '@/components/Layout/Header'
-import Footer from '@/components/Layout/Footer'
 
 const theme = extendTheme({
   colors: {
@@ -18,30 +15,6 @@ const theme = extendTheme({
       700: '#004080',
       800: '#00264D',
       900: '#000D1A',
-    },
-    success: {
-      50: '#E6FFF0',
-      100: '#B3FFD6',
-      200: '#80FFBC',
-      300: '#4DFFA2',
-      400: '#1AFF88',
-      500: '#00E66E',
-      600: '#00B356',
-      700: '#00803E',
-      800: '#004D26',
-      900: '#001A0E',
-    },
-    warning: {
-      50: '#FFF8E6',
-      100: '#FFEBB3',
-      200: '#FFDE80',
-      300: '#FFD14D',
-      400: '#FFC41A',
-      500: '#E6B000',
-      600: '#B38C00',
-      700: '#806800',
-      800: '#4D4000',
-      900: '#1A1800',
     },
   },
   fonts: {
@@ -92,23 +65,7 @@ export default function RootLayout({
       <body>
         <QueryClientProvider client={queryClient}>
           <ChakraProvider theme={theme}>
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-              <Header />
-              <main style={{ flex: 1 }}>
-                {children}
-              </main>
-              <Footer />
-            </div>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-              }}
-            />
+            {children}
           </ChakraProvider>
         </QueryClientProvider>
       </body>

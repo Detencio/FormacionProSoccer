@@ -8,39 +8,10 @@ import {
   Button,
   VStack,
   HStack,
-  SimpleGrid,
-  Icon,
-  useColorModeValue,
 } from '@chakra-ui/react'
-import { FaFutbol, FaUsers, FaCalendarAlt, FaCreditCard } from 'react-icons/fa'
-
-const features = [
-  {
-    icon: FaFutbol,
-    title: 'Organización de Partidos',
-    description: 'Crea y gestiona partidos de manera sencilla e intuitiva',
-  },
-  {
-    icon: FaUsers,
-    title: 'Gestión de Equipos',
-    description: 'Administra tu equipo, jugadores y estadísticas',
-  },
-  {
-    icon: FaCalendarAlt,
-    title: 'Calendario Inteligente',
-    description: 'Mantén un calendario organizado de todos los eventos',
-  },
-  {
-    icon: FaCreditCard,
-    title: 'Gestión Financiera',
-    description: 'Controla cuotas, gastos y presupuestos del equipo',
-  },
-]
+import { FaFutbol } from 'react-icons/fa'
 
 export default function HomePage() {
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const textColor = useColorModeValue('gray.600', 'gray.300')
-
   return (
     <Box>
       {/* Hero Section */}
@@ -51,6 +22,7 @@ export default function HomePage() {
       >
         <Container maxW="container.xl">
           <VStack spacing={8} textAlign="center">
+            <FaFutbol size={64} />
             <Heading
               as="h1"
               size="2xl"
@@ -77,50 +49,34 @@ export default function HomePage() {
       </Box>
 
       {/* Features Section */}
-      <Box py={20} bg={bgColor}>
+      <Box py={20} bg="white">
         <Container maxW="container.xl">
           <VStack spacing={16}>
             <VStack spacing={4} textAlign="center">
               <Heading as="h2" size="xl" color="brand.600">
                 Todo lo que necesitas para tu equipo
               </Heading>
-              <Text fontSize="lg" color={textColor} maxW="2xl">
+              <Text fontSize="lg" color="gray.600" maxW="2xl">
                 Una plataforma completa diseñada específicamente para el fútbol amateur, 
                 con todas las herramientas necesarias para organizar tu equipo.
               </Text>
             </VStack>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
-              {features.map((feature, index) => (
-                <Box
-                  key={index}
-                  p={6}
-                  bg="white"
-                  borderRadius="lg"
-                  boxShadow="md"
-                  textAlign="center"
-                  _hover={{ transform: 'translateY(-4px)', boxShadow: 'lg' }}
-                  transition="all 0.3s"
-                >
-                  <VStack spacing={4}>
-                    <Box
-                      p={4}
-                      bg="brand.100"
-                      borderRadius="full"
-                      color="brand.600"
-                    >
-                      <Icon as={feature.icon} boxSize={6} />
-                    </Box>
-                    <Heading as="h3" size="md" color="gray.800">
-                      {feature.title}
-                    </Heading>
-                    <Text color={textColor} fontSize="sm">
-                      {feature.description}
-                    </Text>
-                  </VStack>
-                </Box>
-              ))}
-            </SimpleGrid>
+            <VStack spacing={8}>
+              <Box p={6} bg="white" borderRadius="lg" boxShadow="md" textAlign="center" w="full" maxW="md">
+                <VStack spacing={4}>
+                  <Box p={4} bg="brand.100" borderRadius="full" color="brand.600">
+                    <FaFutbol size={24} />
+                  </Box>
+                  <Heading as="h3" size="md" color="gray.800">
+                    Organización de Partidos
+                  </Heading>
+                  <Text color="gray.600" fontSize="sm">
+                    Crea y gestiona partidos de manera sencilla e intuitiva
+                  </Text>
+                </VStack>
+              </Box>
+            </VStack>
           </VStack>
         </Container>
       </Box>
@@ -132,7 +88,7 @@ export default function HomePage() {
             <Heading as="h2" size="xl" color="brand.600">
               ¿Listo para transformar tu equipo?
             </Heading>
-            <Text fontSize="lg" color={textColor} maxW="2xl">
+            <Text fontSize="lg" color="gray.600" maxW="2xl">
               Únete a cientos de equipos que ya están usando Formación ProSoccer 
               para organizar sus partidos y fortalecer la camaradería.
             </Text>
