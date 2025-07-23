@@ -1,9 +1,11 @@
-import os
-from dotenv import load_dotenv
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  env: {
+    DATABASE_URL: process.env.DATABASE_URL || "sqlite:///./test.db",
+    SECRET_KEY: process.env.SECRET_KEY || "supersecretkey",
+    ALGORITHM: "HS256",
+    ACCESS_TOKEN_EXPIRE_MINUTES: "1440", // Convertido a string
+  },
+}
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 día 
+module.exports = nextConfig 

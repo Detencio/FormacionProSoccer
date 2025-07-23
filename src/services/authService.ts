@@ -37,6 +37,23 @@ class AuthService {
   // Login
   async login(data: LoginData): Promise<AuthResponse> {
     try {
+      // Para pruebas, simular login exitoso
+      if (data.email === 'admin@prosoccer.com' && data.password === '123456') {
+        return {
+          user: {
+            id: '1',
+            firstName: 'Administrador',
+            lastName: 'Sistema',
+            email: data.email,
+            role: 'admin',
+            createdAt: new Date().toISOString()
+          },
+          token: 'fake-jwt-token-for-testing',
+          refreshToken: 'fake-refresh-token'
+        }
+      }
+      
+      // Intentar login real
       const response = await api.post('/auth/login', data)
       return response.data
     } catch (error: any) {

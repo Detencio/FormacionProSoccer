@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore'
+import { authService } from '@/services/authService'
 
 export const useAuth = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { setUser, clearUser } = useAuthStore()
 
   // Login
   const login = async (data: { email: string; password: string }) => {
@@ -14,17 +17,11 @@ export const useAuth = () => {
     setError(null)
     
     try {
-      // Simular llamada a API
-      console.log('Login attempt:', data)
-      
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Por ahora, solo redirigir al dashboard
+      const response = await authService.login(data)
+      setUser(response.user, response.token)
       router.push('/dashboard')
-      
     } catch (err: any) {
-      setError('Error al iniciar sesión')
+      setError(err.message || 'Error al iniciar sesión')
       console.error('Login error:', err)
     } finally {
       setLoading(false)
@@ -37,17 +34,11 @@ export const useAuth = () => {
     setError(null)
     
     try {
-      // Simular llamada a API
-      console.log('Register attempt:', data)
-      
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Por ahora, solo redirigir al dashboard
+      const response = await authService.register(data)
+      setUser(response.user, response.token)
       router.push('/dashboard')
-      
     } catch (err: any) {
-      setError('Error al registrarse')
+      setError(err.message || 'Error al registrarse')
       console.error('Register error:', err)
     } finally {
       setLoading(false)
@@ -59,13 +50,14 @@ export const useAuth = () => {
     setLoading(true)
     
     try {
-      // Simular logout
-      console.log('Logout')
-      
-      // Redirigir al login
+      await authService.logout()
+      clearUser()
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
+      // Aún así, limpiar el estado local
+      clearUser()
+      router.push('/login')
     } finally {
       setLoading(false)
     }
