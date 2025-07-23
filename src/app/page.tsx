@@ -1,9 +1,39 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import { FaFutbol } from 'react-icons/fa'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function HomePage() {
+  const router = useRouter()
+  const { isAuthenticated, loading } = useAuth()
+
+  useEffect(() => {
+    if (!loading) {
+      if (isAuthenticated) {
+        router.push('/dashboard')
+      } else {
+        router.push('/login')
+      }
+    }
+  }, [isAuthenticated, loading, router])
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Página de landing para usuarios no autenticados
   return (
     <div>
       {/* Hero Section */}
@@ -20,12 +50,16 @@ export default function HomePage() {
               deportiva de manera sencilla y profesional.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100">
-                Comenzar Ahora
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-600">
-                Ver Demo
-              </Button>
+              <Link href="/login">
+                <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100">
+                  Iniciar Sesión
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-600">
+                  Registrarse
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -75,9 +109,11 @@ export default function HomePage() {
               Únete a cientos de equipos que ya están usando Formación ProSoccer 
               para organizar sus partidos y fortalecer la camaradería.
             </p>
-            <Button size="lg" className="bg-brand-600 hover:bg-brand-700">
-              Crear Mi Equipo
-            </Button>
+            <Link href="/register">
+              <Button size="lg" className="bg-brand-600 hover:bg-brand-700">
+                Crear Mi Cuenta
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

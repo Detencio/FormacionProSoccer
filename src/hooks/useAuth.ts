@@ -1,67 +1,54 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { authService, LoginData, RegisterData, AuthResponse, ApiError } from '@/services/authService'
-import { useAuthStore } from '@/store/authStore'
 
 export const useAuth = () => {
   const router = useRouter()
-  const { user, setUser, clearUser } = useAuthStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Login
-  const login = async (data: LoginData) => {
+  const login = async (data: { email: string; password: string }) => {
     setLoading(true)
     setError(null)
     
     try {
-      const response = await authService.login(data)
+      // Simular llamada a API
+      console.log('Login attempt:', data)
       
-      // Guardar token en localStorage
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('refreshToken', response.refreshToken)
+      // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Actualizar estado global
-      setUser(response.user)
-      
-      // Redirigir al dashboard
+      // Por ahora, solo redirigir al dashboard
       router.push('/dashboard')
       
-      return response
     } catch (err: any) {
-      const error = err as ApiError
-      setError(error.message)
-      throw error
+      setError('Error al iniciar sesión')
+      console.error('Login error:', err)
     } finally {
       setLoading(false)
     }
   }
 
   // Register
-  const register = async (data: RegisterData) => {
+  const register = async (data: { email: string; password: string; firstName: string; lastName: string }) => {
     setLoading(true)
     setError(null)
     
     try {
-      const response = await authService.register(data)
+      // Simular llamada a API
+      console.log('Register attempt:', data)
       
-      // Guardar token en localStorage
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('refreshToken', response.refreshToken)
+      // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Actualizar estado global
-      setUser(response.user)
-      
-      // Redirigir al dashboard
+      // Por ahora, solo redirigir al dashboard
       router.push('/dashboard')
       
-      return response
     } catch (err: any) {
-      const error = err as ApiError
-      setError(error.message)
-      throw error
+      setError('Error al registrarse')
+      console.error('Register error:', err)
     } finally {
       setLoading(false)
     }
@@ -72,55 +59,23 @@ export const useAuth = () => {
     setLoading(true)
     
     try {
-      await authService.logout()
-    } catch (error) {
-      console.error('Logout error:', error)
-    } finally {
-      // Limpiar localStorage
-      localStorage.removeItem('token')
-      localStorage.removeItem('refreshToken')
-      
-      // Limpiar estado global
-      clearUser()
+      // Simular logout
+      console.log('Logout')
       
       // Redirigir al login
       router.push('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
       setLoading(false)
     }
   }
 
-  // Check if user is authenticated
-  const isAuthenticated = !!user
-
-  // Get current user from API
-  const getCurrentUser = async () => {
-    try {
-      const user = await authService.getCurrentUser()
-      setUser(user)
-      return user
-    } catch (error) {
-      console.error('Get current user error:', error)
-      clearUser()
-      return null
-    }
-  }
-
-  // Initialize auth on app load
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token && !user) {
-      getCurrentUser()
-    }
-  }, [user])
-
   return {
-    user,
-    loading,
-    error,
     login,
     register,
     logout,
-    isAuthenticated,
-    getCurrentUser,
+    loading,
+    error,
   }
 } 

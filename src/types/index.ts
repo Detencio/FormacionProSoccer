@@ -2,9 +2,11 @@
 export interface User {
   id: string
   email: string
-  name: string
+  firstName: string
+  lastName: string
   phone?: string
   avatar?: string
+  role: 'user' | 'admin'
   createdAt: Date
   updatedAt: Date
 }

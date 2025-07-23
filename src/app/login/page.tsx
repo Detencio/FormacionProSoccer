@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { FaFutbol, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { FaFutbol, FaEye, FaEyeSlash, FaEnvelope, FaLock } from 'react-icons/fa'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -23,7 +20,6 @@ export default function LoginPage() {
     try {
       await login(formData)
     } catch (error) {
-      // El error ya se maneja en el hook
       console.error('Login error:', error)
     }
   }
@@ -36,48 +32,59 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <FaFutbol size={48} className="text-brand-600" />
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                <FaFutbol size={24} className="text-gray-600" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Formación ProSoccer
+            </h1>
+            <p className="text-gray-600 text-sm">
+              Inicia sesión en tu cuenta
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Formación ProSoccer
-          </h1>
-          <p className="text-gray-600">
-            Inicia sesión en tu cuenta
-          </p>
-        </div>
 
-        {/* Formulario */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Correo electrónico
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="tu@email.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full"
-              />
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaEnvelope className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Contraseña
-              </Label>
+              </label>
               <div className="relative">
-                <Input
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
@@ -85,14 +92,14 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full pr-10"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
                 </button>
               </div>
             </div>
@@ -102,13 +109,13 @@ export default function LoginPage() {
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-600">Recordarme</span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-sm text-brand-600 hover:text-brand-700"
+                className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -116,26 +123,33 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
             {/* Submit Button */}
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50"
+              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </Button>
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Iniciando sesión...</span>
+                </div>
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </button>
           </form>
 
           {/* Divider */}
           <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
+            <div className="flex-1 border-t border-gray-200"></div>
             <span className="px-4 text-sm text-gray-500">o</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+            <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
           {/* Register Link */}
@@ -144,7 +158,7 @@ export default function LoginPage() {
               ¿No tienes una cuenta?{' '}
               <Link
                 href="/register"
-                className="text-brand-600 hover:text-brand-700 font-medium"
+                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
               >
                 Regístrate aquí
               </Link>
