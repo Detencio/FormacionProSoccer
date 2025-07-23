@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { FaFutbol, FaUsers, FaCalendar, FaCreditCard, FaSignOutAlt } from 'react-icons/fa'
 import Link from 'next/link'
 import AuthGuard from '@/components/AuthGuard'
+import MainLayout from '@/components/Layout/MainLayout'
 
 export default function DashboardPage() {
   const { user, logout, loading } = useAuth()
@@ -15,37 +16,8 @@ export default function DashboardPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <FaFutbol size={32} className="text-brand-600 mr-3" />
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Formación ProSoccer
-                </h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700">
-                  Hola, {user?.firstName} {user?.lastName}
-                </span>
-                <Button
-                  onClick={handleLogout}
-                  disabled={loading}
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                >
-                  <FaSignOutAlt size={16} />
-                  <span>Cerrar Sesión</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <MainLayout>
+        <div className="p-6">
           {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -146,8 +118,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </MainLayout>
     </AuthGuard>
   )
 } 

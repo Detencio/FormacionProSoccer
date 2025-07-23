@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { useRouter } from 'next/navigation'
 import { countries, getCitiesByCountry, getCommunesByCity } from '@/lib/locations'
+import MainLayout from '@/components/Layout/MainLayout'
 
 // Datos simulados para equipos (solo como fallback inicial)
 const initialMockTeams = [
@@ -407,7 +408,8 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <MainLayout>
+      <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Equipos</h1>
         <div className="flex gap-2">
@@ -676,7 +678,8 @@ export default function TeamsPage() {
           teamId={selectedTeamId}
         />
       )}
-    </div>
+      </div>
+    </MainLayout>
   )
 }
 
