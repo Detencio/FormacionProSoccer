@@ -2,6 +2,8 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import type { Metadata } from 'next'
+import Header from '@/components/Layout/Header'
+import Footer from '@/components/Layout/Footer'
 
 const theme = extendTheme({
   colors: {
@@ -90,7 +92,13 @@ export default function RootLayout({
       <body>
         <QueryClientProvider client={queryClient}>
           <ChakraProvider theme={theme}>
-            {children}
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+              <Header />
+              <main style={{ flex: 1 }}>
+                {children}
+              </main>
+              <Footer />
+            </div>
             <Toaster
               position="top-right"
               toastOptions={{
