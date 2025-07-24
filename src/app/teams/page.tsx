@@ -434,11 +434,13 @@ export default function TeamsPage() {
       return team ? team.players : []
     }
     if (showAllPlayers) {
-      return teams.flatMap(team => team.players.map((player: any) => ({
-        ...player,
-        teamName: team.name,
-        teamId: team.id
-      })))
+      return teams.flatMap((team: any) => 
+        team.players.map((player: any) => ({
+          ...player,
+          teamName: team.name,
+          teamId: team.id
+        }))
+      )
     }
     return []
   }
@@ -463,20 +465,20 @@ export default function TeamsPage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={() => router.push('/register-player')}
+          <button
+            onClick={() => router.push('/register-player')}
                 className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                title="Crear cuenta de usuario para jugador"
-              >
+            title="Crear cuenta de usuario para jugador"
+          >
                 <div className="flex items-center space-x-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
                   <span>Registrar Jugador</span>
                 </div>
-              </button>
-              <button
-                onClick={handleDebug}
+          </button>
+          <button
+            onClick={handleDebug}
                 className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 <div className="flex items-center space-x-2">
@@ -486,10 +488,10 @@ export default function TeamsPage() {
                   </svg>
                   <span>Debug</span>
                 </div>
-              </button>
-              {!isAuthenticated && (
-                <button
-                  onClick={handleLogin}
+          </button>
+          {!isAuthenticated && (
+            <button
+              onClick={handleLogin}
                   className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <div className="flex items-center space-x-2">
@@ -498,11 +500,11 @@ export default function TeamsPage() {
                     </svg>
                     <span>Iniciar Sesión</span>
                   </div>
-                </button>
-              )}
+            </button>
+          )}
             </div>
-          </div>
         </div>
+      </div>
 
         {/* Información con diseño FIFA 26 */}
         <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-2xl p-6 mb-8 shadow-lg">
@@ -535,8 +537,8 @@ export default function TeamsPage() {
                   <span className="text-blue-500 mr-2">•</span>
                   Para gestión interna de equipos
                 </li>
-              </ul>
-            </div>
+            </ul>
+          </div>
             <div className="bg-white rounded-xl p-4 shadow-md">
               <div className="flex items-center mb-3">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
@@ -561,21 +563,21 @@ export default function TeamsPage() {
                   <span className="text-green-500 mr-2">•</span>
                   Contraseña por defecto: 123456
                 </li>
-              </ul>
-            </div>
+            </ul>
           </div>
         </div>
+      </div>
 
         {/* Advertencia de autenticación con diseño FIFA 26 */}
-        {showAuthWarning && (
+      {showAuthWarning && (
           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-300 rounded-2xl p-6 mb-8 shadow-lg">
             <div className="flex items-start">
-              <div className="flex-shrink-0">
+            <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">Modo de Prueba</h3>
@@ -689,8 +691,8 @@ export default function TeamsPage() {
                     </p>
                     <p className="text-sm text-gray-600">
                       {filteredPlayers.length} jugador{filteredPlayers.length !== 1 ? 'es' : ''} encontrado{filteredPlayers.length !== 1 ? 's' : ''}
-                    </p>
-                  </div>
+              </p>
+            </div>
                 </div>
                 <button
                   onClick={() => {
@@ -701,9 +703,9 @@ export default function TeamsPage() {
                 >
                   Limpiar filtro
                 </button>
-              </div>
-            </div>
-          )}
+          </div>
+        </div>
+      )}
         </div>
 
         {/* Vista de jugadores filtrados */}
@@ -836,48 +838,48 @@ export default function TeamsPage() {
         {/* Grid de equipos con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
         {!selectedFilterTeam && !showAllPlayers && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {teams.map((team, index) => (
-            <div key={`team-${team.id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex items-start gap-4">
-                  {team.logo_url && (
-                    <div className="w-20 h-24 bg-gradient-to-br from-blue-100 to-green-100 rounded-xl flex items-center justify-center shadow-lg border-2 border-gray-200">
-                      <img 
-                        src={team.logo_url} 
-                        alt={`Logo ${team.name}`}
-                        className="w-16 h-20 object-contain"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{team.name}</h3>
-                    <p className="text-gray-600 font-medium">
-                      {team.commune && `${team.commune}, `}{team.city}, {team.country}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">Fundado: {team.founded}</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEditTeam(team)}
-                    className="p-3 text-gray-600 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
-                    title="Editar equipo"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTeam(team.id)}
-                    className="p-3 text-gray-600 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
-                    title="Eliminar equipo"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+        {teams.map((team, index) => (
+              <div key={`team-${team.id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-start gap-4">
+                {team.logo_url && (
+                      <div className="w-20 h-24 bg-gradient-to-br from-blue-100 to-green-100 rounded-xl flex items-center justify-center shadow-lg border-2 border-gray-200">
+                  <img 
+                    src={team.logo_url} 
+                    alt={`Logo ${team.name}`}
+                          className="w-16 h-20 object-contain"
+                  />
+                      </div>
+                )}
+                <div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{team.name}</h3>
+                      <p className="text-gray-600 font-medium">
+                    {team.commune && `${team.commune}, `}{team.city}, {team.country}
+                  </p>
+                      <p className="text-sm text-gray-500 mt-1">Fundado: {team.founded}</p>
                 </div>
               </div>
+                  <div className="flex gap-2">
+                <button
+                  onClick={() => handleEditTeam(team)}
+                      className="p-3 text-gray-600 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                  title="Editar equipo"
+                >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleDeleteTeam(team.id)}
+                      className="p-3 text-gray-600 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                  title="Eliminar equipo"
+                >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
             <div className="border-t pt-4">
               <div className="flex justify-between items-center mb-3">
@@ -994,22 +996,23 @@ export default function TeamsPage() {
           </div>
         ))}
       </div>
+        )}
 
-        {/* Botón agregar equipo con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
+                {/* Botón agregar equipo con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
         {!selectedFilterTeam && !showAllPlayers && (
           <div className="mt-12 text-center">
-          <button 
-            onClick={handleAddTeam}
-            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-          >
-            <div className="flex items-center justify-center space-x-3">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>+ Agregar Nuevo Equipo</span>
-            </div>
-          </button>
-        </div>
+        <button 
+          onClick={handleAddTeam}
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
+            >
+              <div className="flex items-center justify-center space-x-3">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>+ Agregar Nuevo Equipo</span>
+              </div>
+        </button>
+      </div>
         )}
 
       {/* Modal para Equipos */}
@@ -1026,7 +1029,7 @@ export default function TeamsPage() {
       )}
 
       {/* Modal para Jugadores */}
-      {showPlayerModal && (
+      {showPlayerModal && selectedTeamId && (
         <PlayerModal
           isOpen={showPlayerModal}
           onClose={() => {
