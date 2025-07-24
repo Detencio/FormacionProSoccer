@@ -131,29 +131,29 @@ export default function Sidebar() {
   }
 
   return (
-    <div className={`bg-gradient-to-b from-blue-900 to-blue-800 text-white transition-all duration-300 ${
+    <div className={`bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } min-h-screen flex flex-col`}>
+    } min-h-screen flex flex-col shadow-2xl border-r border-gray-700`}>
       
-      {/* Header */}
-      <div className="p-4 border-b border-blue-700">
+      {/* Header con diseño FIFA 26 */}
+      <div className="p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600 to-green-600">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2m4 0V2a1 1 0 011-1h4a1 1 0 011 1v2M7 4v16a2 2 0 002 2h10a2 2 0 002-2V4M7 4h10" />
                 </svg>
               </div>
               <div>
-                <h1 className="font-bold text-lg">FormaciónPro</h1>
-                <p className="text-xs text-blue-200">Soccer</p>
+                <h1 className="font-bold text-xl text-white">FormaciónPro</h1>
+                <p className="text-sm text-blue-100 font-medium">Soccer</p>
               </div>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-200 text-white"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -162,8 +162,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 p-4 space-y-2">
+      {/* Navigation Menu con diseño FIFA 26 */}
+      <nav className="flex-1 p-4 space-y-3">
         {menuItems.map((item) => (
           <div key={item.href}>
             {item.submenu ? (
@@ -171,23 +171,23 @@ export default function Sidebar() {
               <div>
                 <button
                   onClick={() => toggleSubmenu(item.name)}
-                  className={`group w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                  className={`group w-full flex items-center space-x-3 px-4 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                     isActive(item.href)
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+                      ? 'bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-xl'
+                      : 'text-gray-200 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white'
                   }`}
                 >
-                  <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-blue-300 group-hover:text-white'}`}>
+                  <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}>
                     {item.icon}
                   </div>
                   {!isCollapsed && (
                     <>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className="text-sm font-medium truncate">{item.name}</p>
-                        <p className="text-xs text-blue-200 truncate">{item.description}</p>
+                        <p className="text-sm font-semibold truncate">{item.name}</p>
+                        <p className="text-xs text-gray-300 truncate">{item.description}</p>
                       </div>
                       <svg 
-                        className={`w-4 h-4 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform duration-300 ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
@@ -198,21 +198,21 @@ export default function Sidebar() {
                   )}
                 </button>
                 
-                {/* Submenú */}
+                {/* Submenú con diseño FIFA 26 */}
                 {!isCollapsed && expandedItems.includes(item.name) && (
-                  <div className="ml-6 mt-2 space-y-1">
+                  <div className="ml-6 mt-3 space-y-2">
                     {item.submenu.map((subItem) => (
                       <Link
                         key={subItem.href}
                         href={subItem.href}
-                        className={`block px-3 py-2 rounded-lg transition-all duration-200 ${
+                        className={`block px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                           isActive(subItem.href)
-                            ? 'bg-blue-500 text-white'
-                            : 'text-blue-200 hover:bg-blue-600 hover:text-white'
+                            ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-lg'
+                            : 'text-gray-300 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white'
                         }`}
                       >
                         <p className="text-sm font-medium">{subItem.name}</p>
-                        <p className="text-xs text-blue-200">{subItem.description}</p>
+                        <p className="text-xs text-gray-400">{subItem.description}</p>
                       </Link>
                     ))}
                   </div>
@@ -222,19 +222,19 @@ export default function Sidebar() {
               // Item sin submenú
               <Link
                 href={item.href}
-                className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                className={`group flex items-center space-x-3 px-4 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                   isActive(item.href)
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-xl'
+                    : 'text-gray-200 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white'
                 }`}
               >
-                <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-blue-300 group-hover:text-white'}`}>
+                <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}>
                   {item.icon}
                 </div>
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-blue-200 truncate">{item.description}</p>
+                    <p className="text-sm font-semibold truncate">{item.name}</p>
+                    <p className="text-xs text-gray-300 truncate">{item.description}</p>
                   </div>
                 )}
               </Link>
@@ -243,13 +243,20 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-blue-700">
+      {/* Footer con diseño FIFA 26 */}
+      <div className="p-6 border-t border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
         {!isCollapsed && (
-          <div className="space-y-2">
-            <div className="text-xs text-blue-200">
-              <p>© 2024 FormaciónPro</p>
-              <p>Soccer Management</p>
+          <div className="space-y-3">
+            <div className="text-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="text-xs text-gray-300">
+                <p className="font-semibold">© 2024 FormaciónPro</p>
+                <p className="text-gray-400">Soccer Management</p>
+              </div>
             </div>
           </div>
         )}

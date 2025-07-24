@@ -3,8 +3,14 @@ import api from '@/lib/api';
 export interface Player {
   id: number;
   name: string;
+  email?: string;
+  country?: string;
+  phone?: string;
   position: string;
   age: number;
+  jersey_number?: number;
+  photo_url?: string;
+  skill?: number;
   team_id: number;
   created_at: string;
   updated_at: string;
@@ -27,8 +33,14 @@ export interface CreateTeamRequest {
 
 export interface CreatePlayerRequest {
   name: string;
+  email?: string;
+  country?: string;
+  phone?: string;
   position: string;
   age: number;
+  jersey_number?: number;
+  photo_url?: string;
+  skill?: number;
   team_id: number;
 }
 
@@ -39,8 +51,14 @@ export interface UpdateTeamRequest {
 
 export interface UpdatePlayerRequest {
   name?: string;
+  email?: string;
+  country?: string;
+  phone?: string;
   position?: string;
   age?: number;
+  jersey_number?: number;
+  photo_url?: string;
+  skill?: number;
 }
 
 // Datos simulados para pruebas

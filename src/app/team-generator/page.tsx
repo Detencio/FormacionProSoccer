@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import MainLayout from '@/components/Layout/MainLayout'
 import PlayerCard from '@/components/team-generator/PlayerCard'
 import TeamFormation from '@/components/team-generator/TeamFormation'
+import { countries } from '@/lib/countries'
 
 
 interface Player {
@@ -1238,102 +1239,318 @@ export default function TeamGeneratorPage() {
 function PlayerModal({ player, onClose, onSave }: any) {
   const [formData, setFormData] = useState({
     name: player?.name || '',
-    skill: player?.skill || 3,
+    email: player?.email || '',
+    country: player?.country || '',
+    phone: player?.phone || '',
     position: player?.position || 'Mediocampista',
-    photo: player?.photo || ''
+    age: player?.age ? player.age.toString() : '',
+    jersey_number: player?.jersey_number ? player.jersey_number.toString() : '',
+    photo_url: player?.photo_url || player?.photo || '',
+    skill: Number(player?.skill) || 3
   })
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [teams, setTeams] = useState<any[]>([])
+
+  // Cargar equipos desde localStorage
+  useEffect(() => {
+    const savedTeams = localStorage.getItem('teams-data')
+    if (savedTeams) {
+      try {
+        const teamsData = JSON.parse(savedTeams)
+        setTeams(teamsData)
+      } catch (error) {
+        console.error('Error cargando equipos:', error)
+      }
+    }
+  }, [])
+
+  // Actualizar formData cuando cambie el player
+  useEffect(() => {
+    console.log('PlayerModal useEffect - player:', player)
+    const newFormData = {
+      name: player?.name || '',
+      email: player?.email || '',
+      country: player?.country || '',
+      phone: player?.phone || '',
+      position: player?.position || 'Mediocampista',
+      age: player?.age ? player.age.toString() : '',
+      jersey_number: player?.jersey_number ? player.jersey_number.toString() : '',
+      photo_url: player?.photo_url || player?.photo || '',
+      skill: Number(player?.skill) || 3
+    }
+    console.log('PlayerModal useEffect - newFormData:', newFormData)
+    setFormData(newFormData)
+    setPhotoPreview(player?.photo_url || player?.photo || null)
+  }, [player])
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        setPhotoPreview(result)
+        setFormData({ ...formData, photo_url: result })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = e.target.value
+    const selectedCountry = countries.find(country => country.code === countryCode)
+    
+    setFormData({
+      ...formData,
+      country: countryCode,
+      phone: selectedCountry ? selectedCountry.phoneCode : ''
+    })
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    const data = {
+      ...formData,
+      age: parseInt(formData.age),
+      jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : null,
+      photo: formData.photo_url,
+      skill: formData.skill
+    }
+    onSave(data)
   }
 
   const positions = ['Portero', 'Defensa', 'Mediocampista', 'Delantero']
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {player ? 'Editar Jugador' : 'Agregar Jugador'}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Header con gradiente */}
+        <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">
+            {player ? 'Editar Jugador en el Sistema' : 'Registrar Jugador en el Sistema'}
+          </h1>
+          <p className="text-blue-100 text-lg">
+            {player ? 'Modifica la información del jugador' : 'Crea una cuenta de usuario para un jugador y asígnalo a un equipo'}
+          </p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Habilidad *
-            </label>
-            <div className="flex items-center space-x-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={`skill-star-${star}-${Date.now()}`}
-                  type="button"
-                  onClick={() => setFormData({...formData, skill: star})}
-                  className={`text-2xl ${formData.skill >= star ? 'text-yellow-500' : 'text-gray-300'}`}
-                >
-                  ⭐
-                </button>
-              ))}
-              <span className="text-sm text-gray-600 ml-2">{formData.skill}/5</span>
+        <div className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Información Personal */}
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Información Personal</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Ingresa el nombre completo"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="jugador@ejemplo.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    País *
+                  </label>
+                  <select
+                    value={formData.country}
+                    onChange={handleCountryChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  >
+                    <option value="">Selecciona un país</option>
+                    {countries.map((country, index) => (
+                      <option key={`country-${country.code}-${index}`} value={country.code}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="+34 600 000 000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Posición
+                  </label>
+                  <select
+                    value={formData.position}
+                    onChange={(e) => setFormData({...formData, position: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Selecciona posición</option>
+                    {positions.map((position) => (
+                      <option key={position} value={position}>
+                        {position}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Edad *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.age}
+                    onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    min="16"
+                    max="50"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Número de Camiseta
+                </label>
+                <input
+                  type="number"
+                  value={formData.jersey_number}
+                  onChange={(e) => setFormData({...formData, jersey_number: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  min="1"
+                  max="99"
+                />
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Habilidad *
+                </label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFilled = formData.skill >= star
+                    return (
+                      <button
+                        key={`skill-star-${star}`}
+                        type="button"
+                        onClick={() => setFormData({...formData, skill: star})}
+                        className={`text-2xl transition-colors duration-200 ${isFilled ? 'text-yellow-500' : 'text-gray-300'}`}
+                      >
+                        ⭐
+                      </button>
+                    )
+                  })}
+                  <span className="text-sm text-gray-600 ml-2">{formData.skill}/5</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Posición
-            </label>
-            <select
-              value={formData.position}
-              onChange={(e) => setFormData({...formData, position: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {positions.map((pos, index) => (
-                <option key={`position-${pos}-${index}-${Date.now()}`} value={pos}>{pos}</option>
-              ))}
-            </select>
-          </div>
+            {/* Asignación de Equipo */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Asignación de Equipo</h3>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Equipo *
+                </label>
+                <select
+                  value={player?.teamId || 1}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  disabled
+                >
+                  {teams.map((team, index) => (
+                    <option key={`team-${team.id}-${index}`} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL de Foto (opcional)
-            </label>
-            <input
-              type="url"
-              value={formData.photo}
-              onChange={(e) => setFormData({...formData, photo: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://ejemplo.com/foto.jpg"
-            />
-          </div>
+            {/* Foto del Jugador */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Foto del Jugador</h3>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
+                {photoPreview && (
+                  <div className="flex-shrink-0">
+                    <img 
+                      src={photoPreview} 
+                      alt="Preview" 
+                      className="w-16 h-16 object-cover border-2 border-blue-200 rounded-lg shadow-sm"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
-            >
-              {player ? 'Actualizar' : 'Agregar'}
-            </button>
-          </div>
-        </form>
+            {/* Botones de Acción */}
+            <div className="flex gap-4 pt-6">
+              <button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <div className="flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {player ? 'Actualizar Jugador' : 'Crear Cuenta de Jugador'}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <div className="flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Cancelar
+                </div>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
