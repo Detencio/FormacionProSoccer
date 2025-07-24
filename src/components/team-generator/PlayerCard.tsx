@@ -200,16 +200,17 @@ export default function PlayerCard({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-20"></div>
         </div>
 
-        {/* Acciones (hover) */}
-        {showActions && (onEdit || onDelete || showEvaluation) && (
-          <div className="absolute top-2 right-2 flex space-x-1">
+        {/* Acciones */}
+        {(onEdit || onDelete || showEvaluation) && (
+          <div className="absolute top-2 right-2 flex space-x-1 z-10">
             {showEvaluation && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowEvaluationModal(true)
                 }}
-                className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-purple-600 transition-colors"
+                className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
+                title="Evaluar jugador"
               >
                 📊
               </button>
@@ -220,7 +221,8 @@ export default function PlayerCard({
                   e.stopPropagation()
                   onEdit()
                 }}
-                className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-blue-600 transition-colors"
+                className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center text-xs hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
+                title="Editar jugador"
               >
                 ✏️
               </button>
@@ -231,7 +233,8 @@ export default function PlayerCard({
                   e.stopPropagation()
                   onDelete()
                 }}
-                className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full flex items-center justify-center text-xs hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
+                title="Eliminar jugador"
               >
                 🗑️
               </button>

@@ -214,6 +214,29 @@ export default function TeamGeneratorPage() {
 
   const savePlayers = (newPlayers: Player[]) => {
     localStorage.setItem('generator-players', JSON.stringify(newPlayers))
+    
+    // También guardar en teams-data para sincronización
+    const savedTeams = localStorage.getItem('teams-data')
+    if (savedTeams) {
+      const teamsData = JSON.parse(savedTeams)
+      const matizFC = teamsData.find((team: any) => team.id === 1)
+      if (matizFC) {
+        // Actualizar los nombres de los jugadores en teams-data
+        matizFC.players = matizFC.players.map((player: any) => {
+          const updatedPlayer = newPlayers.find(p => p.id === player.id)
+          if (updatedPlayer) {
+            return {
+              ...player,
+              name: updatedPlayer.name,
+              position: updatedPlayer.position
+            }
+          }
+          return player
+        })
+        
+        localStorage.setItem('teams-data', JSON.stringify(teamsData))
+      }
+    }
   }
 
   const addPlayer = (playerData: Omit<Player, 'id'>) => {
@@ -235,28 +258,60 @@ export default function TeamGeneratorPage() {
   }
 
   const updatePlayer = (id: number, playerData: Partial<Player>) => {
+    console.log('updatePlayer llamado con id:', id, 'playerData:', playerData)
     const updatedPlayers = players.map(player => 
       player.id === id ? { ...player, ...playerData } : player
     )
     setPlayers(updatedPlayers)
+    
+    // Actualizar availablePlayers si hay equipo seleccionado
     if (selectedTeamId) {
       const teamPlayers = updatedPlayers.filter(player => player.teamId === selectedTeamId)
       setAvailablePlayers(teamPlayers)
       setPresentPlayers(teamPlayers.map(p => ({ ...p, isPresent: true })))
     }
+    
+    // Actualizar equipos generados
+    setGeneratedTeams(prev => prev.map(team => ({
+      ...team,
+      players: team.players.map(player => 
+        player.id === id ? { ...player, ...playerData } : player
+      )
+    })))
+    
+    // Actualizar jugadores de reserva
+    setReservePlayers(prev => prev.map(player => 
+      player.id === id ? { ...player, ...playerData } : player
+    ))
+    
     savePlayers(updatedPlayers)
+    console.log('updatePlayer completado')
   }
 
   const deletePlayer = (id: number) => {
+    console.log('deletePlayer llamado con id:', id)
     if (confirm('¿Estás seguro de que quieres eliminar este jugador?')) {
       const updatedPlayers = players.filter(player => player.id !== id)
       setPlayers(updatedPlayers)
+      
+      // Actualizar availablePlayers si hay equipo seleccionado
       if (selectedTeamId) {
         const teamPlayers = updatedPlayers.filter(player => player.teamId === selectedTeamId)
         setAvailablePlayers(teamPlayers)
         setPresentPlayers(teamPlayers.map(p => ({ ...p, isPresent: true })))
       }
+      
+      // Actualizar equipos generados
+      setGeneratedTeams(prev => prev.map(team => ({
+        ...team,
+        players: team.players.filter(player => player.id !== id)
+      })))
+      
+      // Actualizar jugadores de reserva
+      setReservePlayers(prev => prev.filter(player => player.id !== id))
+      
       savePlayers(updatedPlayers)
+      console.log('deletePlayer completado')
     }
   }
 
@@ -625,14 +680,18 @@ export default function TeamGeneratorPage() {
           console.log('Jugadores de Matiz FC encontrados:', matizFC.players.length)
           matizFC.players.forEach((player: any) => {
             const existingPlayer = players.find(p => p.id === player.id)
+            
+            // Preservar el nombre modificado si existe, sino usar el de la base de datos
+            const playerName = existingPlayer?.name || player.name || player.full_name || 'Jugador Sin Nombre'
+            
             updatedPlayers.push({
               id: player.id,
-              name: player.name || player.full_name || 'Jugador Sin Nombre',
+              name: playerName,
               skill: existingPlayer?.skill || Math.floor(Math.random() * 5) + 1,
-              position: player.position || existingPlayer?.position || 'Mediocampista',
+              position: existingPlayer?.position || player.position || 'Mediocampista',
               teamId: matizFC.id,
               teamName: matizFC.name,
-              photo: player.photo_url || player.avatar_url,
+              photo: existingPlayer?.photo || player.photo_url || player.avatar_url,
               isPresent: existingPlayer?.isPresent !== undefined ? existingPlayer.isPresent : true,
               stats: existingPlayer?.stats || {
                 velocidad: Math.floor(Math.random() * 100) + 1,
@@ -921,10 +980,14 @@ export default function TeamGeneratorPage() {
                     key={player.id}
                     player={player}
                     onEdit={() => {
+                      console.log('Editando jugador:', player)
                       setEditingPlayer(player)
                       setShowAddPlayerModal(true)
                     }}
-                    onDelete={() => deletePlayer(player.id)}
+                    onDelete={() => {
+                      console.log('Eliminando jugador:', player.id)
+                      deletePlayer(player.id)
+                    }}
                     onDragStart={() => handleDragStart(player, null)}
                     isDragging={dragState.isDragging && dragState.draggedPlayer?.id === player.id}
                     onEvaluate={handlePlayerEvaluation}
@@ -964,17 +1027,20 @@ export default function TeamGeneratorPage() {
                   <div key={player.id} className="relative">
                     <PlayerCard
                       player={player}
+                      onEdit={() => {
+                        console.log('Editando jugador de reserva:', player)
+                        setEditingPlayer(player)
+                        setShowAddPlayerModal(true)
+                      }}
+                      onDelete={() => {
+                        console.log('Eliminando jugador de reserva:', player.id)
+                        removeReservePlayer(player.id)
+                      }}
                       onDragStart={() => handleDragStart(player, null)}
                       isDragging={dragState.isDragging && dragState.draggedPlayer?.id === player.id}
                       onEvaluate={handlePlayerEvaluation}
                       showEvaluation={showEvaluation}
                     />
-                    <button
-                      onClick={() => removeReservePlayer(player.id)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                    >
-                      ×
-                    </button>
                   </div>
                 ))}
               </div>
