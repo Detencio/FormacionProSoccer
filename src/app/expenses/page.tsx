@@ -221,124 +221,122 @@ export default function ExpensesPage() {
 
   return (
     <MainLayout>
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Gastos</h1>
-            <p className="text-gray-600">
-              Administra los gastos del club, equipamiento, eventos y más
-            </p>
-          </div>
-
-          {/* Resumen de gastos */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6 border border-red-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-red-600">Total Gastos</p>
-                  <p className="text-2xl font-bold text-red-900">{formatCurrency(getTotalExpenses())}</p>
-                  <p className="text-xs text-red-600 mt-1">
-                    {filteredExpenses.length} gastos registrados
-                  </p>
-                </div>
-                <div className="p-3 bg-red-200 rounded-full">
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="space-y-8">
+        {/* Header con diseño FIFA 26 */}
+        <div className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 rounded-3xl shadow-2xl border border-red-500/30 p-8 relative overflow-hidden">
+          {/* Efecto de luz de fondo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-6">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Este Mes</p>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {formatCurrency(
-                      filteredExpenses
-                        .filter(e => new Date(e.date).getMonth() === new Date().getMonth())
-                        .reduce((total, e) => total + e.amount, 0)
-                    )}
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    Gastos del mes actual
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-200 rounded-full">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <h1 className="text-5xl font-bold text-white mb-2">Gastos</h1>
+                  <p className="text-xl text-red-100 font-medium">Control financiero del club</p>
                 </div>
               </div>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-green-400/30 flex items-center space-x-3"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Nuevo Gasto</span>
+              </button>
             </div>
+          </div>
+        </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Promedio</p>
-                  <p className="text-2xl font-bold text-green-900">
-                    {filteredExpenses.length > 0 
-                      ? formatCurrency(Math.round(getTotalExpenses() / filteredExpenses.length))
-                      : formatCurrency(0)
-                    }
-                  </p>
-                  <p className="text-xs text-green-600 mt-1">
-                    Por gasto registrado
-                  </p>
-                </div>
-                <div className="p-3 bg-green-200 rounded-full">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        {/* Resumen financiero con diseño FIFA 26 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-3xl shadow-2xl border border-red-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
-              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">Categorías</p>
-                  <p className="text-2xl font-bold text-purple-900">
-                    {Object.keys(getExpensesByCategory()).length}
-                  </p>
-                  <p className="text-xs text-purple-600 mt-1">
-                    Categorías con gastos
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-200 rounded-full">
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
+                  <p className="text-sm font-medium text-red-100">Total Gastos</p>
+                  <p className="text-3xl font-bold text-white">{formatCurrency(getTotalExpenses())}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Filtros */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Filtros</h2>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 font-semibold"
-              >
-                <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Agregar Gasto
-              </button>
+          <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-3xl shadow-2xl border border-orange-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-orange-100">Este Mes</p>
+                  <p className="text-3xl font-bold text-white">{formatCurrency(expenses.filter(e => e.date.startsWith('2024-01')).reduce((sum, e) => sum + e.amount, 0))}</p>
+                </div>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-3xl shadow-2xl border border-yellow-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-yellow-100">Categorías</p>
+                  <p className="text-3xl font-bold text-white">{Object.keys(EXPENSE_CATEGORIES).length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-3xl shadow-2xl border border-green-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-100">Registros</p>
+                  <p className="text-3xl font-bold text-white">{expenses.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filtros con diseño FIFA 26 */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl border border-gray-600/30 p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/10"></div>
+          <div className="relative z-10">
+            <h3 className="text-2xl font-bold text-white mb-6">Filtros</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Categoría
-                </label>
+                <label className="block text-sm font-bold text-white mb-3">Categoría</label>
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters({...filters, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Todas las categorías</option>
                   {Object.entries(EXPENSE_CATEGORIES).map(([key, category]) => (
@@ -348,13 +346,13 @@ export default function ExpensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-white mb-3">
                   Subcategoría
                 </label>
                 <select
                   value={filters.subcategory}
                   onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Todas las subcategorías</option>
                   {filters.category && EXPENSE_CATEGORIES[filters.category as keyof typeof EXPENSE_CATEGORIES]?.subcategories.map((sub) => (
@@ -364,13 +362,13 @@ export default function ExpensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-white mb-3">
                   Equipo
                 </label>
                 <select
                   value={filters.teamId}
                   onChange={(e) => setFilters({...filters, teamId: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Todos los equipos</option>
                   {teams.map((team) => (
@@ -380,13 +378,13 @@ export default function ExpensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-white mb-3">
                   Estado
                 </label>
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters({...filters, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Todos los estados</option>
                   <option value="pagado">Pagado</option>
@@ -396,7 +394,7 @@ export default function ExpensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-white mb-3">
                   Buscar
                 </label>
                 <input
@@ -404,35 +402,32 @@ export default function ExpensesPage() {
                   value={filters.search}
                   onChange={(e) => setFilters({...filters, search: e.target.value})}
                   placeholder="Descripción, categoría..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-white mb-3">
                   Rango de fechas
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   <input
                     type="date"
                     value={filters.startDate}
                     onChange={(e) => setFilters({...filters, startDate: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
                   <input
                     type="date"
                     value={filters.endDate}
                     onChange={(e) => setFilters({...filters, endDate: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 flex justify-between items-center">
-              <p className="text-sm text-gray-600">
-                {filteredExpenses.length} gastos encontrados
-              </p>
+            <div className="mt-4 flex justify-end space-x-3 pt-4">
               <button
                 onClick={() => setFilters({category: '', subcategory: '', teamId: '', status: '', search: '', startDate: '', endDate: ''})}
                 className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
@@ -574,7 +569,7 @@ export default function ExpensesPage() {
               setShowAddModal(false)
               setEditingExpense(null)
             }}
-            onSave={(expenseData) => {
+            onSave={(expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
               if (editingExpense) {
                 updateExpense(editingExpense.id, expenseData)
               } else {
@@ -647,7 +642,7 @@ function ExpenseModal({ expense, teams, categories, onClose, onSave }: any) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                {Object.entries(categories).map(([key, category]) => (
+                {Object.entries(categories).map(([key, category]: [string, any]) => (
                   <option key={key} value={key}>{category.name}</option>
                 ))}
               </select>
@@ -664,7 +659,7 @@ function ExpenseModal({ expense, teams, categories, onClose, onSave }: any) {
                 required
               >
                 <option value="">Selecciona una subcategoría</option>
-                {categories[formData.category as keyof typeof categories]?.subcategories.map((sub) => (
+                {categories[formData.category as keyof typeof categories]?.subcategories.map((sub: string) => (
                   <option key={sub} value={sub}>{sub}</option>
                 ))}
               </select>
@@ -753,7 +748,7 @@ function ExpenseModal({ expense, teams, categories, onClose, onSave }: any) {
               <select
                 value={formData.teamId}
                 onChange={(e) => {
-                  const team = teams.find(t => t.id === parseInt(e.target.value))
+                  const team = teams.find((t: any) => t.id === parseInt(e.target.value))
                   setFormData({
                     ...formData, 
                     teamId: e.target.value ? parseInt(e.target.value) : undefined,
@@ -763,7 +758,7 @@ function ExpenseModal({ expense, teams, categories, onClose, onSave }: any) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Sin equipo específico</option>
-                {teams.map((team) => (
+                {teams.map((team: any) => (
                   <option key={team.id} value={team.id}>{team.name}</option>
                 ))}
               </select>

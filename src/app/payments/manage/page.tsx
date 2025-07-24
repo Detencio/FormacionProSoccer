@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import MainLayout from '@/components/Layout/MainLayout'
-import { paymentService } from '@/services/paymentService'
+// import { paymentService } from '@/services/paymentService'
 
 export default function ManagePaymentsPage() {
   const [payments, setPayments] = useState<any[]>([])
@@ -32,9 +32,13 @@ export default function ManagePaymentsPage() {
         setTeams(JSON.parse(savedTeams))
       }
 
-      // Cargar pagos
-      const allPayments = await paymentService.getPayments()
-      setPayments(allPayments)
+      // Cargar pagos desde localStorage
+      const savedPayments = localStorage.getItem('payments-data')
+      if (savedPayments) {
+        setPayments(JSON.parse(savedPayments))
+      } else {
+        setPayments([])
+      }
     } catch (error) {
       console.error('Error cargando datos:', error)
       setMessage('Error al cargar los datos')
@@ -62,15 +66,15 @@ export default function ManagePaymentsPage() {
     try {
       setLoading(true)
       
-      if (newStatus === 'pagado') {
-        await paymentService.markAsPaid(paymentId)
-      } else {
-        await paymentService.updatePayment(paymentId, { status: newStatus })
-      }
+      // Actualizar pago en localStorage
+      const updatedPayments = payments.map(payment => 
+        payment.id === paymentId 
+          ? { ...payment, status: newStatus }
+          : payment
+      )
       
-      // Recargar pagos
-      const updatedPayments = await paymentService.getPayments()
       setPayments(updatedPayments)
+      localStorage.setItem('payments-data', JSON.stringify(updatedPayments))
       
       setMessage(`Estado actualizado exitosamente`)
       setTimeout(() => setMessage(''), 3000)
@@ -90,11 +94,16 @@ export default function ManagePaymentsPage() {
   const handleSavePayment = async (updatedPayment: any) => {
     try {
       setLoading(true)
-      await paymentService.updatePayment(updatedPayment.id, updatedPayment)
       
-      // Recargar pagos
-      const updatedPayments = await paymentService.getPayments()
+      // Actualizar pago en localStorage
+      const updatedPayments = payments.map(payment => 
+        payment.id === updatedPayment.id 
+          ? { ...payment, ...updatedPayment }
+          : payment
+      )
+      
       setPayments(updatedPayments)
+      localStorage.setItem('payments-data', JSON.stringify(updatedPayments))
       
       setShowEditModal(false)
       setEditingPayment(null)
@@ -461,7 +470,7 @@ function EditPaymentModal({ payment, onClose, onSave, teams }: any) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              {teams.map((team) => (
+              {teams.map((team: any) => (
                 <option key={team.id} value={team.id}>{team.name}</option>
               ))}
             </select>

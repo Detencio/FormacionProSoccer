@@ -132,244 +132,241 @@ export default function RegisterPlayerPage() {
 
   return (
     <MainLayout>
-      <div className="p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-            {/* Header con gradiente */}
-            <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-8 text-center">
-              <h1 className="text-3xl font-bold mb-2">Registrar Jugador en el Sistema</h1>
-              <p className="text-blue-100 text-lg">
-                Crea una cuenta de usuario para un jugador y asígnalo a un equipo
-              </p>
-            </div>
-
-            <div className="p-8">
-              {message && (
-                <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-                  message.includes('Error') 
-                    ? 'bg-red-50 text-red-700 border-red-400' 
-                    : 'bg-green-50 text-green-700 border-green-400'
-                }`}>
-                  <div className="flex items-center">
-                    <svg className={`w-5 h-5 mr-2 ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={message.includes('Error') ? "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" : "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"} />
-                    </svg>
-                    {message}
-                  </div>
+      <div className="space-y-8">
+        {/* Header con diseño FIFA 26 */}
+        <div className="bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 rounded-3xl shadow-2xl border border-green-500/30 p-8 relative overflow-hidden">
+          {/* Efecto de luz de fondo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-6">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
                 </div>
-              )}
+                <div>
+                  <h1 className="text-5xl font-bold text-white mb-2">Registrar Jugador</h1>
+                  <p className="text-xl text-green-100 font-medium">Crear cuenta de usuario para jugador</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Formulario con diseño FIFA 26 */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl border border-gray-600/30 p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/10"></div>
+          <div className="relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Información Personal */}
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Información Personal</h3>
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                    <svg className="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Información Personal
+                  </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Nombre Completo *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="Ingresa el nombre completo"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Email *
-                      </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="jugador@ejemplo.com"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        País *
-                      </label>
-                      <select
-                        value={formData.country}
-                        onChange={handleCountryChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        required
-                      >
-                        <option value="">Selecciona un país</option>
-                        {countries.map((country, index) => (
-                          <option key={`country-${country.code}-${index}`} value={country.code}>
-                            {country.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Teléfono
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="+34 600 000 000"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Posición
-                      </label>
-                      <select
-                        value={formData.position}
-                        onChange={(e) => setFormData({...formData, position: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      >
-                        <option value="">Selecciona posición</option>
-                        <option value="Portero">Portero</option>
-                        <option value="Defensa">Defensa</option>
-                        <option value="Mediocampista">Mediocampista</option>
-                        <option value="Delantero">Delantero</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Edad *
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.age}
-                        onChange={(e) => setFormData({...formData, age: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        min="16"
-                        max="50"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Número de Camiseta
-                    </label>
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Nombre Completo *</label>
                     <input
-                      type="number"
-                      value={formData.jersey_number}
-                      onChange={(e) => setFormData({...formData, jersey_number: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      min="1"
-                      max="99"
+                      type="text"
+                      required
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ingresa el nombre completo"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Email *</label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="ejemplo@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">País</label>
+                    <select
+                      value={formData.country}
+                      onChange={handleCountryChange}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Selecciona un país</option>
+                      {countries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Teléfono</label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="+56 912345678"
                     />
                   </div>
                 </div>
 
-                {/* Asignación de Equipo */}
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Asignación de Equipo</h3>
+                {/* Información Deportiva */}
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                    <svg className="w-6 h-6 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2m4 0V2a1 1 0 011-1h4a1 1 0 011 1v2M7 4v16a2 2 0 002 2h10a2 2 0 002-2V4M7 4h10" />
+                    </svg>
+                    Información Deportiva
+                  </h3>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Equipo *
-                    </label>
+                    <label className="block text-sm font-bold text-white mb-3">Posición *</label>
                     <select
+                      required
+                      value={formData.position}
+                      onChange={(e) => setFormData({...formData, position: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Selecciona una posición</option>
+                      <option value="Portero">Portero</option>
+                      <option value="Defensa">Defensa</option>
+                      <option value="Centrocampista">Centrocampista</option>
+                      <option value="Delantero">Delantero</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Edad *</label>
+                    <input
+                      type="number"
+                      required
+                      min="5"
+                      max="50"
+                      value={formData.age}
+                      onChange={(e) => setFormData({...formData, age: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="25"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Número de Camiseta</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={formData.jersey_number}
+                      onChange={(e) => setFormData({...formData, jersey_number: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-white mb-3">Equipo *</label>
+                    <select
+                      required
                       value={formData.team_id}
                       onChange={(e) => setFormData({...formData, team_id: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      required
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Selecciona un equipo</option>
-                      {teams.map((team, index) => (
-                        <option key={`register-team-${team.id}-${index}`} value={team.id}>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
                           {team.name}
                         </option>
                       ))}
                     </select>
-                    {teams.length === 0 && (
-                      <p className="text-sm text-red-600 mt-2">
-                        No hay equipos disponibles. Primero crea un equipo en la sección de Equipos.
-                      </p>
-                    )}
                   </div>
                 </div>
+              </div>
 
-                {/* Foto del Jugador */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Foto del Jugador</h3>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      />
-                    </div>
-                    {photoPreview && (
-                      <div className="flex-shrink-0">
-                        <img 
-                          src={photoPreview} 
-                          alt="Preview" 
-                          className="w-16 h-16 object-cover border-2 border-blue-200 rounded-lg shadow-sm"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Botones de Acción */}
-                <div className="flex gap-4 pt-6">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center justify-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Registrando...
-                      </div>
+              {/* Foto del Jugador */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <svg className="w-6 h-6 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Foto del Jugador
+                </h3>
+                
+                <div className="flex items-center space-x-6">
+                  <div className="w-32 h-32 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-500 overflow-hidden">
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex items-center justify-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Crear Cuenta de Jugador
-                      </div>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => router.push('/teams')}
-                    className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                  >
-                    <div className="flex items-center justify-center">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      Cancelar
-                    </div>
-                  </button>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block text-sm font-bold text-white mb-3">Seleccionar Foto</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
                 </div>
-              </form>
-            </div>
+              </div>
+
+              {/* Mensaje de estado */}
+              {message && (
+                <div className={`p-4 rounded-2xl ${
+                  message.includes('Error') 
+                    ? 'bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 text-red-200' 
+                    : 'bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/30 text-green-200'
+                }`}>
+                  {message}
+                </div>
+              )}
+
+              {/* Botones de acción */}
+              <div className="flex justify-end space-x-4 pt-6">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 border border-gray-500/30"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 border border-green-400/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Registrando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Registrar Jugador</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

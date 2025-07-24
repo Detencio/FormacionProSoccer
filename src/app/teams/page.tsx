@@ -508,127 +508,136 @@ export default function TeamsPage() {
 
   return (
     <MainLayout>
-      <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="space-y-8">
         {/* Header con diseño FIFA 26 */}
-        <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl shadow-2xl border border-gray-100 p-8 mb-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-white mb-2">Equipos</h1>
-                <p className="text-blue-100 text-lg">Gestión de equipos y jugadores</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-          <button
-            onClick={() => router.push('/register-player')}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            title="Crear cuenta de usuario para jugador"
-          >
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 rounded-3xl shadow-2xl border border-blue-500/30 p-8 relative overflow-hidden">
+          {/* Efecto de luz de fondo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-6">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  <span>Registrar Jugador</span>
                 </div>
-          </button>
-          <button
-            onClick={handleDebug}
-                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Debug</span>
+                <div>
+                  <h1 className="text-5xl font-bold text-white mb-2">Equipos</h1>
+                  <p className="text-xl text-blue-100 font-medium">Gestión profesional de equipos y jugadores</p>
                 </div>
-          </button>
-          {!isAuthenticated && (
-            <button
-              onClick={handleLogin}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => router.push('/register-player')}
+                  className="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-green-400/30"
+                  title="Crear cuenta de usuario para jugador"
                 >
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                    <span>Iniciar Sesión</span>
+                    <span>Registrar Jugador</span>
                   </div>
-            </button>
-          )}
+                </button>
+                <button
+                  onClick={handleDebug}
+                  className="px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-2xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-yellow-400/30"
+                >
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826-3.31-2.37-2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Debug</span>
+                  </div>
+                </button>
+                {!isAuthenticated && (
+                  <button
+                    onClick={handleLogin}
+                    className="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-blue-400/30"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Iniciar Sesión</span>
+                    </div>
+                  </button>
+                )}
+              </div>
             </div>
+          </div>
         </div>
-      </div>
 
         {/* Información con diseño FIFA 26 */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-2xl p-6 mb-8 shadow-lg">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl border border-gray-600/30 p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center mr-4">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-white">Diferencia entre funciones</h3>
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">Diferencia entre funciones</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center mb-3">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-2">
-                  <span className="text-white text-xs font-bold">📝</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-2xl p-6 shadow-xl border border-blue-500/30">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm font-bold">📝</span>
+                  </div>
+                  <h4 className="font-bold text-white text-lg">"Agregar Jugador" (en cada equipo)</h4>
                 </div>
-                <h4 className="font-semibold text-gray-800">"Agregar Jugador" (en cada equipo)</h4>
+                <ul className="space-y-3 text-sm text-blue-100">
+                  <li className="flex items-start">
+                    <span className="text-blue-300 mr-3 text-lg">•</span>
+                    Solo agrega datos del jugador al equipo
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-300 mr-3 text-lg">•</span>
+                    No crea cuenta de usuario
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-300 mr-3 text-lg">•</span>
+                    Para gestión interna de equipos
+                  </li>
+                </ul>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  Solo agrega datos del jugador al equipo
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  No crea cuenta de usuario
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  Para gestión interna de equipos
-                </li>
-            </ul>
-          </div>
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center mb-3">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
-                  <span className="text-white text-xs font-bold">👤</span>
+              <div className="bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-2xl p-6 shadow-xl border border-green-500/30">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm font-bold">👤</span>
+                  </div>
+                  <h4 className="font-bold text-white text-lg">"Registrar Jugador" (botón verde)</h4>
                 </div>
-                <h4 className="font-semibold text-gray-800">"Registrar Jugador" (botón verde)</h4>
+                <ul className="space-y-3 text-sm text-green-100">
+                  <li className="flex items-start">
+                    <span className="text-green-300 mr-3 text-lg">•</span>
+                    Crea cuenta de usuario con email
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-300 mr-3 text-lg">•</span>
+                    Asigna jugador a un equipo
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-300 mr-3 text-lg">•</span>
+                    El jugador puede iniciar sesión
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-300 mr-3 text-lg">•</span>
+                    Contraseña por defecto: 123456
+                  </li>
+                </ul>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  Crea cuenta de usuario con email
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  Asigna jugador a un equipo
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  El jugador puede iniciar sesión
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  Contraseña por defecto: 123456
-                </li>
-            </ul>
+            </div>
           </div>
         </div>
-      </div>
 
         {/* Advertencia de autenticación con diseño FIFA 26 */}
-      {showAuthWarning && (
+        {showAuthWarning && (
           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-300 rounded-2xl p-6 mb-8 shadow-lg">
             <div className="flex items-start">
             <div className="flex-shrink-0">
@@ -1330,5 +1339,4 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
     </div>
   )
 }
-
  

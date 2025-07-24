@@ -2,7 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import MainLayout from '@/components/Layout/MainLayout'
-import { paymentService, PaymentStats, PaymentFilters } from '@/services/paymentService'
+// import { paymentService, PaymentStats, PaymentFilters } from '@/services/paymentService'
+
+interface PaymentStats {
+  total: number
+  paid: number
+  pending: number
+  overdue: number
+  canceled: number
+  totalAmount: number
+  paidAmount: number
+  pendingAmount: number
+  overdueAmount: number
+  canceledAmount: number
+}
+
+interface PaymentFilters {
+  dateFrom?: string
+  dateTo?: string
+  status?: string
+  teamId?: number
+  search?: string
+}
 
 export default function PaymentReportsPage() {
   const [stats, setStats] = useState<PaymentStats>({
@@ -28,11 +49,45 @@ export default function PaymentReportsPage() {
   const loadReportData = async () => {
     setLoading(true)
     try {
-      const [paymentsData, statsData] = await Promise.all([
-        paymentService.getPayments(filters),
-        paymentService.getPaymentStats()
-      ])
-      setPayments(paymentsData)
+      // Cargar datos desde localStorage
+      const savedPayments = localStorage.getItem('payments-data')
+      let paymentsData = []
+      if (savedPayments) {
+        paymentsData = JSON.parse(savedPayments)
+      }
+      
+      // Filtrar pagos
+      const filteredPayments = paymentsData.filter((payment: any) => {
+        if (filters.status && payment.status !== filters.status) return false
+        if (filters.teamId && payment.teamId !== filters.teamId) return false
+        if (filters.dateFrom && payment.date < filters.dateFrom) return false
+        if (filters.dateTo && payment.date > filters.dateTo) return false
+        if (filters.search) {
+          const searchLower = filters.search.toLowerCase()
+          return (
+            payment.playerName.toLowerCase().includes(searchLower) ||
+            payment.teamName.toLowerCase().includes(searchLower) ||
+            payment.description.toLowerCase().includes(searchLower)
+          )
+        }
+        return true
+      })
+      
+      setPayments(filteredPayments)
+      
+      // Calcular estadísticas
+      const statsData: PaymentStats = {
+        total: filteredPayments.length,
+        paid: filteredPayments.filter((p: any) => p.status === 'pagado').length,
+        pending: filteredPayments.filter((p: any) => p.status === 'pendiente').length,
+        overdue: filteredPayments.filter((p: any) => p.status === 'vencido').length,
+        canceled: filteredPayments.filter((p: any) => p.status === 'cancelado').length,
+        totalAmount: filteredPayments.reduce((sum: number, p: any) => sum + p.amount, 0),
+        paidAmount: filteredPayments.filter((p: any) => p.status === 'pagado').reduce((sum: number, p: any) => sum + p.amount, 0),
+        pendingAmount: filteredPayments.filter((p: any) => p.status === 'pendiente').reduce((sum: number, p: any) => sum + p.amount, 0),
+        overdueAmount: filteredPayments.filter((p: any) => p.status === 'vencido').reduce((sum: number, p: any) => sum + p.amount, 0),
+        canceledAmount: filteredPayments.filter((p: any) => p.status === 'cancelado').reduce((sum: number, p: any) => sum + p.amount, 0)
+      }
       setStats(statsData)
     } catch (error) {
       console.error('Error cargando reporte:', error)

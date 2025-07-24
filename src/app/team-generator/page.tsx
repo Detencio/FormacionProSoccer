@@ -387,7 +387,7 @@ export default function TeamGeneratorPage() {
     // Actualizar las posiciones de los jugadores en los equipos
     const updatedTeams = teams.map(team => ({
       ...team,
-      players: team.players.map(player => {
+      players: team.players.map((player: any) => {
         if (player.id === playerId) {
           return { ...player, position: toPosition }
         }
@@ -586,17 +586,17 @@ export default function TeamGeneratorPage() {
         return {
           ...team,
           players: [...team.players, dragState.draggedPlayer!],
-          totalSkill: team.players.reduce((sum, p) => sum + p.skill, 0) + dragState.draggedPlayer!.skill,
-          averageSkill: Math.round(((team.players.reduce((sum, p) => sum + p.skill, 0) + dragState.draggedPlayer!.skill) / (team.players.length + 1)) * 10) / 10
+          totalSkill: team.players.reduce((sum: number, p: any) => sum + p.skill, 0) + dragState.draggedPlayer!.skill,
+          averageSkill: Math.round(((team.players.reduce((sum: number, p: any) => sum + p.skill, 0) + dragState.draggedPlayer!.skill) / (team.players.length + 1)) * 10) / 10
         }
       } else if (dragState.sourceTeam && team.id === dragState.sourceTeam) {
         // Remover jugador del equipo origen
-        const filteredPlayers = team.players.filter(p => p.id !== dragState.draggedPlayer!.id)
+        const filteredPlayers = team.players.filter((p: any) => p.id !== dragState.draggedPlayer!.id)
         return {
           ...team,
           players: filteredPlayers,
-          totalSkill: filteredPlayers.reduce((sum, p) => sum + p.skill, 0),
-          averageSkill: filteredPlayers.length > 0 ? Math.round((filteredPlayers.reduce((sum, p) => sum + p.skill, 0) / filteredPlayers.length) * 10) / 10 : 0
+          totalSkill: filteredPlayers.reduce((sum: number, p: any) => sum + p.skill, 0),
+          averageSkill: filteredPlayers.length > 0 ? Math.round((filteredPlayers.reduce((sum: number, p: any) => sum + p.skill, 0) / filteredPlayers.length) * 10) / 10 : 0
         }
       }
       return team
@@ -615,7 +615,7 @@ export default function TeamGeneratorPage() {
     const teamName = selectedTeam?.name || 'Equipo'
     
     const teamsText = teams.map(team => {
-      const playersList = team.players.map(p => `${p.name} (${p.skill}⭐)`).join('\n')
+      const playersList = team.players.map((p: any) => `${p.name} (${p.skill}⭐)`).join('\n')
       return `${team.name}:\n${playersList}\nPromedio: ${team.averageSkill}⭐\n`
     }).join('\n')
 
@@ -640,7 +640,7 @@ export default function TeamGeneratorPage() {
     const teamName = selectedTeam?.name || 'Equipo'
     
     const csvContent = teams.map(team => {
-      const playersCsv = team.players.map(p => `${p.name},${p.skill},${p.position}`).join('\n')
+      const playersCsv = team.players.map((p: any) => `${p.name},${p.skill},${p.position}`).join('\n')
       return `${team.name}\nJugador,Habilidad,Posición\n${playersCsv}\nPromedio,${team.averageSkill},\n`
     }).join('\n')
 
@@ -1256,7 +1256,7 @@ export default function TeamGeneratorPage() {
                           editable={enableEditing}
                           onPlayerMove={handlePlayerMove}
                           onPositionChange={handlePositionChange}
-                          customPlayersPerTeam={customPlayersPerTeam}
+                          customPlayersPerTeam={customPlayersPerTeam || undefined}
                           isTeamA={team.id === 1}
                         />
                       </div>
@@ -1307,7 +1307,7 @@ export default function TeamGeneratorPage() {
                 setShowAddPlayerModal(false)
                 setEditingPlayer(null)
               }}
-              onSave={(playerData) => {
+              onSave={(playerData: any) => {
                 if (editingPlayer) {
                   updatePlayer(editingPlayer.id, playerData)
                 } else {
@@ -1324,7 +1324,7 @@ export default function TeamGeneratorPage() {
             <AttendanceModal
               players={presentPlayers}
               onClose={() => setShowAttendanceModal(false)}
-              onSave={(updatedPlayers) => {
+              onSave={(updatedPlayers: any) => {
                 setPresentPlayers(updatedPlayers)
                 setShowAttendanceModal(false)
               }}
@@ -1340,7 +1340,7 @@ export default function TeamGeneratorPage() {
               currentMode={selectedGameMode}
               customPlayersPerTeam={customPlayersPerTeam}
               onClose={() => setShowCustomSettingsModal(false)}
-              onSave={(settings) => {
+              onSave={(settings: any) => {
                 setCustomPlayersPerTeam(settings.playersPerTeam)
                 setShowCustomSettingsModal(false)
               }}
@@ -1711,8 +1711,8 @@ function AttendanceModal({ players, onClose, onSave, onSelectAll, onDeselectAll,
   const [showReserveOptions, setShowReserveOptions] = useState<number | null>(null)
 
   const handlePlayerToggle = (playerId: number) => {
-    setAttendanceList(prev => 
-      prev.map(player => 
+        setAttendanceList((prev: any) =>
+      prev.map((player: any) => 
         player.id === playerId 
           ? { ...player, isPresent: !player.isPresent }
           : player
