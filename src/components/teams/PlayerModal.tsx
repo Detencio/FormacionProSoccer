@@ -50,6 +50,8 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
 
   useEffect(() => {
     if (player) {
+      const playerSkill = Number(player.skill) || 3
+      console.log('PlayerModal: Cargando jugador con skill:', playerSkill, 'player.skill:', player.skill)
       setFormData({
         name: player.name || '',
         email: player.email || '',
@@ -59,10 +61,11 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         age: player.age ? player.age.toString() : '',
         jersey_number: player.jersey_number ? player.jersey_number.toString() : '',
         photo_url: player.photo_url || '',
-        skill: Number(player.skill) || 3
+        skill: playerSkill
       });
       setPhotoPreview(player.photo_url || null);
     } else {
+      console.log('PlayerModal: Creando nuevo jugador con skill por defecto: 3')
       setFormData({
         name: '',
         email: '',
@@ -275,21 +278,29 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   Habilidad *
                 </label>
                 <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => {
-                    const isFilled = formData.skill >= star
-                    return (
-                      <button
-                        key={`skill-star-${star}`}
-                        type="button"
-                        onClick={() => setFormData({...formData, skill: star})}
-                        className={`text-2xl transition-colors duration-200 ${isFilled ? 'text-yellow-500' : 'text-gray-300'}`}
-                        disabled={loading}
-                      >
-                        ⭐
-                      </button>
-                    )
-                  })}
-                  <span className="text-sm text-gray-600 ml-2">{formData.skill}/5</span>
+                  {(() => {
+                    console.log('Rendering stars with formData.skill:', formData.skill, 'type:', typeof formData.skill)
+                    return [1, 2, 3, 4, 5].map((star) => {
+                      const currentSkill = Number(formData.skill) || 0
+                      const isFilled = currentSkill >= star
+                      console.log(`Star ${star}: formData.skill=${formData.skill}, currentSkill=${currentSkill}, isFilled=${isFilled}`)
+                      return (
+                        <button
+                          key={`skill-star-${star}`}
+                          type="button"
+                          onClick={() => {
+                            console.log('Clicking star:', star)
+                            setFormData({...formData, skill: star})
+                          }}
+                          className="text-2xl transition-colors duration-200"
+                          disabled={loading}
+                        >
+                          {isFilled ? '⭐' : '☆'}
+                        </button>
+                      )
+                    })
+                  })()}
+                  <span className="text-sm text-gray-600 ml-2">{Number(formData.skill) || 0}/5</span>
                 </div>
               </div>
             </div>

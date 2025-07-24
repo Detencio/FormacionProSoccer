@@ -16,6 +16,9 @@ interface Player {
   teamName?: string
   photo?: string
   isPresent?: boolean // Nueva propiedad para asistencia
+  email?: string
+  phone?: string
+  age?: number | string
   stats?: {
     velocidad: number
     disparo: number
@@ -24,6 +27,9 @@ interface Player {
     defensa: number
     fisico: number
   }
+  country?: string
+  jersey_number?: string
+  teamLogo?: string
 }
 
 interface Team {
@@ -158,13 +164,11 @@ export default function TeamGeneratorPage() {
   const loadTeamsAndPlayers = async () => {
     try {
       console.log('Cargando equipos y jugadores...')
-      
       // Cargar equipos desde localStorage
       const savedTeams = localStorage.getItem('teams-data')
       if (savedTeams) {
         const teamsData = JSON.parse(savedTeams)
         console.log('Equipos cargados:', teamsData.length)
-        
         // Solo mostrar Matiz FC en la lista de equipos disponibles
         const matizFC = teamsData.find((team: any) => team.id === 1)
         if (matizFC) {
@@ -174,32 +178,52 @@ export default function TeamGeneratorPage() {
           console.log('No se encontró Matiz FC')
           setAvailableTeams([])
         }
-        
-        // Cargar jugadores solo de Matiz FC
+        // Cargar jugadores solo de Matiz FC con sincronización mejorada
         const allPlayers: Player[] = []
         if (matizFC && matizFC.players) {
           matizFC.players.forEach((player: any) => {
+            // Preservar datos existentes del generador si existen
+            const existingPlayer = players.find(p => p.id === player.id)
+            const playerName = existingPlayer?.name || player.name || player.full_name || 'Jugador Sin Nombre'
+            const playerSkill = existingPlayer?.skill || player.skill || 3
+            console.log(`Loading player ${player.id}: existingPlayer.skill=${existingPlayer?.skill}, player.skill=${player.skill}, final skill=${playerSkill}`)
+            const playerPosition = existingPlayer?.position || player.position || 'Mediocampista'
+            const playerPhoto = existingPlayer?.photo || player.photo_url || player.avatar_url || player.photo
+            const playerCountry = existingPlayer?.country || player.country || 'CL'
+            const playerJersey = existingPlayer?.jersey_number || player.jersey_number || ''
+            const playerTeamLogo = existingPlayer?.teamLogo || player.teamLogo || ''
+            const playerEmail = existingPlayer?.email || player.email || ''
+            const playerPhone = existingPlayer?.phone || player.phone || ''
+            const playerAge = existingPlayer?.age || player.age || ''
+            const playerStats = existingPlayer?.stats || player.stats || {
+              velocidad: 70,
+              disparo: 70,
+              pase: 70,
+              regate: 70,
+              defensa: 70,
+              fisico: 70
+            }
+            
             allPlayers.push({
+              ...player, // Copia todos los campos
               id: player.id,
-              name: player.name || player.full_name || 'Jugador Sin Nombre',
-              skill: Math.floor(Math.random() * 5) + 1, // Skill aleatorio 1-5
-              position: player.position || 'Mediocampista',
+              name: playerName,
+              skill: playerSkill,
+              position: playerPosition,
               teamId: matizFC.id,
               teamName: matizFC.name,
-              photo: player.photo_url || player.avatar_url,
-              stats: {
-                velocidad: Math.floor(Math.random() * 100) + 1,
-                disparo: Math.floor(Math.random() * 100) + 1,
-                pase: Math.floor(Math.random() * 100) + 1,
-                regate: Math.floor(Math.random() * 100) + 1,
-                defensa: Math.floor(Math.random() * 100) + 1,
-                fisico: Math.floor(Math.random() * 100) + 1
-              }
+              photo: playerPhoto,
+              country: playerCountry,
+              jersey_number: playerJersey,
+              teamLogo: playerTeamLogo,
+              email: playerEmail,
+              phone: playerPhone,
+              age: playerAge,
+              stats: playerStats
             })
           })
           console.log('Jugadores de Matiz FC cargados:', allPlayers.length)
         }
-        
         setPlayers(allPlayers)
         setAvailablePlayers(allPlayers)
         setLoading(false)
@@ -229,7 +253,13 @@ export default function TeamGeneratorPage() {
             return {
               ...player,
               name: updatedPlayer.name,
-              position: updatedPlayer.position
+              position: updatedPlayer.position,
+              skill: updatedPlayer.skill,
+              email: updatedPlayer.email,
+              phone: updatedPlayer.phone,
+              age: updatedPlayer.age,
+              country: updatedPlayer.country,
+              jersey_number: updatedPlayer.jersey_number
             }
           }
           return player
@@ -241,79 +271,81 @@ export default function TeamGeneratorPage() {
   }
 
   const addPlayer = (playerData: Omit<Player, 'id'>) => {
-    const newPlayer: Player = {
-      ...playerData,
-      id: Date.now() + Math.random(),
-      teamId: selectedTeamId || undefined,
-      teamName: availableTeams.find(t => t.id === selectedTeamId)?.name,
-      isPresent: true
+    const savedTeams = localStorage.getItem('teams-data')
+    if (!savedTeams) return
+    const teamsData = JSON.parse(savedTeams)
+    const newId = Date.now() + Math.random()
+    const team = teamsData.find((t: any) => t.id === selectedTeamId)
+    if (team) {
+      const newPlayer = {
+        ...playerData,
+        id: newId,
+        teamId: selectedTeamId,
+        teamName: team.name,
+        isPresent: true
+      }
+      team.players.push(newPlayer)
+      localStorage.setItem('teams-data', JSON.stringify(teamsData))
+      // Disparar evento personalizado para notificar a otros módulos
+      window.dispatchEvent(new CustomEvent('teams-data-updated', {
+        detail: { teamsData, updatedPlayer: newPlayer }
+      }))
+      loadTeamsAndPlayers()
     }
-    const updatedPlayers = [...players, newPlayer]
-    setPlayers(updatedPlayers)
-    if (selectedTeamId) {
-      const teamPlayers = updatedPlayers.filter(player => player.teamId === selectedTeamId)
-      setAvailablePlayers(teamPlayers)
-      setPresentPlayers(teamPlayers.map(p => ({ ...p, isPresent: true })))
-    }
-    savePlayers(updatedPlayers)
   }
 
   const updatePlayer = (id: number, playerData: Partial<Player>) => {
-    console.log('updatePlayer llamado con id:', id, 'playerData:', playerData)
-    const updatedPlayers = players.map(player => 
-      player.id === id ? { ...player, ...playerData } : player
-    )
-    setPlayers(updatedPlayers)
-    
-    // Actualizar availablePlayers si hay equipo seleccionado
-    if (selectedTeamId) {
-      const teamPlayers = updatedPlayers.filter(player => player.teamId === selectedTeamId)
-      setAvailablePlayers(teamPlayers)
-      setPresentPlayers(teamPlayers.map(p => ({ ...p, isPresent: true })))
+    // 1. Leer teams-data
+    const savedTeams = localStorage.getItem('teams-data')
+    if (!savedTeams) return
+    const teamsData = JSON.parse(savedTeams)
+    // 2. Buscar el equipo y el jugador, y actualizar todos los campos
+    let updated = false
+    for (const team of teamsData) {
+      const idx = team.players.findIndex((p: any) => p.id === id)
+      if (idx !== -1) {
+        team.players[idx] = { 
+          ...team.players[idx], 
+          ...playerData,
+          // Asegurar que los campos críticos se guarden correctamente
+          name: playerData.name || team.players[idx].name,
+          skill: playerData.skill || team.players[idx].skill,
+          country: playerData.country || team.players[idx].country,
+          jersey_number: playerData.jersey_number || team.players[idx].jersey_number,
+          email: playerData.email || team.players[idx].email,
+          phone: playerData.phone || team.players[idx].phone,
+          age: playerData.age || team.players[idx].age,
+          teamLogo: playerData.teamLogo || team.players[idx].teamLogo
+        }
+        updated = true
+        break
+      }
     }
-    
-    // Actualizar equipos generados
-    setGeneratedTeams(prev => prev.map(team => ({
-      ...team,
-      players: team.players.map(player => 
-        player.id === id ? { ...player, ...playerData } : player
-      )
-    })))
-    
-    // Actualizar jugadores de reserva
-    setReservePlayers(prev => prev.map(player => 
-      player.id === id ? { ...player, ...playerData } : player
-    ))
-    
-    savePlayers(updatedPlayers)
-    console.log('updatePlayer completado')
+    if (!updated) return
+    // 3. Guardar teams-data actualizado
+    localStorage.setItem('teams-data', JSON.stringify(teamsData))
+    // 4. Disparar evento personalizado para notificar a otros módulos
+    window.dispatchEvent(new CustomEvent('teams-data-updated', {
+      detail: { teamsData, updatedPlayer: { id, ...playerData } }
+    }))
+    // 5. Recargar el array de jugadores desde teams-data
+    loadTeamsAndPlayers()
   }
 
   const deletePlayer = (id: number) => {
-    console.log('deletePlayer llamado con id:', id)
-    if (confirm('¿Estás seguro de que quieres eliminar este jugador?')) {
-      const updatedPlayers = players.filter(player => player.id !== id)
-      setPlayers(updatedPlayers)
-      
-      // Actualizar availablePlayers si hay equipo seleccionado
-      if (selectedTeamId) {
-        const teamPlayers = updatedPlayers.filter(player => player.teamId === selectedTeamId)
-        setAvailablePlayers(teamPlayers)
-        setPresentPlayers(teamPlayers.map(p => ({ ...p, isPresent: true })))
+    if (!confirm('¿Estás seguro de que quieres eliminar este jugador?')) return
+    const savedTeams = localStorage.getItem('teams-data')
+    if (!savedTeams) return
+    const teamsData = JSON.parse(savedTeams)
+    for (const team of teamsData) {
+      const idx = team.players.findIndex((p: any) => p.id === id)
+      if (idx !== -1) {
+        team.players.splice(idx, 1)
+        break
       }
-      
-      // Actualizar equipos generados
-      setGeneratedTeams(prev => prev.map(team => ({
-        ...team,
-        players: team.players.filter(player => player.id !== id)
-      })))
-      
-      // Actualizar jugadores de reserva
-      setReservePlayers(prev => prev.filter(player => player.id !== id))
-      
-      savePlayers(updatedPlayers)
-      console.log('deletePlayer completado')
     }
+    localStorage.setItem('teams-data', JSON.stringify(teamsData))
+    loadTeamsAndPlayers()
   }
 
   const handleAttendanceChange = (playerId: number, isPresent: boolean) => {
@@ -453,6 +485,12 @@ export default function TeamGeneratorPage() {
     setTimeout(() => {
       const presentPlayers = players.filter(p => p.isPresent)
       console.log('presentPlayers:', presentPlayers)
+      
+      if (presentPlayers.length < currentPlayersPerTeam * 2) {
+        alert(`Se necesitan al menos ${currentPlayersPerTeam * 2} jugadores presentes para generar equipos`)
+        setLoading(false)
+        return
+      }
       
       // Ordenar por habilidad para mejor distribución
       const sortedPlayers = [...presentPlayers].sort((a, b) => b.skill - a.skill)
@@ -666,6 +704,34 @@ export default function TeamGeneratorPage() {
     console.log('Datos de prueba limpiados y jugadores reales recargados')
   }
 
+  // Forzar recarga completa de datos
+  const forceReloadData = async () => {
+    try {
+      console.log('Forzando recarga completa de datos...')
+      setLoading(true)
+      
+      // Limpiar estados actuales
+      setPlayers([])
+      setAvailablePlayers([])
+      setPresentPlayers([])
+      setReservePlayers([])
+      setGeneratedTeams([])
+      setShowGeneratedTeams(false)
+      
+      // Recargar equipos y jugadores
+      await loadTeamsAndPlayers()
+      
+      // Sincronizar con base de datos
+      await syncPlayersWithDatabase()
+      
+      console.log('Recarga completa de datos finalizada')
+      setLoading(false)
+    } catch (error) {
+      console.error('Error en recarga completa de datos:', error)
+      setLoading(false)
+    }
+  }
+
   // Sincronizar jugadores con la base de datos (solo jugadores reales)
   const syncPlayersWithDatabase = async () => {
     try {
@@ -685,10 +751,13 @@ export default function TeamGeneratorPage() {
             // Preservar el nombre modificado si existe, sino usar el de la base de datos
             const playerName = existingPlayer?.name || player.name || player.full_name || 'Jugador Sin Nombre'
             
+            // Preservar skill existente o usar el de la base de datos
+            const playerSkill = existingPlayer?.skill || player.skill || Math.floor(Math.random() * 5) + 1
+            
             updatedPlayers.push({
               id: player.id,
               name: playerName,
-              skill: existingPlayer?.skill || Math.floor(Math.random() * 5) + 1,
+              skill: playerSkill,
               position: existingPlayer?.position || player.position || 'Mediocampista',
               teamId: matizFC.id,
               teamName: matizFC.name,
@@ -733,6 +802,61 @@ export default function TeamGeneratorPage() {
   useEffect(() => {
     syncPlayersWithDatabase()
   }, []) // Solo se ejecuta una vez al montar el componente
+
+  // Escuchar cambios en localStorage para sincronización automática
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'teams-data') {
+        console.log('Detectado cambio en teams-data, recargando...')
+        loadTeamsAndPlayers()
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Página visible, recargando datos...')
+        syncPlayersWithDatabase()
+      }
+    }
+
+    const handleTeamsDataUpdated = (event: CustomEvent) => {
+      console.log('Evento teams-data-updated recibido, recargando datos...')
+      loadTeamsAndPlayers()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('teams-data-updated', handleTeamsDataUpdated as EventListener)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('teams-data-updated', handleTeamsDataUpdated as EventListener)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'teams-data') {
+        console.log('Detectado cambio en teams-data, recargando...')
+        loadTeamsAndPlayers();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Página visible, recargando datos...')
+        loadTeamsAndPlayers();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <MainLayout>
@@ -905,6 +1029,12 @@ export default function TeamGeneratorPage() {
                       🔄 Sincronizar
                     </button>
                     <button
+                      onClick={forceReloadData}
+                      className="px-4 py-2 fifa-button bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-semibold hover-fifa-glow"
+                    >
+                      🔄 Recargar Datos
+                    </button>
+                    <button
                       onClick={clearTestDataAndReload}
                       className="px-4 py-2 fifa-button bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 font-semibold hover-fifa-glow"
                     >
@@ -982,6 +1112,7 @@ export default function TeamGeneratorPage() {
                     player={player}
                     onEdit={() => {
                       console.log('Editando jugador:', player)
+                      console.log('Player data completo:', JSON.stringify(player, null, 2))
                       setEditingPlayer(player)
                       setShowAddPlayerModal(true)
                     }}
@@ -1237,8 +1368,19 @@ export default function TeamGeneratorPage() {
 
 // Componente Modal para jugadores
 function PlayerModal({ player, onClose, onSave }: any) {
+  const defaultPlayer = {
+    name: '',
+    email: '',
+    country: '',
+    phone: '',
+    position: 'Mediocampista',
+    age: '',
+    jersey_number: '',
+    photo_url: '',
+    skill: 3
+  }
   const [formData, setFormData] = useState({
-    name: player?.name || '',
+    name: player?.name || player?.full_name || '',
     email: player?.email || '',
     country: player?.country || '',
     phone: player?.phone || '',
@@ -1266,9 +1408,15 @@ function PlayerModal({ player, onClose, onSave }: any) {
 
   // Actualizar formData cuando cambie el player
   useEffect(() => {
-    console.log('PlayerModal useEffect - player:', player)
+    console.log('PlayerModal: Actualizando formData con player:', player)
+    console.log('Player email:', player?.email)
+    console.log('Player phone:', player?.phone)
+    console.log('Player age:', player?.age)
+    console.log('Player country:', player?.country)
+    console.log('Player jersey_number:', player?.jersey_number)
+    
     const newFormData = {
-      name: player?.name || '',
+      name: player?.name || player?.full_name || '',
       email: player?.email || '',
       country: player?.country || '',
       phone: player?.phone || '',
@@ -1278,7 +1426,8 @@ function PlayerModal({ player, onClose, onSave }: any) {
       photo_url: player?.photo_url || player?.photo || '',
       skill: Number(player?.skill) || 3
     }
-    console.log('PlayerModal useEffect - newFormData:', newFormData)
+    
+    console.log('Nuevo formData:', newFormData)
     setFormData(newFormData)
     setPhotoPreview(player?.photo_url || player?.photo || null)
   }, [player])
@@ -1465,9 +1614,9 @@ function PlayerModal({ player, onClose, onSave }: any) {
                         key={`skill-star-${star}`}
                         type="button"
                         onClick={() => setFormData({...formData, skill: star})}
-                        className={`text-2xl transition-colors duration-200 ${isFilled ? 'text-yellow-500' : 'text-gray-300'}`}
+                        className="text-2xl transition-colors duration-200"
                       >
-                        ⭐
+                        {isFilled ? '⭐' : '☆'}
                       </button>
                     )
                   })}

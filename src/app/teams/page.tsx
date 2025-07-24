@@ -288,7 +288,50 @@ export default function TeamsPage() {
   useEffect(() => {
     const savedTeams = localStorage.getItem('teams-data')
     if (savedTeams) {
-      setTeams(JSON.parse(savedTeams))
+      const teamsData = JSON.parse(savedTeams)
+      console.log('TeamsPage - Cargando equipos:', teamsData.length)
+      
+      // Corregir IDs duplicados de equipos
+      const correctedTeams = teamsData.map((team, index) => {
+        // Si el equipo tiene ID duplicado, asignar un nuevo ID único
+        const correctedTeam = { ...team }
+        if (index > 0) {
+          const previousTeams = teamsData.slice(0, index)
+          const maxId = Math.max(...previousTeams.map(t => t.id))
+          if (team.id <= maxId) {
+            correctedTeam.id = maxId + 1
+            console.log(`Corrigiendo ID del equipo "${team.name}" de ${team.id} a ${correctedTeam.id}`)
+          }
+        }
+        
+        // Corregir IDs duplicados de jugadores
+        const correctedPlayers = team.players.map((player, playerIndex) => {
+          const correctedPlayer = { ...player }
+          if (playerIndex > 0) {
+            const previousPlayers = team.players.slice(0, playerIndex)
+            const maxPlayerId = Math.max(...previousPlayers.map(p => p.id))
+            if (player.id <= maxPlayerId) {
+              correctedPlayer.id = maxPlayerId + 1
+              console.log(`Corrigiendo ID del jugador "${player.name}" de ${player.id} a ${correctedPlayer.id}`)
+            }
+          }
+          return correctedPlayer
+        })
+        
+        correctedTeam.players = correctedPlayers
+        return correctedTeam
+      })
+      
+      correctedTeams.forEach((team, index) => {
+        console.log(`Team ${index}: id=${team.id}, name=${team.name}, players=${team.players.length}`)
+        team.players.forEach((player, playerIndex) => {
+          console.log(`  Player ${playerIndex}: id=${player.id}, name=${player.name}`)
+        })
+      })
+      
+      // Guardar los datos corregidos
+      localStorage.setItem('teams-data', JSON.stringify(correctedTeams))
+      setTeams(correctedTeams)
     } else {
       // Solo usar datos simulados si no hay datos guardados
       setTeams(initialMockTeams)
@@ -370,42 +413,47 @@ export default function TeamsPage() {
   }
 
   const handleDeletePlayer = (playerId: number, teamId: number) => {
-    if (confirm('¿Estás seguro de que quieres eliminar este jugador?')) {
-      setTeams(prev => prev.map(team => 
-        team.id === teamId 
-          ? { ...team, players: team.players.filter((p: any) => p.id !== playerId) }
-          : team
-      ))
-    }
+    if (!confirm('¿Estás seguro de que quieres eliminar este jugador?')) return
+    const savedTeams = localStorage.getItem('teams-data')
+    if (!savedTeams) return
+    const teamsData = JSON.parse(savedTeams)
+    const team = teamsData.find((t: any) => t.id === teamId)
+    if (!team) return
+    team.players = team.players.filter((p: any) => p.id !== playerId)
+    localStorage.setItem('teams-data', JSON.stringify(teamsData))
+    setTeams([...teamsData])
   }
 
   const handlePlayerSubmit = (formData: any) => {
     if (!selectedTeamId) return
 
+    const savedTeams = localStorage.getItem('teams-data')
+    if (!savedTeams) return
+    const teamsData = JSON.parse(savedTeams)
+    const team = teamsData.find((t: any) => t.id === selectedTeamId)
+    if (!team) return
+
     if (editingPlayer) {
       // Actualizar jugador existente
-      setTeams(prev => prev.map(team => 
-        team.id === selectedTeamId 
-                      ? { ...team, players: team.players.map((p: any) => 
+      team.players = team.players.map((p: any) =>
                 p.id === editingPlayer.id ? { ...p, ...formData } : p
-              )}
-          : team
-      ))
+      )
     } else {
       // Crear nuevo jugador
-      const newPlayer = {
-        id: Math.max(...teams.flatMap(t => t.players).map((p: any) => p.id)) + 1,
-        ...formData
-      }
-      setTeams(prev => prev.map(team => 
-        team.id === selectedTeamId 
-          ? { ...team, players: [...team.players, newPlayer] }
-          : team
-      ))
+      const newId = Math.max(0, ...teamsData.flatMap((t: any) => t.players.map((p: any) => p.id))) + 1
+      const newPlayer = { id: newId, ...formData }
+      team.players.push(newPlayer)
     }
+    localStorage.setItem('teams-data', JSON.stringify(teamsData))
+    setTeams([...teamsData])
     setShowPlayerModal(false)
     setEditingPlayer(null)
     setSelectedTeamId(null)
+    
+    // Disparar evento personalizado para notificar a otros módulos
+    window.dispatchEvent(new CustomEvent('teams-data-updated', {
+      detail: { teamsData, updatedPlayer: editingPlayer ? { id: editingPlayer.id, ...formData } : null }
+    }))
   }
 
   // Función para mostrar/ocultar detalles
@@ -434,13 +482,24 @@ export default function TeamsPage() {
       return team ? team.players : []
     }
     if (showAllPlayers) {
-      return teams.flatMap((team: any) => 
+      const allPlayers = teams.flatMap((team: any) => 
         team.players.map((player: any) => ({
           ...player,
           teamName: team.name,
           teamId: team.id
         }))
       )
+      
+      // Eliminar duplicados basándose en el ID del jugador
+      const uniquePlayers = allPlayers.filter((player, index, self) => 
+        index === self.findIndex(p => p.id === player.id)
+      )
+      
+      console.log('getFilteredPlayers - allPlayers:', allPlayers.length)
+      console.log('getFilteredPlayers - uniquePlayers:', uniquePlayers.length)
+      console.log('getFilteredPlayers - player IDs:', uniquePlayers.map(p => p.id))
+      
+      return uniquePlayers
     }
     return []
   }
@@ -838,8 +897,8 @@ export default function TeamsPage() {
         {/* Grid de equipos con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
         {!selectedFilterTeam && !showAllPlayers && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {teams.map((team, index) => (
-              <div key={`team-${team.id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+        {teams.map((team) => (
+              <div key={`team-${team.id}`} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex items-start gap-4">
                 {team.logo_url && (
@@ -1165,8 +1224,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               required
             >
               <option value="">Seleccionar país</option>
-              {countries.map((country, index) => (
-                <option key={`team-country-${country.id}-${index}`} value={country.id}>
+              {countries.map((country) => (
+                <option key={`team-country-${country.id}`} value={country.id}>
                   {country.name}
                 </option>
               ))}
@@ -1185,8 +1244,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               disabled={!formData.country}
             >
               <option value="">Seleccionar ciudad</option>
-              {availableCities.map((city, index) => (
-                <option key={`team-city-${city.id}-${index}`} value={city.id}>
+              {availableCities.map((city) => (
+                <option key={`team-city-${city.id}`} value={city.id}>
                   {city.name}
                 </option>
               ))}
@@ -1205,8 +1264,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
               disabled={!formData.city}
             >
               <option value="">Seleccionar comuna</option>
-              {availableCommunes.map((commune, index) => (
-                <option key={`team-commune-${commune.id}-${index}`} value={commune.id}>
+              {availableCommunes.map((commune) => (
+                <option key={`team-commune-${commune.id}`} value={commune.id}>
                   {commune.name}
                 </option>
               ))}

@@ -18,6 +18,9 @@ interface Player {
     defensa: number
     fisico: number
   }
+  country?: string
+  teamLogo?: string
+  jersey_number?: string
 }
 
 interface PlayerCardProps {
@@ -102,45 +105,89 @@ export default function PlayerCard({
     setShowEvaluationModal(false)
   }
 
+  // Agrega esta función arriba del componente para obtener el emoji de la bandera
+  function getFlagEmoji(countryCode: string) {
+    if (!countryCode) return '🏳️';
+    // Convierte el código de país a emoji de bandera
+    return countryCode
+      .toUpperCase()
+      .replace(/./g, char =>
+        String.fromCodePoint(127397 + char.charCodeAt(0))
+      );
+  }
+
   return (
     <>
       <div
         className={`relative group cursor-pointer fifa-card ${
           isDragging ? 'opacity-50' : ''
         }`}
-        draggable
         onDragStart={onDragStart}
-        onMouseEnter={() => setShowActions(true)}
-        onMouseLeave={() => setShowActions(false)}
       >
         {/* Tarjeta principal estilo FIFA FUT */}
-        <div className="relative w-full h-64 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-700 fifa-particles">
+        <div className="relative w-full h-64 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-700 fifa-particles" draggable={true}>
           {/* Fondo con patrón dinámico */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 to-purple-900/30"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-          
           {/* Efectos de luz */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-60"></div>
           <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-60"></div>
-          
+
           {/* Header de la tarjeta */}
-          <div className="absolute top-0 left-0 right-0 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs font-bold text-white rounded ${getPositionColor(player.position)}`}>
-                  {getPositionAbbr(player.position)}
-                </span>
-                <div className="flex space-x-1">
-                  {Array.from({ length: player.skill }, (_, i) => (
-                    <span key={i} className="text-yellow-400 text-xs">⭐</span>
-                  ))}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-white fifa-text-glow">{calculateOverallRating()}</div>
-                <div className="text-xs text-gray-300">RATING</div>
-              </div>
+          <div className="absolute top-0 left-0 p-3 flex flex-col items-start">
+            <div className="text-3xl font-bold text-white fifa-text-glow leading-none">{calculateOverallRating()}</div>
+            <div className="text-xs text-gray-300 mt-1 px-1 py-0.5 rounded bg-black/30 font-bold">
+              {getPositionAbbr(player.position)}
             </div>
+          </div>
+
+          {/* Estrella de skill en la esquina superior derecha y acciones */}
+          <div className="absolute top-2 right-3 flex flex-col items-center justify-start gap-1 pointer-events-none z-30">
+            <div className="relative w-9 h-9 flex items-center justify-center mb-1">
+              <svg viewBox="0 0 40 40" className="w-9 h-9">
+                <polygon points="20,3 25,15 38,15 27,23 31,36 20,28 9,36 13,23 2,15 15,15" fill="#fffbe6" stroke="#ffe066" strokeWidth="2" filter="drop-shadow(0 1px 4px #ffe06688)" />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-base font-bold text-yellow-600" style={{pointerEvents: 'none'}}>{player.skill}</span>
+            </div>
+            {/* Iconos de acción: editar, eliminar y evaluación */}
+            {onEdit && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="w-6 h-6 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 group-hover:text-blue-500 transition-all duration-200 scale-75 group-hover:scale-100 mb-1 pointer-events-auto"
+                title="Editar jugador"
+                style={{background: 'none', boxShadow: 'none'}}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="w-6 h-6 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 group-hover:text-red-500 transition-all duration-200 scale-75 group-hover:scale-100 mb-1 pointer-events-auto"
+                title="Eliminar jugador"
+                style={{background: 'none', boxShadow: 'none'}}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+            {showEvaluation && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEvaluationModal(true);
+                }}
+                className="w-6 h-6 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 group-hover:text-purple-500 transition-all duration-200 scale-75 group-hover:scale-100 pointer-events-auto"
+                title="Evaluar jugador"
+                style={{background: 'none', boxShadow: 'none'}}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 014-4h2a4 4 0 014 4v2M9 17H7a2 2 0 01-2-2v-2a2 2 0 012-2h2m0 0V7a4 4 0 014-4 4 4 0 014 4v2m-8 4h8" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Foto del jugador */}
@@ -168,15 +215,15 @@ export default function PlayerCard({
             </div>
           </div>
 
-          {/* Nombre del jugador */}
-          <div className="absolute bottom-16 left-0 right-0 text-center">
+          {/* Nombre del jugador centrado debajo de la foto */}
+          <div className="absolute bottom-20 left-0 right-0 text-center flex flex-col items-center">
             <div className="text-white font-bold text-lg px-2 truncate">
               {player.name}
             </div>
           </div>
 
           {/* Stats del jugador */}
-          <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="absolute bottom-10 left-0 right-0 p-3">
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="text-center">
                 <div className="text-white font-bold">VEL</div>
@@ -193,65 +240,47 @@ export default function PlayerCard({
             </div>
           </div>
 
+
+
+          {/* País, camiseta y logo del equipo */}
+          <div className="flex items-center justify-center gap-3 mt-2 mb-1">
+            {/* Bandera del país (emoji) */}
+            <span className="text-2xl" title={player.country || ''}>{getFlagEmoji(player.country || '')}</span>
+            {/* Camiseta SVG igual al ejemplo, con mangas y cuello en V */}
+            <span className="inline-block align-middle">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="shirtStroke" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#3b82f6"/>
+                    <stop offset="1" stopColor="#a21caf"/>
+                  </linearGradient>
+                  <linearGradient id="shirtFill" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#fff"/>
+                    <stop offset="1" stopColor="#f3e8ff"/>
+                  </linearGradient>
+                </defs>
+                {/* Camiseta con mangas y cuello en V */}
+                <path d="M2 8 Q4 2 12 2 L16 6 L20 2 Q28 2 30 8 L26 12 L24 10 L16 16 L8 10 L6 12 Z" fill="url(#shirtFill)" stroke="url(#shirtStroke)" strokeWidth="2"/>
+                {/* Cuerpo */}
+                <rect x="8" y="10" width="16" height="16" rx="3" fill="url(#shirtFill)" stroke="url(#shirtStroke)" strokeWidth="2"/>
+                {/* Cuello en V */}
+                <path d="M13 10 L16 13 L19 10" stroke="#3b82f6" strokeWidth="1.2" fill="none"/>
+                {/* Número */}
+                <text x="16" y="22" textAnchor="middle" fontSize="12" fill="#a21caf" fontWeight="bold" dominantBaseline="middle">{player.jersey_number || ''}</text>
+              </svg>
+            </span>
+            {/* Logo del equipo */}
+            {player.teamLogo && (
+              <img src={player.teamLogo} alt="Logo equipo" className="w-7 h-7 object-contain rounded bg-white/80 border border-gray-300" />
+            )}
+          </div>
+
           {/* Borde brillante según habilidad */}
-          <div className={`absolute inset-0 rounded-lg bg-gradient-to-r ${getSkillColor(player.skill)} opacity-30`}></div>
-          
+          <div className={`absolute inset-0 rounded-lg bg-gradient-to-r ${getSkillColor(player.skill)} opacity-30 z-0 pointer-events-none`}></div>
           {/* Efecto de brillo */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-20 z-0 pointer-events-none"></div>
         </div>
-
-        {/* Acciones */}
-        {(onEdit || onDelete || showEvaluation) && (
-          <div className="absolute top-2 right-2 flex space-x-1 z-10">
-            {showEvaluation && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowEvaluationModal(true)
-                }}
-                className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
-                title="Evaluar jugador"
-              >
-                📊
-              </button>
-            )}
-            {onEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onEdit()
-                }}
-                className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center text-xs hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
-                title="Editar jugador"
-              >
-                ✏️
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                }}
-                className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full flex items-center justify-center text-xs hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 shadow-lg"
-                title="Eliminar jugador"
-              >
-                🗑️
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Indicador de equipo */}
-        {player.teamName && (
-          <div className="absolute top-2 left-2">
-            <div className="bg-black/50 text-white text-xs px-2 py-1 rounded">
-              {player.teamName}
-            </div>
-          </div>
-        )}
       </div>
-
       {/* Modal de evaluación */}
       {showEvaluationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -259,7 +288,6 @@ export default function PlayerCard({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Evaluar Habilidades de {player.name}
             </h3>
-            
             <div className="space-y-4">
               {Object.entries(evaluationStats).map(([stat, value]) => (
                 <div key={stat}>
@@ -280,7 +308,6 @@ export default function PlayerCard({
                 </div>
               ))}
             </div>
-
             <div className="flex justify-end space-x-3 pt-4">
               <button
                 onClick={() => setShowEvaluationModal(false)}
