@@ -165,6 +165,55 @@ class PaymentService {
     return newPayments
   }
 
+  // Generar cuotas mensuales para equipos específicos
+  async generateMonthlyPaymentsForTeams(month: string, amount: number = 50000, selectedTeams: any[]): Promise<Payment[]> {
+    const existingPayments = this.getPaymentsFromStorage()
+    
+    const newPayments: Payment[] = []
+    
+    selectedTeams.forEach(team => {
+      team.players?.forEach(player => {
+        // Verificar si ya existe un pago para este jugador en este mes
+        const existingPayment = existingPayments.find(p => 
+          p.playerId === player.id && p.month === month
+        )
+        
+        if (!existingPayment) {
+          const dueDate = new Date(month + '-10') // Vence el día 10 de cada mes
+          
+          const newPayment: Payment = {
+            id: Date.now() + Math.random(),
+            playerName: player.name,
+            playerId: player.id,
+            teamId: team.id,
+            teamName: team.name,
+            amount,
+            date: '',
+            dueDate: dueDate.toISOString().split('T')[0],
+            status: 'pendiente',
+            method: 'efectivo',
+            description: `Cuota mensual ${month}`,
+            month,
+            isRecurring: true,
+            notificationSent: false
+          }
+          
+          newPayments.push(newPayment)
+        }
+      })
+    })
+    
+    if (newPayments.length > 0) {
+      const updatedPayments = [...existingPayments, ...newPayments]
+      this.savePaymentsToStorage(updatedPayments)
+      
+      // Crear notificaciones para pagos pendientes
+      await this.createPaymentNotifications(newPayments)
+    }
+    
+    return newPayments
+  }
+
   private getTeamsFromStorage(): any[] {
     try {
       const saved = localStorage.getItem('teams-data')

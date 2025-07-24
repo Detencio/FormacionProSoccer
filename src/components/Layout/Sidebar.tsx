@@ -9,6 +9,11 @@ interface MenuItem {
   href: string
   icon: React.ReactNode
   description: string
+  submenu?: {
+    name: string
+    href: string
+    description: string
+  }[]
 }
 
 const menuItems: MenuItem[] = [
@@ -51,7 +56,49 @@ const menuItems: MenuItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
       </svg>
     ),
-    description: 'Gestión de cuotas y pagos'
+    description: 'Gestión de cuotas y pagos',
+    submenu: [
+      {
+        name: 'Todos los Pagos',
+        href: '/payments',
+        description: 'Ver y gestionar todos los pagos'
+      },
+      {
+        name: 'Gestión de Pagos',
+        href: '/payments/manage',
+        description: 'Cambiar estados y editar pagos'
+      },
+      {
+        name: 'Cuotas Mensuales',
+        href: '/payments/monthly',
+        description: 'Generar cuotas mensuales automáticas'
+      },
+      {
+        name: 'Reportes',
+        href: '/payments/reports',
+        description: 'Reportes y estadísticas de pagos'
+      }
+    ]
+  },
+  {
+    name: 'Gastos',
+    href: '/expenses',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+      </svg>
+    ),
+    description: 'Gestión de gastos del club'
+  },
+  {
+    name: 'Generador de Equipos',
+    href: '/team-generator',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    description: 'Selección aleatoria equilibrada'
   },
   {
     name: 'Registrar Jugador',
@@ -67,11 +114,20 @@ const menuItems: MenuItem[] = [
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   const pathname = usePathname()
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
+  }
+
+  const toggleSubmenu = (itemName: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemName) 
+        ? prev.filter(name => name !== itemName)
+        : [...prev, itemName]
+    )
   }
 
   return (
@@ -109,25 +165,81 @@ export default function Sidebar() {
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-              isActive(item.href)
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-blue-100 hover:bg-blue-700 hover:text-white'
-            }`}
-          >
-            <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-blue-300 group-hover:text-white'}`}>
-              {item.icon}
-            </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.name}</p>
-                <p className="text-xs text-blue-200 truncate">{item.description}</p>
+          <div key={item.href}>
+            {item.submenu ? (
+              // Item con submenú
+              <div>
+                <button
+                  onClick={() => toggleSubmenu(item.name)}
+                  className={`group w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                    isActive(item.href)
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+                  }`}
+                >
+                  <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-blue-300 group-hover:text-white'}`}>
+                    {item.icon}
+                  </div>
+                  {!isCollapsed && (
+                    <>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        <p className="text-xs text-blue-200 truncate">{item.description}</p>
+                      </div>
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+                
+                {/* Submenú */}
+                {!isCollapsed && expandedItems.includes(item.name) && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {item.submenu.map((subItem) => (
+                      <Link
+                        key={subItem.href}
+                        href={subItem.href}
+                        className={`block px-3 py-2 rounded-lg transition-all duration-200 ${
+                          isActive(subItem.href)
+                            ? 'bg-blue-500 text-white'
+                            : 'text-blue-200 hover:bg-blue-600 hover:text-white'
+                        }`}
+                      >
+                        <p className="text-sm font-medium">{subItem.name}</p>
+                        <p className="text-xs text-blue-200">{subItem.description}</p>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
+            ) : (
+              // Item sin submenú
+              <Link
+                href={item.href}
+                className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                  isActive(item.href)
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+                }`}
+              >
+                <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-blue-300 group-hover:text-white'}`}>
+                  {item.icon}
+                </div>
+                {!isCollapsed && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.name}</p>
+                    <p className="text-xs text-blue-200 truncate">{item.description}</p>
+                  </div>
+                )}
+              </Link>
             )}
-          </Link>
+          </div>
         ))}
       </nav>
 
