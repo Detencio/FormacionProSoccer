@@ -6,7 +6,8 @@ export interface User {
   lastName: string
   phone?: string
   avatar?: string
-  role: 'user' | 'admin'
+  role: 'admin' | 'supervisor' | 'jugador' | 'invitado'
+  teamId?: string // equipo asignado (para supervisor, jugador, invitado)
   createdAt: Date
   updatedAt: Date
 }
