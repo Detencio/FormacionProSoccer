@@ -21,7 +21,7 @@ export interface AuthResponse {
     lastName: string
     email: string
     phone?: string
-    role: 'user' | 'admin'
+    role: 'admin' | 'supervisor' | 'jugador' | 'invitado'
     createdAt: Date
     updatedAt: Date
   }

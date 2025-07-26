@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { paymentService, PlayerPaymentHistory } from '@/services/paymentService'
+import { paymentService } from '@/services/paymentService'
+import type { PlayerPaymentHistory } from '@/services/paymentService'
 
 interface PlayerPaymentHistoryProps {
   playerId: number

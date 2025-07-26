@@ -2,102 +2,277 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos personalizados para FIFA 26 */
+/* ===== EA SPORTS FC 25/26 STYLE SYSTEM ===== */
+
+/* Variables CSS para el sistema de colores */
+:root {
+  /* Colores principales - EA SPORTS FC */
+  --fc-primary: #00ff88;
+  --fc-primary-dark: #00cc6a;
+  --fc-primary-light: #33ff99;
+  --fc-secondary: #1a1a1a;
+  --fc-secondary-light: #2a2a2a;
+  --fc-accent: #ff6b35;
+  --fc-accent-dark: #e55a2b;
+  
+  /* Gradientes EA SPORTS */
+  --fc-gradient-primary: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  --fc-gradient-secondary: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  --fc-gradient-accent: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+  --fc-gradient-dark: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  --fc-gradient-card: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  
+  /* Sombras y efectos */
+  --fc-shadow-primary: 0 0 20px rgba(0, 255, 136, 0.3);
+  --fc-shadow-secondary: 0 0 30px rgba(0, 255, 136, 0.2);
+  --fc-glow-primary: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* ===== COMPONENTES EA SPORTS FC ===== */
+
 @layer components {
-  /* Efectos de brillo para botones */
-  .fifa-button {
-    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105;
+  /* Botones EA SPORTS FC */
+  .fc-button {
+    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105 font-semibold;
+    background: var(--fc-gradient-primary);
+    box-shadow: var(--fc-shadow-primary);
   }
   
-  .fifa-button::before {
+  .fc-button:hover {
+    box-shadow: var(--fc-shadow-secondary);
+  }
+  
+  .fc-button::before {
     content: '';
     @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300;
   }
   
-  .fifa-button:hover::before {
+  .fc-button:hover::before {
     @apply opacity-100;
   }
 
-  /* Efectos de tarjeta FIFA */
-  .fifa-card {
-    @apply relative overflow-hidden transition-all duration-500 transform hover:scale-105 hover:rotate-1;
+  /* Botones secundarios (negros con bordes verdes) */
+  .fc-button-secondary {
+    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105 font-semibold;
+    background: var(--fc-gradient-secondary);
+    border: 2px solid var(--fc-primary);
+    box-shadow: var(--fc-glow-primary);
   }
   
-  .fifa-card::after {
+  .fc-button-secondary:hover {
+    border-color: var(--fc-primary-light);
+    box-shadow: var(--fc-shadow-secondary);
+  }
+
+  /* Tarjetas estilo FUT */
+  .fc-card {
+    @apply relative overflow-hidden transition-all duration-500 transform hover:scale-105;
+    background: var(--fc-gradient-card);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .fc-card::after {
     content: '';
     @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-500;
   }
   
-  .fifa-card:hover::after {
+  .fc-card:hover::after {
     @apply opacity-100;
   }
 
-  /* Animación de carga */
-  .fifa-loading {
-    @apply relative overflow-hidden;
+  /* Tarjetas de jugador estilo FUT */
+  .fc-player-card {
+    @apply relative overflow-hidden transition-all duration-300;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+    border: 2px solid var(--fc-primary);
+    box-shadow: var(--fc-shadow-primary);
   }
   
-  .fifa-loading::before {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse;
+  .fc-player-card:hover {
+    border-color: var(--fc-primary-light);
+    box-shadow: var(--fc-shadow-secondary);
+    transform: translateY(-5px);
   }
 
-  /* Efectos de texto brillante */
-  .fifa-text-glow {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  /* Contenedores principales */
+  .fc-container {
+    @apply relative overflow-hidden;
+    background: var(--fc-gradient-dark);
+    border: 1px solid rgba(0, 255, 136, 0.1);
+  }
+
+  /* Headers EA SPORTS */
+  .fc-header {
+    @apply relative overflow-hidden;
+    background: var(--fc-gradient-primary);
+    box-shadow: var(--fc-shadow-primary);
+  }
+
+  /* Tablas estilo EA SPORTS */
+  .fc-table {
+    @apply w-full;
+    background: var(--fc-gradient-card);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+  }
+  
+  .fc-table th {
+    @apply px-4 py-3 text-left font-semibold;
+    background: rgba(0, 255, 136, 0.1);
+    border-bottom: 2px solid var(--fc-primary);
+    color: var(--fc-primary);
+  }
+  
+  .fc-table td {
+    @apply px-4 py-3 border-b;
+    border-color: rgba(0, 255, 136, 0.1);
+    color: white;
+  }
+  
+  .fc-table tr:hover {
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  /* Cancha de fútbol */
+  .fc-pitch {
+    @apply relative overflow-hidden rounded-2xl;
+    background: linear-gradient(135deg, #2d5a2d 0%, #1a3d1a 100%);
+    border: 3px solid var(--fc-primary);
+    box-shadow: var(--fc-shadow-primary);
+  }
+
+  /* Efectos de texto */
+  .fc-text-glow {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
   }
 
   /* Bordes animados */
-  .fifa-border-animated {
+  .fc-border-animated {
     @apply relative;
   }
   
-  .fifa-border-animated::before {
+  .fc-border-animated::before {
     content: '';
-    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-75 blur-sm;
+    @apply absolute inset-0 rounded-2xl;
+    background: var(--fc-gradient-primary);
+    opacity: 0.75;
+    filter: blur(4px);
   }
   
-  .fifa-border-animated::after {
+  .fc-border-animated::after {
     content: '';
-    @apply absolute inset-[2px] rounded-2xl bg-gray-900;
+    @apply absolute inset-[2px] rounded-2xl;
+    background: var(--fc-gradient-dark);
   }
 
   /* Efectos de partículas */
-  .fifa-particles {
+  .fc-particles {
     @apply relative;
   }
   
-  .fifa-particles::before {
+  .fc-particles::before {
     content: '⚽';
     @apply absolute -top-2 -right-2 text-xs opacity-50 animate-bounce;
   }
   
-  .fifa-particles::after {
+  .fc-particles::after {
     content: '⚽';
     @apply absolute -bottom-2 -left-2 text-xs opacity-50 animate-bounce;
     animation-delay: 0.5s;
   }
+
+  /* Inputs EA SPORTS */
+  .fc-input {
+    @apply w-full px-4 py-3 rounded-lg transition-all duration-300;
+    background: var(--fc-gradient-secondary);
+    border: 2px solid rgba(0, 255, 136, 0.2);
+    color: white;
+  }
+  
+  .fc-input:focus {
+    @apply outline-none;
+    border-color: var(--fc-primary);
+    box-shadow: var(--fc-glow-primary);
+  }
+
+  /* Selects EA SPORTS */
+  .fc-select {
+    @apply w-full px-4 py-3 rounded-lg transition-all duration-300;
+    background: var(--fc-gradient-secondary);
+    border: 2px solid rgba(0, 255, 136, 0.2);
+    color: white;
+  }
+  
+  .fc-select:focus {
+    @apply outline-none;
+    border-color: var(--fc-primary);
+    box-shadow: var(--fc-glow-primary);
+  }
+
+  /* Modales EA SPORTS */
+  .fc-modal {
+    @apply fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50;
+  }
+  
+  .fc-modal-content {
+    @apply relative overflow-hidden rounded-2xl;
+    background: var(--fc-gradient-dark);
+    border: 2px solid var(--fc-primary);
+    box-shadow: var(--fc-shadow-secondary);
+  }
+
+  /* Badges y etiquetas */
+  .fc-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
+    background: var(--fc-gradient-primary);
+    color: #1a1a1a;
+  }
+
+  .fc-badge-secondary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
+    background: var(--fc-gradient-secondary);
+    border: 1px solid var(--fc-primary);
+    color: var(--fc-primary);
+  }
+
+  /* Estadísticas de jugador */
+  .fc-stat {
+    @apply flex items-center justify-between p-2 rounded-lg;
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+  }
+
+  .fc-stat-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .fc-stat-fill {
+    @apply h-full transition-all duration-300;
+    background: var(--fc-gradient-primary);
+  }
 }
 
-/* Scrollbar personalizada */
+/* ===== SCROLLBAR PERSONALIZADA ===== */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-800;
+  background: var(--fc-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-blue-500 to-purple-600 rounded-full;
+  background: var(--fc-gradient-primary);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gradient-to-b from-blue-600 to-purple-700;
+  background: var(--fc-primary-dark);
 }
 
-/* Animaciones personalizadas */
-@keyframes fifa-pulse {
+/* ===== ANIMACIONES PERSONALIZADAS ===== */
+@keyframes fc-pulse {
   0%, 100% {
     opacity: 1;
   }
@@ -106,11 +281,11 @@
   }
 }
 
-.animate-fifa-pulse {
-  animation: fifa-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-fc-pulse {
+  animation: fc-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes fifa-bounce {
+@keyframes fc-bounce {
   0%, 100% {
     transform: translateY(-25%);
     animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
@@ -121,32 +296,66 @@
   }
 }
 
-.animate-fifa-bounce {
-  animation: fifa-bounce 1s infinite;
+.animate-fc-bounce {
+  animation: fc-bounce 1s infinite;
 }
 
-/* Efectos de hover para botones */
-.hover-fifa-glow:hover {
-  box-shadow: 0 0 20px currentColor;
+@keyframes fc-glow {
+  0%, 100% {
+    box-shadow: var(--fc-shadow-primary);
+  }
+  50% {
+    box-shadow: var(--fc-shadow-secondary);
+  }
 }
 
-/* Gradientes personalizados */
-.bg-fifa-gradient {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.animate-fc-glow {
+  animation: fc-glow 2s ease-in-out infinite;
 }
 
-.bg-fifa-gradient-dark {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+/* ===== EFECTOS DE HOVER ===== */
+.hover-fc-glow:hover {
+  box-shadow: var(--fc-shadow-secondary);
 }
 
-.bg-fifa-gradient-success {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+.hover-fc-scale:hover {
+  transform: scale(1.05);
 }
 
-.bg-fifa-gradient-warning {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+/* ===== GRADIENTES PERSONALIZADOS ===== */
+.bg-fc-gradient {
+  background: var(--fc-gradient-primary);
 }
 
-.bg-fifa-gradient-danger {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+.bg-fc-gradient-dark {
+  background: var(--fc-gradient-dark);
+}
+
+.bg-fc-gradient-card {
+  background: var(--fc-gradient-card);
+}
+
+.bg-fc-gradient-accent {
+  background: var(--fc-gradient-accent);
+}
+
+/* ===== UTILIDADES ESPECÍFICAS ===== */
+.text-fc-primary {
+  color: var(--fc-primary);
+}
+
+.text-fc-accent {
+  color: var(--fc-accent);
+}
+
+.border-fc-primary {
+  border-color: var(--fc-primary);
+}
+
+.shadow-fc-primary {
+  box-shadow: var(--fc-shadow-primary);
+}
+
+.glow-fc-primary {
+  box-shadow: var(--fc-glow-primary);
 } 

@@ -81,7 +81,7 @@ export default function TeamCard({ team, onUpdate, onDelete, onAddPlayer, onEdit
                   {players.length} Jugadores
                 </span>
                 <span className="text-green-300 text-sm font-medium">
-                  {team.country || 'CL'}
+                  {'CL'}
                 </span>
               </div>
             </div>

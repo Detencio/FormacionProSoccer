@@ -292,12 +292,12 @@ export default function TeamsPage() {
       console.log('TeamsPage - Cargando equipos:', teamsData.length)
       
       // Corregir IDs duplicados de equipos
-      const correctedTeams = teamsData.map((team, index) => {
+      const correctedTeams = teamsData.map((team: any, index: number) => {
         // Si el equipo tiene ID duplicado, asignar un nuevo ID único
         const correctedTeam = { ...team }
         if (index > 0) {
           const previousTeams = teamsData.slice(0, index)
-          const maxId = Math.max(...previousTeams.map(t => t.id))
+          const maxId = Math.max(...previousTeams.map((t: any) => t.id))
           if (team.id <= maxId) {
             correctedTeam.id = maxId + 1
             console.log(`Corrigiendo ID del equipo "${team.name}" de ${team.id} a ${correctedTeam.id}`)
@@ -305,11 +305,11 @@ export default function TeamsPage() {
         }
         
         // Corregir IDs duplicados de jugadores
-        const correctedPlayers = team.players.map((player, playerIndex) => {
+        const correctedPlayers = team.players.map((player: any, playerIndex: number) => {
           const correctedPlayer = { ...player }
           if (playerIndex > 0) {
             const previousPlayers = team.players.slice(0, playerIndex)
-            const maxPlayerId = Math.max(...previousPlayers.map(p => p.id))
+            const maxPlayerId = Math.max(...previousPlayers.map((p: any) => p.id))
             if (player.id <= maxPlayerId) {
               correctedPlayer.id = maxPlayerId + 1
               console.log(`Corrigiendo ID del jugador "${player.name}" de ${player.id} a ${correctedPlayer.id}`)
@@ -322,9 +322,9 @@ export default function TeamsPage() {
         return correctedTeam
       })
       
-      correctedTeams.forEach((team, index) => {
+      correctedTeams.forEach((team: any, index: number) => {
         console.log(`Team ${index}: id=${team.id}, name=${team.name}, players=${team.players.length}`)
-        team.players.forEach((player, playerIndex) => {
+        team.players.forEach((player: any, playerIndex: number) => {
           console.log(`  Player ${playerIndex}: id=${player.id}, name=${player.name}`)
         })
       })
@@ -425,36 +425,31 @@ export default function TeamsPage() {
   }
 
   const handlePlayerSubmit = (formData: any) => {
-    if (!selectedTeamId) return
-
-    const savedTeams = localStorage.getItem('teams-data')
-    if (!savedTeams) return
-    const teamsData = JSON.parse(savedTeams)
-    const team = teamsData.find((t: any) => t.id === selectedTeamId)
-    if (!team) return
-
+    if (!selectedTeamId) return;
+    const savedTeams = localStorage.getItem('teams-data');
+    if (!savedTeams) return;
+    const teamsData = JSON.parse(savedTeams);
+    const team = teamsData.find((t: any) => t.id === selectedTeamId);
+    if (!team) return;
     if (editingPlayer) {
       // Actualizar jugador existente
       team.players = team.players.map((p: any) =>
-                p.id === editingPlayer.id ? { ...p, ...formData } : p
-      )
+        p.id === editingPlayer.id ? { ...p, ...formData } : p
+      );
     } else {
       // Crear nuevo jugador
-      const newId = Math.max(0, ...teamsData.flatMap((t: any) => t.players.map((p: any) => p.id))) + 1
-      const newPlayer = { id: newId, ...formData }
-      team.players.push(newPlayer)
+      const newId = Math.max(0, ...teamsData.flatMap((t: any) => t.players.map((p: any) => p.id))) + 1;
+      const newPlayer = { id: newId, ...formData };
+      team.players.push(newPlayer);
     }
-    localStorage.setItem('teams-data', JSON.stringify(teamsData))
-    setTeams([...teamsData])
-    setShowPlayerModal(false)
-    setEditingPlayer(null)
-    setSelectedTeamId(null)
-    
+    localStorage.setItem('teams-data', JSON.stringify(teamsData));
+    setTeams([...teamsData]);
+    setShowPlayerModal(false);
+    setEditingPlayer(null);
+    setSelectedTeamId(null);
     // Disparar evento personalizado para notificar a otros módulos
-    window.dispatchEvent(new CustomEvent('teams-data-updated', {
-      detail: { teamsData, updatedPlayer: editingPlayer ? { id: editingPlayer.id, ...formData } : null }
-    }))
-  }
+    window.dispatchEvent(new CustomEvent('teams-data-updated'));
+  };
 
   // Función para mostrar/ocultar detalles
   const toggleDetails = (teamId: number) => {
@@ -922,7 +917,7 @@ export default function TeamsPage() {
                 <div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-2">{team.name}</h3>
                       <p className="text-gray-600 font-medium">
-                    {team.commune && `${team.commune}, `}{team.city}, {team.country}
+                    {team.commune && `${team.commune}, `}{team.city}, CL
                   </p>
                       <p className="text-sm text-gray-500 mt-1">Fundado: {team.founded}</p>
                 </div>
@@ -1054,7 +1049,7 @@ export default function TeamsPage() {
                   <div className="text-sm space-y-1">
                     <p><strong>Nombre:</strong> {team.name}</p>
                     <p><strong>Ciudad:</strong> {team.city}</p>
-                    <p><strong>País:</strong> {team.country}</p>
+                    <p><strong>País:</strong> CL</p>
                     <p><strong>Fundado:</strong> {team.founded}</p>
                     <p><strong>Total Jugadores:</strong> {team.players.length}</p>
                   </div>
@@ -1133,7 +1128,7 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
     if (team) {
       setFormData({
         name: team.name,
-        country: team.country,
+                      country: 'CL',
         city: team.city,
         commune: team.commune,
         founded: team.founded,

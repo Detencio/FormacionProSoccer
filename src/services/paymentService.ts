@@ -122,8 +122,8 @@ class PaymentService {
     
     const newPayments: Payment[] = []
     
-    teams.forEach(team => {
-      team.players?.forEach(player => {
+    teams.forEach((team: any) => {
+      team.players?.forEach((player: any) => {
         // Verificar si ya existe un pago para este jugador en este mes
         const existingPayment = existingPayments.find(p => 
           p.playerId === player.id && p.month === month
@@ -171,8 +171,8 @@ class PaymentService {
     
     const newPayments: Payment[] = []
     
-    selectedTeams.forEach(team => {
-      team.players?.forEach(player => {
+    selectedTeams.forEach((team: any) => {
+      team.players?.forEach((player: any) => {
         // Verificar si ya existe un pago para este jugador en este mes
         const existingPayment = existingPayments.find(p => 
           p.playerId === player.id && p.month === month
