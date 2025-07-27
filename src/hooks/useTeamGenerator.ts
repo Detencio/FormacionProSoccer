@@ -16,6 +16,8 @@ export const useTeamGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+
+
   // Obtener formación por defecto según tipo de juego
   const getDefaultFormation = useCallback((gameType: '5v5' | '7v7' | '11v11') => {
     switch (gameType) {
@@ -64,6 +66,7 @@ export const useTeamGenerator = () => {
 
   // Generar equipos
   const generateTeams = useCallback(() => {
+    console.log('generateTeams called')
     if (selectedPlayers.length < 2) {
       setError('Se necesitan al menos 2 jugadores para generar equipos')
       return
@@ -86,6 +89,7 @@ export const useTeamGenerator = () => {
 
   // Regenerar equipos
   const regenerateTeams = useCallback(() => {
+    console.log('regenerateTeams called')
     generateTeams()
   }, [generateTeams])
 
@@ -97,15 +101,32 @@ export const useTeamGenerator = () => {
     toTeam: 'home' | 'away',
     toRole: 'starter' | 'substitute'
   ) => {
-    if (!distribution) return
+    console.log('movePlayer called with:', { playerId, fromTeam, fromRole, toTeam, toRole })
+    console.log('useTeamGenerator - movePlayer llamado:', {
+      playerId,
+      fromTeam,
+      fromRole,
+      toTeam,
+      toRole,
+      hasDistribution: !!distribution
+    })
+
+    if (!distribution) {
+      console.error('No hay distribución disponible para mover jugador')
+      setError('No hay equipos generados para mover jugadores')
+      return
+    }
 
     try {
       // Validar si se puede mover
       if (!canMovePlayer(distribution, toTeam, toRole)) {
-        setError('No se puede mover más jugadores a esa posición')
+        const errorMsg = 'No se puede mover más jugadores a esa posición'
+        console.error(errorMsg)
+        setError(errorMsg)
         return
       }
 
+      console.log('Moviendo jugador en distribución...')
       const newDistribution = movePlayerInDistribution(
         distribution,
         playerId,
@@ -115,10 +136,13 @@ export const useTeamGenerator = () => {
         toRole
       )
       
+      console.log('Nueva distribución creada:', newDistribution)
       setDistribution(newDistribution)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al mover jugador')
+      const errorMsg = err instanceof Error ? err.message : 'Error al mover jugador'
+      console.error('Error moviendo jugador:', errorMsg)
+      setError(errorMsg)
     }
   }, [distribution])
 
@@ -152,6 +176,7 @@ export const useTeamGenerator = () => {
 
   // Limpiar selección
   const clearSelection = useCallback(() => {
+    console.log('clearSelection called')
     setSelectedPlayers([])
     setDistribution(null)
     setError(null)

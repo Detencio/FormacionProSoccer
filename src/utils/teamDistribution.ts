@@ -184,6 +184,14 @@ export const movePlayerInDistribution = (
   toTeam: 'home' | 'away',
   toRole: 'starter' | 'substitute'
 ): TeamDistribution => {
+  console.log('movePlayerInDistribution - Iniciando movimiento:', {
+    playerId,
+    fromTeam,
+    fromRole,
+    toTeam,
+    toRole
+  })
+
   const newDistribution = { ...distribution }
   
   // Encontrar y remover jugador de la posición original
@@ -191,11 +199,20 @@ export const movePlayerInDistribution = (
   const sourceArray = fromRole === 'starter' ? sourceTeam.starters : sourceTeam.substitutes
   const playerIndex = sourceArray.findIndex(p => p.id === playerId)
   
+  console.log('Buscando jugador en:', {
+    team: fromTeam,
+    role: fromRole,
+    playerIndex,
+    sourceArrayLength: sourceArray.length
+  })
+  
   if (playerIndex === -1) {
-    throw new Error('Jugador no encontrado en la posición especificada')
+    console.error('Jugador no encontrado:', playerId)
+    throw new Error(`Jugador con ID ${playerId} no encontrado en la posición especificada`)
   }
 
   const player = sourceArray[playerIndex]
+  console.log('Jugador encontrado:', player.name)
   sourceArray.splice(playerIndex, 1)
 
   // Validar límites antes de mover
@@ -203,16 +220,23 @@ export const movePlayerInDistribution = (
   const targetArray = toRole === 'starter' ? targetTeam.starters : targetTeam.substitutes
   const config = GAME_CONFIGURATIONS[distribution.gameType]
 
+  console.log('Validando límites:', {
+    toRole,
+    targetArrayLength: targetArray.length,
+    maxAllowed: toRole === 'starter' ? config.startersPerTeam : config.maxSubstitutesPerTeam
+  })
+
   if (toRole === 'starter' && targetArray.length >= config.startersPerTeam) {
-    throw new Error('No se puede agregar más titulares')
+    throw new Error(`No se puede agregar más titulares. Máximo: ${config.startersPerTeam}`)
   }
 
   if (toRole === 'substitute' && targetArray.length >= config.maxSubstitutesPerTeam) {
-    throw new Error('No se puede agregar más suplentes')
+    throw new Error(`No se puede agregar más suplentes. Máximo: ${config.maxSubstitutesPerTeam}`)
   }
 
   // Agregar jugador a la nueva posición
   targetArray.push(player)
+  console.log('Jugador movido exitosamente a:', { toTeam, toRole })
 
   // Recalcular promedios de habilidad
   newDistribution.homeTeam.averageSkill = calculateAverageSkill(newDistribution.homeTeam.starters)
@@ -220,6 +244,14 @@ export const movePlayerInDistribution = (
 
   // Recalcular puntuación de balance
   newDistribution.balanceScore = calculateBalanceScore(newDistribution.homeTeam, newDistribution.awayTeam)
+
+  console.log('Distribución actualizada:', {
+    homeStarters: newDistribution.homeTeam.starters.length,
+    homeSubstitutes: newDistribution.homeTeam.substitutes.length,
+    awayStarters: newDistribution.awayTeam.starters.length,
+    awaySubstitutes: newDistribution.awayTeam.substitutes.length,
+    balanceScore: newDistribution.balanceScore
+  })
 
   return newDistribution
 }

@@ -133,7 +133,7 @@ export default function Sidebar() {
   return (
     <div className={`bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } min-h-screen flex flex-col shadow-2xl border-r border-gray-700`}>
+    } min-h-screen flex flex-col shadow-2xl border-r border-gray-700 relative z-50`}>
       
       {/* Header con diseño FIFA 26 */}
       <div className="p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600 to-green-600">

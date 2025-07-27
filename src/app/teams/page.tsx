@@ -503,111 +503,145 @@ export default function TeamsPage() {
           </div>
         )}
 
-        {/* Grid de equipos con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
+        {/* Vista de resumen de equipos - Solo mostrar cuando no hay filtro activo */}
         {!selectedFilterTeam && !showAllPlayers && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {teams.map((team) => (
-              <div key={`team-${team.id}`} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex items-start gap-4">
-                {team.logo_url && (
-                      <div className="w-20 h-24 bg-gradient-to-br from-blue-100 to-green-100 rounded-xl flex items-center justify-center shadow-lg border-2 border-gray-200">
-                  <img 
-                    src={team.logo_url} 
-                    alt={`Logo ${team.name}`}
-                          className="w-16 h-20 object-contain"
-                  />
-                      </div>
-                )}
-                <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{team.name}</h3>
-                      <p className="text-gray-600 font-medium">
-                    {team.city && `${team.city}, `}CL
-                  </p>
-                      <p className="text-sm text-gray-500 mt-1">Fundado: {team.founded}</p>
-                </div>
-              </div>
-                  <div className="flex gap-2">
-                <button
-                  onClick={() => handleEditTeam(team)}
-                      className="p-3 text-gray-600 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
-                  title="Editar equipo"
-                >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleDeleteTeam(team.id)}
-                      className="p-3 text-gray-600 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
-                  title="Eliminar equipo"
-                >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium text-gray-900">Jugadores ({(team.players || []).length})</h4>
-                <button
-                  onClick={() => handleAddPlayer(team.id)}
-                  className="text-green-500 hover:text-green-700 text-sm"
-                >
-                  + Agregar
-                </button>
-              </div>
-              
-              <div className="space-y-2">
-                {(team.players || []).map((player: any) => (
-                  <ProfessionalPlayerCard
-                    key={player.id}
-                    player={player}
-                    compact={true}
-                    onEdit={() => handleEditPlayer(player, team.id)}
-                    onDelete={() => handleDeletePlayer(player.id, team.id)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => toggleDetails(team.id)}
-                  className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
-                >
-                  {showDetails === team.id ? 'Ocultar' : 'Ver'} Detalles
-                </button>
-                <button 
-                  onClick={() => handleEditTeam(team)}
-                  className="flex-1 bg-gray-500 text-white px-3 py-2 rounded text-sm hover:bg-gray-600"
-                >
-                  Editar
-                </button>
-              </div>
-              
-              {showDetails === team.id && (
-                <div className="mt-4 p-4 bg-gray-50 rounded">
-                  <h5 className="font-medium mb-2">Detalles del Equipo</h5>
-                  <div className="text-sm space-y-1">
-                    <p><strong>Nombre:</strong> {team.name}</p>
-                    <p><strong>Ciudad:</strong> {team.city}</p>
-                    <p><strong>País:</strong> CL</p>
-                    <p><strong>Fundado:</strong> {team.founded}</p>
-                    <p><strong>Total Jugadores:</strong> {(team.players || []).length}</p>
+          <div className="space-y-6">
+            {/* Header de resumen */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Resumen de Equipos</h2>
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold">{teams.length}</span> equipos registrados
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold">{teams.reduce((total, team) => total + (team.players?.length || 0), 0)}</span> jugadores total
                   </div>
                 </div>
-              )}
+              </div>
+              
+              {/* Estadísticas rápidas */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                  <div className="text-2xl font-bold">{teams.length}</div>
+                  <div className="text-sm opacity-90">Equipos</div>
+                </div>
+                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                  <div className="text-2xl font-bold">{teams.reduce((total, team) => total + (team.players?.length || 0), 0)}</div>
+                  <div className="text-sm opacity-90">Jugadores</div>
+                </div>
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                  <div className="text-2xl font-bold">{teams.filter(team => (team.players?.length || 0) > 0).length}</div>
+                  <div className="text-sm opacity-90">Equipos con jugadores</div>
+                </div>
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+                  <div className="text-2xl font-bold">{Math.round(teams.reduce((total, team) => total + (team.players?.length || 0), 0) / teams.length)}</div>
+                  <div className="text-sm opacity-90">Promedio por equipo</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla de equipos compacta */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Equipos Registrados</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipo</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubicación</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugadores</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posiciones</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {teams.map((team) => {
+                      const playerCount = team.players?.length || 0
+                      const positions = team.players?.reduce((acc: any, player: any) => {
+                        const pos = player.position_zone?.abbreviation || 'N/A'
+                        acc[pos] = (acc[pos] || 0) + 1
+                        return acc
+                      }, {}) || {}
+                      
+                      return (
+                        <tr key={team.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                <span className="text-white font-bold text-sm">
+                                  {team.name.charAt(0)}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{team.name}</div>
+                                <div className="text-sm text-gray-500">Fundado: {team.founded}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {team.city && `${team.city}, `}CL
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <span className="text-sm font-medium text-gray-900">{playerCount}</span>
+                              {playerCount > 0 && (
+                                <span className="ml-2 text-xs text-gray-500">
+                                  ({Math.round((playerCount / teams.reduce((total, t) => total + (t.players?.length || 0), 0)) * 100)}%)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-wrap gap-1">
+                              {Object.entries(positions).map(([pos, count]: [string, any]) => (
+                                <span key={pos} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {pos}: {count}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleFilterChange(team.id)}
+                                className="text-blue-600 hover:text-blue-900 font-medium"
+                              >
+                                Ver jugadores
+                              </button>
+                              <button
+                                onClick={() => handleEditTeam(team)}
+                                className="text-gray-600 hover:text-blue-600"
+                                title="Editar equipo"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTeam(team.id)}
+                                className="text-gray-600 hover:text-red-600"
+                                title="Eliminar equipo"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
         )}
 
-                {/* Botón agregar equipo con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
+        {/* Botón agregar equipo con diseño FIFA 26 - Solo mostrar cuando no hay filtro activo */}
         {!selectedFilterTeam && !showAllPlayers && (
           <div className="mt-12 text-center">
         <button 

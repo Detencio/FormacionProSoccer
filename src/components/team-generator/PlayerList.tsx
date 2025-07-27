@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { Player } from '@/types'
 import PlayerCard from './PlayerCard'
 
@@ -9,38 +9,48 @@ interface PlayerListProps {
   selectedPlayers: Player[]
   onPlayerSelect: (player: Player) => void
   onPlayerDeselect: (playerId: number) => void
+  onRemoveManualPlayer?: (playerId: number) => void
+  showManualPlayerControls?: boolean
+  onPlayerPreview?: (player: Player) => void
 }
 
 const PlayerList: React.FC<PlayerListProps> = ({
   players,
   selectedPlayers,
   onPlayerSelect,
-  onPlayerDeselect
+  onPlayerDeselect,
+  onRemoveManualPlayer,
+  showManualPlayerControls = false,
+  onPlayerPreview
 }) => {
   const [filterPosition, setFilterPosition] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Filtrar jugadores
-  const filteredPlayers = players.filter(player => {
-    const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesPosition = filterPosition === 'all' || 
-      player.position_zone.abbreviation === filterPosition ||
-      player.position_specific?.abbreviation === filterPosition
-    return matchesSearch && matchesPosition
-  })
+  // Filtrar jugadores con useMemo para mejor rendimiento
+  const filteredPlayers = useMemo(() => {
+    return players.filter(player => {
+      const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesPosition = filterPosition === 'all' || 
+        player.position_zone.abbreviation === filterPosition ||
+        player.position_specific?.abbreviation === filterPosition
+      return matchesSearch && matchesPosition
+    })
+  }, [players, searchTerm, filterPosition])
 
-  // Obtener posiciones únicas
-  const positions = Array.from(new Set([
-    ...players.map(p => p.position_zone.abbreviation),
-    ...players.map(p => p.position_specific?.abbreviation).filter(Boolean) as string[]
-  ])).sort()
+  // Obtener posiciones únicas con useMemo
+  const positions = useMemo(() => {
+    return Array.from(new Set([
+      ...players.map(p => p.position_zone.abbreviation),
+      ...players.map(p => p.position_specific?.abbreviation).filter(Boolean) as string[]
+    ])).sort()
+  }, [players])
 
-  const isPlayerSelected = (playerId: number) => {
+  const isPlayerSelected = useCallback((playerId: number) => {
     return selectedPlayers.some(p => p.id === playerId)
-  }
+  }, [selectedPlayers])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-hidden">
       {/* Filtros */}
       <div className="space-y-3">
         {/* Búsqueda */}
@@ -122,7 +132,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
             <p>No se encontraron jugadores con los filtros aplicados</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-hidden">
             {filteredPlayers.map((player) => (
               <PlayerCard
                 key={player.id}
@@ -130,6 +140,9 @@ const PlayerList: React.FC<PlayerListProps> = ({
                 isSelected={isPlayerSelected(player.id)}
                 onSelect={onPlayerSelect}
                 onDeselect={onPlayerDeselect}
+                onRemoveManualPlayer={onRemoveManualPlayer}
+                showManualPlayerControls={showManualPlayerControls}
+                onPreview={onPlayerPreview}
               />
             ))}
           </div>

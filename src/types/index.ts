@@ -117,12 +117,20 @@ export interface Player {
   weight?: number // en kilogramos
   skill_level: number // 1-10
   is_active: boolean
+  is_guest?: boolean // Indica si es un jugador invitado manual
   created_at: string
   updated_at?: string
   position_zone: PositionZone
   position_specific?: PositionSpecific
   team?: Team
   user?: User
+  // Estadísticas de habilidades (opcionales)
+  rit?: number // Ritmo
+  tir?: number // Tiro
+  pas?: number // Pase
+  reg?: number // Regate
+  defense?: number // Defensa
+  fis?: number // Físico
 }
 
 // User Types
