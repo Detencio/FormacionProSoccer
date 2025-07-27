@@ -1,3 +1,80 @@
+// Team Formation Types
+export interface TeamFormation {
+  id: string;
+  name: string;  // "4-4-2", "4-3-3", etc.
+  description: string;
+  gameType: '5v5' | '7v7' | '11v11';
+  positions: FormationPosition[];
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface FormationPosition {
+  id: number;
+  position_id: number;
+  position: PositionZone | PositionSpecific;
+  x: number; // Coordenada X en la cancha (0-100)
+  y: number; // Coordenada Y en la cancha (0-100)
+  team: 'HOME' | 'AWAY';
+  player_id?: number;
+  player?: Player;
+  is_captain: boolean;
+}
+
+// Team Distribution Types
+export interface TeamDistribution {
+  homeTeam: TeamSection;
+  awayTeam: TeamSection;
+  unassigned: Player[];
+  gameType: '5v5' | '7v7' | '11v11';
+  formation?: TeamFormation;
+  balanceScore: number;
+  generatedAt: string;
+}
+
+export interface TeamSection {
+  starters: Player[];
+  substitutes: Player[];
+  averageSkill: number;
+}
+
+export interface PlayerMove {
+  playerId: number;
+  fromTeam: 'home' | 'away';
+  fromRole: 'starter' | 'substitute';
+  toTeam: 'home' | 'away';
+  toRole: 'starter' | 'substitute';
+}
+
+export interface TeamGenerationRequest {
+  playerIds: number[];
+  gameType: '5v5' | '7v7' | '11v11';
+  formationId?: string;
+  balancePreferences?: {
+    skillLevelWeight: number;
+    positionBalanceWeight: number;
+    teamSizeWeight: number;
+  };
+}
+
+export interface TeamGenerationResponse {
+  distribution: TeamDistribution;
+  validation: {
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+  };
+}
+
+// Game Configuration Types
+export interface GameConfiguration {
+  gameType: '5v5' | '7v7' | '11v11';
+  startersPerTeam: number;
+  maxSubstitutesPerTeam: number;
+  requiredPositions: PositionAbbreviation[];
+  maxPlayers: number;
+}
+
 // Position Types
 export interface PositionZone {
   id: number

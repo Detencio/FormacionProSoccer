@@ -748,9 +748,9 @@ const server = setupServer(
         expenses: [
           {
             id: 1,
-            title: 'Compra de balones',
+      title: 'Compra de balones',
             category: { id: 1, name: 'Equipamiento' },
-            amount: 150000,
+      amount: 150000,
             status: 'APPROVED',
             expense_date: '2024-01-15T00:00:00Z'
           }

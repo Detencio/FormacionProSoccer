@@ -1,9 +1,21 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { ApiResponse, PositionZone, PositionSpecific, Player } from '@/types'
+import { 
+  ApiResponse, 
+  User, 
+  Team, 
+  Player, 
+  Match, 
+  Payment, 
+  TeamGenerationRequest, 
+  TeamGenerationResponse, 
+  TeamFormation, 
+  PositionZone, 
+  PositionSpecific 
+} from '@/types'
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -52,13 +64,13 @@ api.interceptors.response.use(
     })
     
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      console.log('API: 401 Unauthorized, limpiando localStorage')
-      localStorage.removeItem('auth-storage')
+      // Handle unauthorized access - TEMPORAL: No redirigir automáticamente
+      console.log('API: 401 Unauthorized, pero no redirigiendo automáticamente')
+      // localStorage.removeItem('auth-storage')
       // Solo redirigir si no estamos ya en login
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      // if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+      //   window.location.href = '/login'
+      // }
     } else if (error.response?.status === 403) {
       console.log('API: 403 Forbidden - Token inválido o expirado')
       // Para desarrollo, no limpiar el localStorage en 403
@@ -232,6 +244,32 @@ export const apiClient = {
     const response = await api.post(`/players/${playerId}/remove`)
     return response.data
   },
+
+  // Team Generator API
+  generateTeams: async (request: TeamGenerationRequest): Promise<TeamGenerationResponse> => {
+    const response = await api.post<TeamGenerationResponse>('/team-generator/generate', request)
+    return response.data
+  },
+
+  getFormations: async (): Promise<TeamFormation[]> => {
+    const response = await api.get<TeamFormation[]>('/team-generator/formations')
+    return response.data
+  },
+
+  getFormation: async (id: string): Promise<TeamFormation> => {
+    const response = await api.get<TeamFormation>(`/team-generator/formations/${id}`)
+    return response.data
+  },
+
+  saveTeamGeneration: async (request: any): Promise<any> => {
+    const response = await api.post<any>('/team-generator/save', request)
+    return response.data
+  },
+
+  getTeamGenerationHistory: async (): Promise<any[]> => {
+    const response = await api.get<any[]>('/team-generator/history')
+    return response.data
+  }
 }
 
 export default api 

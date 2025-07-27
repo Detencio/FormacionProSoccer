@@ -38,26 +38,25 @@ class AuthService {
   // Login
   async login(data: LoginData): Promise<AuthResponse> {
     try {
-      // Para pruebas, simular login exitoso
-      if (data.email === 'admin@prosoccer.com' && data.password === '123456') {
-        return {
-          user: {
-            id: '1',
-            firstName: 'Administrador',
-            lastName: 'Sistema',
-            email: data.email,
-            role: 'admin',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          token: 'fake-jwt-token-for-testing',
-          refreshToken: 'fake-refresh-token'
-        }
-      }
-      
-      // Intentar login real
+      // Login real con el backend
       const response = await api.post('/auth/login', data)
-      return response.data
+      
+      // Convertir la respuesta del backend al formato esperado por el frontend
+      const backendResponse = response.data
+      return {
+        user: {
+          id: backendResponse.user?.id || '1',
+          firstName: backendResponse.user?.full_name?.split(' ')[0] || 'Administrador',
+          lastName: backendResponse.user?.full_name?.split(' ').slice(1).join(' ') || 'Sistema',
+          email: backendResponse.user?.email || data.email,
+          phone: backendResponse.user?.phone || '',
+          role: backendResponse.user?.role || 'admin',
+          createdAt: new Date(backendResponse.user?.created_at) || new Date(),
+          updatedAt: new Date(backendResponse.user?.updated_at) || new Date()
+        },
+        token: backendResponse.access_token,
+        refreshToken: backendResponse.refresh_token || 'fake-refresh-token'
+      }
     } catch (error: any) {
       throw this.handleError(error)
     }

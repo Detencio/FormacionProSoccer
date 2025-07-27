@@ -12,9 +12,14 @@ class User(Base):
     phone = Column(String, nullable=True)  # Agregado campo teléfono
     is_admin = Column(Boolean, default=False)
     is_player = Column(Boolean, default=False)  # Agregado para identificar jugadores
+    role = Column(String, default="player")  # admin, supervisor, player, guest
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)  # Para supervisores
     must_change_password = Column(Boolean, default=False)  # Para cambio obligatorio de contraseña
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relación con equipo (para supervisores)
+    team = relationship("Team", backref="supervisors")
 
 class PositionZone(Base):
     __tablename__ = "position_zones"
@@ -80,6 +85,14 @@ class Player(Base):
     height = Column(Integer, nullable=True)  # en centímetros
     weight = Column(Integer, nullable=True)  # en kilogramos
     skill_level = Column(Integer, nullable=False, default=5)  # 1-10
+    
+    # Habilidades específicas
+    rit = Column(Integer, nullable=True)  # Ritmo (1-100)
+    tir = Column(Integer, nullable=True)  # Tiro (1-100)
+    pas = Column(Integer, nullable=True)  # Pase (1-100)
+    reg = Column(Integer, nullable=True)  # Regate (1-100)
+    defense = Column(Integer, nullable=True)  # Defensa (1-100)
+    fis = Column(Integer, nullable=True)  # Físico (1-100)
     
     # Estado
     is_active = Column(Boolean, default=True)

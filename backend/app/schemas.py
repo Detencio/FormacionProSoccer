@@ -116,6 +116,14 @@ class PlayerBase(BaseModel):
     weight: Optional[int] = None  # en kilogramos
     skill_level: int = 5  # 1-10
     
+    # Habilidades específicas
+    rit: Optional[int] = None  # Ritmo (1-100)
+    tir: Optional[int] = None  # Tiro (1-100)
+    pas: Optional[int] = None  # Pase (1-100)
+    reg: Optional[int] = None  # Regate (1-100)
+    defense: Optional[int] = None  # Defensa (1-100)
+    fis: Optional[int] = None  # Físico (1-100)
+    
     is_active: bool = True
 
 class PlayerCreate(PlayerBase):
@@ -135,6 +143,13 @@ class PlayerUpdate(BaseModel):
     height: Optional[int] = None
     weight: Optional[int] = None
     skill_level: Optional[int] = None
+    # Habilidades específicas
+    rit: Optional[int] = None
+    tir: Optional[int] = None
+    pas: Optional[int] = None
+    reg: Optional[int] = None
+    defense: Optional[int] = None
+    fis: Optional[int] = None
     is_active: Optional[bool] = None
 
 class PlayerOut(PlayerBase):

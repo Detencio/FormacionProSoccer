@@ -55,7 +55,7 @@ def login_with_email(login_data: schemas.UserLogin, db: Session = Depends(get_db
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     access_token = auth.create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 from fastapi import Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -150,6 +150,73 @@ def get_players(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), 
         player = crud.get_player_by_user_id(db, current_user.id)
         if player and player.team_id:
             return crud.get_players_by_team(db, player.team_id)
+        return []
+
+@app.get("/team-generator/players/", response_model=list[schemas.PlayerOut])
+def get_players_for_team_generator(
+    team_id: int = None,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get players for team generator with role-based filtering"""
+    
+    # Filtrar jugadores según el rol del usuario
+    query = db.query(models.Player)
+    
+    if current_user.role == "admin":
+        # Administradores ven todos los jugadores
+        if team_id:
+            query = query.filter(models.Player.team_id == team_id)
+    elif current_user.role == "supervisor":
+        # Supervisores solo ven jugadores de su equipo
+        if current_user.team_id:
+            query = query.filter(models.Player.team_id == current_user.team_id)
+        else:
+            # Si no tiene equipo asignado, no puede ver jugadores
+            return []
+    elif current_user.role == "player":
+        # Jugadores solo ven jugadores de su equipo
+        player_profile = db.query(models.Player).filter(models.Player.user_id == current_user.id).first()
+        if player_profile and player_profile.team_id:
+            query = query.filter(models.Player.team_id == player_profile.team_id)
+        else:
+            return []
+    elif current_user.role == "guest":
+        # Invitados no pueden ver jugadores para generar equipos
+        return []
+    else:
+        # Rol no reconocido
+        return []
+    
+    return query.all()
+
+@app.get("/team-generator/teams/", response_model=list[schemas.TeamOut])
+def get_teams_for_team_generator(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get teams for team generator with role-based filtering"""
+    
+    if current_user.role == "admin":
+        # Administradores ven todos los equipos
+        return crud.get_teams(db)
+    elif current_user.role == "supervisor":
+        # Supervisores solo ven su equipo
+        if current_user.team_id:
+            team = crud.get_team(db, current_user.team_id)
+            return [team] if team else []
+        return []
+    elif current_user.role == "player":
+        # Jugadores solo ven su equipo
+        player_profile = db.query(models.Player).filter(models.Player.user_id == current_user.id).first()
+        if player_profile and player_profile.team_id:
+            team = crud.get_team(db, player_profile.team_id)
+            return [team] if team else []
+        return []
+    elif current_user.role == "guest":
+        # Invitados no pueden ver equipos para generar
+        return []
+    else:
         return []
 
 @app.get("/players/{player_id}", response_model=schemas.PlayerOut)

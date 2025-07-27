@@ -89,19 +89,26 @@ export const useAuthStore = create<AuthStore>()(
           // Un estado es válido si tiene user Y token, o si ambos son null (estado limpio)
           const hasUserAndToken = state.user && state.token
           const isCleanState = !state.user && !state.token
-          const isValid = hasUserAndToken || isCleanState
+          const hasFakeToken = state.token === 'fake-jwt-token-for-testing'
+          const isValid = (hasUserAndToken || isCleanState) && !hasFakeToken
           
           console.log('AuthStore: Rehydrated state validation:', {
             hasUserAndToken,
             isCleanState,
+            hasFakeToken,
             isValid
           })
           
-          if (!isValid) {
-            console.log('AuthStore: Invalid rehydrated state, clearing...')
+          // Siempre limpiar si hay token falso o estado inválido
+          if (!isValid || hasFakeToken) {
+            console.log('AuthStore: Invalid rehydrated state or fake token detected, clearing...')
             state.clearUser()
+            // Limpiar también el localStorage
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('auth-storage')
+            }
           } else if (hasUserAndToken) {
-            // Si tenemos user y token, asegurar que isAuthenticated sea true
+            // Si tenemos user y token válido, asegurar que isAuthenticated sea true
             console.log('AuthStore: Valid rehydrated state with user and token, setting isAuthenticated to true')
             // No necesitamos hacer nada aquí, el estado ya debería estar correcto
           }

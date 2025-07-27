@@ -1,126 +1,178 @@
 import api from '@/lib/api';
 
-export interface Player {
+export interface PositionZone {
   id: number;
-  name: string;
-  email?: string;
-  country?: string;
-  phone?: string;
-  position: string;
-  age: number;
-  jersey_number?: number;
-  photo_url?: string;
-  skill?: number;
-  team_id: number;
+  abbreviation: string;
+  name_es: string;
+  name_en: string;
+  is_active: boolean;
   created_at: string;
-  updated_at: string;
+}
+
+export interface PositionSpecific {
+  id: number;
+  abbreviation: string;
+  name_es: string;
+  name_en: string;
+  zone_id: number;
+  description_es?: string;
+  description_en?: string;
+  is_active: boolean;
+  created_at: string;
+  zone: PositionZone;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  is_admin: boolean;
+  is_player: boolean;
+  created_at: string;
 }
 
 export interface Team {
   id: number;
   name: string;
-  description: string;
-  user_id: number;
+  city?: string;
+  country?: string;
+  founded?: number;
+  description?: string;
+  logo_url?: string;
   created_at: string;
-  updated_at: string;
-  players: Player[];
+  updated_at?: string;
+  players?: Player[];
+}
+
+export interface Player {
+  id: number;
+  user_id: number;
+  team_id?: number;
+  position_zone_id: number;
+  position_specific_id?: number;
+  name: string;
+  email: string;
+  phone?: string;
+  date_of_birth?: string;
+  nationality?: string;
+  jersey_number?: number;
+  height?: number;
+  weight?: number;
+  skill_level: number;
+  // Habilidades específicas
+  rit?: number;
+  tir?: number;
+  pas?: number;
+  reg?: number;
+  defense?: number;
+  fis?: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+  position_zone?: PositionZone;
+  position_specific?: PositionSpecific;
+  team?: Team;
+  user?: User;
 }
 
 export interface CreateTeamRequest {
   name: string;
-  description: string;
+  city?: string;
+  country?: string;
+  founded?: number;
+  description?: string;
+  logo_url?: string;
 }
 
 export interface CreatePlayerRequest {
-  name: string;
-  email?: string;
-  country?: string;
-  phone?: string;
-  position: string;
-  age: number;
-  jersey_number?: number;
-  photo_url?: string;
-  skill?: number;
+  user_id: number;
   team_id: number;
+  position_zone_id: number;
+  position_specific_id?: number;
+  name: string;
+  email: string;
+  phone?: string;
+  date_of_birth?: string;
+  nationality?: string;
+  jersey_number?: number;
+  height?: number;
+  weight?: number;
+  skill_level: number;
+  // Habilidades específicas
+  rit?: number;
+  tir?: number;
+  pas?: number;
+  reg?: number;
+  defense?: number;
+  fis?: number;
+  is_active?: boolean;
 }
 
 export interface UpdateTeamRequest {
   name?: string;
+  city?: string;
+  country?: string;
+  founded?: number;
   description?: string;
+  logo_url?: string;
 }
 
 export interface UpdatePlayerRequest {
   name?: string;
   email?: string;
-  country?: string;
   phone?: string;
-  position?: string;
-  age?: number;
+  date_of_birth?: string;
+  nationality?: string;
+  position_zone_id?: number;
+  position_specific_id?: number;
   jersey_number?: number;
-  photo_url?: string;
-  skill?: number;
+  height?: number;
+  weight?: number;
+  skill_level?: number;
+  // Habilidades específicas
+  rit?: number;
+  tir?: number;
+  pas?: number;
+  reg?: number;
+  defense?: number;
+  fis?: number;
+  is_active?: boolean;
 }
 
-// Datos simulados para pruebas
-const mockTeams: Team[] = [
-  {
-    id: 1,
-    name: "Real Madrid",
-    description: "Equipo de fútbol profesional",
-    user_id: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    players: [
-      {
-        id: 1,
-        name: "Cristiano Ronaldo",
-        position: "Delantero Centro",
-        age: 25,
-        team_id: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: "Luka Modric",
-        position: "Mediocentro",
-        age: 28,
-        team_id: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: "Barcelona FC",
-    description: "Club de fútbol catalán",
-    user_id: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    players: [
-      {
-        id: 3,
-        name: "Lionel Messi",
-        position: "Extremo Derecho",
-        age: 26,
-        team_id: 2,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ]
-  }
-];
+// Datos simulados para pruebas - ELIMINADOS
+// Ahora el servicio usa solo datos reales del backend
 
 class TeamService {
   // Obtener todos los equipos del usuario
   async getTeams(): Promise<Team[]> {
     try {
-      const response = await api.get('/teams/');
-      return response.data;
+      // Primero obtener la lista de equipos
+      const teamsResponse = await api.get('/teams/');
+      const teams = teamsResponse.data;
+      
+      // Para cada equipo, obtener sus jugadores
+      const teamsWithPlayers = await Promise.all(
+        teams.map(async (team: any) => {
+          try {
+            const teamResponse = await api.get(`/teams/${team.id}`);
+            return teamResponse.data;
+          } catch (error) {
+            console.error(`Error obteniendo jugadores del equipo ${team.id}:`, error);
+            // Si no se pueden obtener los jugadores, devolver el equipo sin jugadores
+            return {
+              ...team,
+              players: []
+            };
+          }
+        })
+      );
+      
+      return teamsWithPlayers;
     } catch (error) {
-      console.log('Backend no disponible, usando datos simulados');
-      return mockTeams;
+      console.error('Error obteniendo equipos del backend:', error);
+      // En lugar de usar datos mock, devolver un array vacío
+      return [];
     }
   }
 
@@ -130,8 +182,7 @@ class TeamService {
       const response = await api.get(`/teams/${teamId}`);
       return response.data;
     } catch (error) {
-      const team = mockTeams.find(t => t.id === teamId);
-      if (team) return team;
+      console.error('Error obteniendo equipo del backend:', error);
       throw new Error('Equipo no encontrado');
     }
   }
@@ -142,17 +193,8 @@ class TeamService {
       const response = await api.post('/teams/', teamData);
       return response.data;
     } catch (error) {
-      // Simular creación
-      const newTeam: Team = {
-        id: Date.now(),
-        ...teamData,
-        user_id: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        players: []
-      };
-      mockTeams.push(newTeam);
-      return newTeam;
+      console.error('Error creando equipo en el backend:', error);
+      throw new Error('Error al crear equipo');
     }
   }
 
@@ -162,12 +204,8 @@ class TeamService {
       const response = await api.put(`/teams/${teamId}`, teamData);
       return response.data;
     } catch (error) {
-      const teamIndex = mockTeams.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        mockTeams[teamIndex] = { ...mockTeams[teamIndex], ...teamData };
-        return mockTeams[teamIndex];
-      }
-      throw new Error('Equipo no encontrado');
+      console.error('Error actualizando equipo en el backend:', error);
+      throw new Error('Error al actualizar equipo');
     }
   }
 
@@ -176,21 +214,19 @@ class TeamService {
     try {
       await api.delete(`/teams/${teamId}`);
     } catch (error) {
-      const teamIndex = mockTeams.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        mockTeams.splice(teamIndex, 1);
-      }
+      console.error('Error eliminando equipo en el backend:', error);
+      throw new Error('Error al eliminar equipo');
     }
   }
 
   // Obtener jugadores de un equipo
   async getTeamPlayers(teamId: number): Promise<Player[]> {
     try {
-      const response = await api.get(`/teams/${teamId}/players`);
-      return response.data;
+      const response = await api.get(`/teams/${teamId}`);
+      return response.data.players || [];
     } catch (error) {
-      const team = mockTeams.find(t => t.id === teamId);
-      return team ? team.players : [];
+      console.error('Error obteniendo jugadores del equipo del backend:', error);
+      return [];
     }
   }
 
@@ -200,20 +236,8 @@ class TeamService {
       const response = await api.post('/players/', playerData);
       return response.data;
     } catch (error) {
-      // Simular creación
-      const newPlayer: Player = {
-        id: Date.now(),
-        ...playerData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      const team = mockTeams.find(t => t.id === playerData.team_id);
-      if (team) {
-        team.players.push(newPlayer);
-      }
-      
-      return newPlayer;
+      console.error('Error creando jugador en el backend:', error);
+      throw new Error('Error al crear jugador');
     }
   }
 
@@ -223,15 +247,8 @@ class TeamService {
       const response = await api.put(`/players/${playerId}`, playerData);
       return response.data;
     } catch (error) {
-      // Buscar jugador en equipos simulados
-      for (const team of mockTeams) {
-        const playerIndex = team.players.findIndex(p => p.id === playerId);
-        if (playerIndex !== -1) {
-          team.players[playerIndex] = { ...team.players[playerIndex], ...playerData };
-          return team.players[playerIndex];
-        }
-      }
-      throw new Error('Jugador no encontrado');
+      console.error('Error actualizando jugador en el backend:', error);
+      throw new Error('Error al actualizar jugador');
     }
   }
 
@@ -240,14 +257,8 @@ class TeamService {
     try {
       await api.delete(`/players/${playerId}`);
     } catch (error) {
-      // Buscar y eliminar jugador en equipos simulados
-      for (const team of mockTeams) {
-        const playerIndex = team.players.findIndex(p => p.id === playerId);
-        if (playerIndex !== -1) {
-          team.players.splice(playerIndex, 1);
-          break;
-        }
-      }
+      console.error('Error eliminando jugador en el backend:', error);
+      throw new Error('Error al eliminar jugador');
     }
   }
 }

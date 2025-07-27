@@ -1,165 +1,166 @@
-import React, { useState } from 'react'
+'use client'
 
-interface Player {
-  id: number
-  name: string
-  skill: number
-  position: string
-  teamId?: number
-  teamName?: string
-  photo?: string
-  jersey_number?: string
-  stats?: {
-    velocidad: number
-    disparo: number
-    pase: number
-    regate: number
-    defensa: number
-    fisico: number
-  }
-}
+import React, { useState } from 'react'
+import { Player } from '@/types'
+import PlayerCard from './PlayerCard'
 
 interface PlayerListProps {
   players: Player[]
-  onEdit?: (player: Player) => void
-  onDelete?: (playerId: number) => void
-  onEvaluate?: (playerId: number, stats: any) => void
-  showEvaluation?: boolean
-  enableEditing?: boolean
-  onViewCard?: (player: Player) => void
+  selectedPlayers: Player[]
+  onPlayerSelect: (player: Player) => void
+  onPlayerDeselect: (playerId: number) => void
 }
 
-export default function PlayerList({ 
-  players, 
-  onEdit, 
-  onDelete, 
-  onEvaluate, 
-  showEvaluation, 
-  enableEditing,
-  onViewCard 
-}: PlayerListProps) {
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
+const PlayerList: React.FC<PlayerListProps> = ({
+  players,
+  selectedPlayers,
+  onPlayerSelect,
+  onPlayerDeselect
+}) => {
+  const [filterPosition, setFilterPosition] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const getPositionColor = (position: string) => {
-    switch (position) {
-      case 'Portero': return 'bg-red-500'
-      case 'Defensa': return 'bg-blue-500'
-      case 'Mediocampista': return 'bg-green-500'
-      case 'Delantero': return 'bg-yellow-500'
-      default: return 'bg-gray-500'
-    }
-  }
+  // Filtrar jugadores
+  const filteredPlayers = players.filter(player => {
+    const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesPosition = filterPosition === 'all' || 
+      player.position_zone.abbreviation === filterPosition ||
+      player.position_specific?.abbreviation === filterPosition
+    return matchesSearch && matchesPosition
+  })
 
-  const getPositionAbbr = (position: string) => {
-    switch (position) {
-      case 'Portero': return 'GK'
-      case 'Defensa': return 'DEF'
-      case 'Mediocampista': return 'MID'
-      case 'Delantero': return 'ST'
-      default: return position.slice(0, 3).toUpperCase()
-    }
-  }
+  // Obtener posiciones únicas
+  const positions = Array.from(new Set([
+    ...players.map(p => p.position_zone.abbreviation),
+    ...players.map(p => p.position_specific?.abbreviation).filter(Boolean) as string[]
+  ])).sort()
 
-  const getSkillStars = (skill: number) => {
-    return '★'.repeat(skill) + '☆'.repeat(5 - skill)
-  }
-
-  const handleViewCard = (player: Player) => {
-    if (onViewCard) {
-      onViewCard(player)
-    }
+  const isPlayerSelected = (playerId: number) => {
+    return selectedPlayers.some(p => p.id === playerId)
   }
 
   return (
-    <div className="space-y-2">
-      {players.map((player) => (
-        <div 
-          key={player.id} 
-          className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-xl border border-gray-600 hover:border-gray-500 transition-all duration-200 hover:shadow-lg"
-        >
-          {/* Información del jugador */}
-          <div className="flex items-center space-x-4 flex-1">
-            {/* Número de camiseta */}
-            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-600 rounded-full flex items-center justify-center border-2 border-gray-500">
-              <span className="text-white font-bold text-sm">
-                {player.jersey_number || '#'}
-              </span>
-            </div>
+    <div className="space-y-4">
+      {/* Filtros */}
+      <div className="space-y-3">
+        {/* Búsqueda */}
+        <div>
+          <input
+            type="text"
+            placeholder="Buscar jugadores..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
 
-            {/* Posición */}
-            <div className={`w-8 h-8 ${getPositionColor(player.position)} rounded-full flex items-center justify-center shadow-lg border border-white/80`}>
-              <span className="text-xs text-white font-bold">
-                {getPositionAbbr(player.position)}
-              </span>
-            </div>
-
-            {/* Nombre y posición */}
-            <div className="flex-1">
-              <div className="text-white font-semibold text-sm">
-                {player.name}
-              </div>
-              <div className="text-gray-400 text-xs">
-                {player.position}
-              </div>
-            </div>
-
-            {/* Habilidad */}
-            <div className="text-right">
-              <div className="text-yellow-400 text-xs font-mono">
-                {getSkillStars(player.skill)}
-              </div>
-              <div className="text-gray-400 text-xs">
-                {player.skill}/5
-              </div>
-            </div>
-          </div>
-
-          {/* Acciones */}
-          <div className="flex items-center space-x-2 ml-4">
-            {/* Botón ver tarjeta completa */}
+        {/* Filtro por posición */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Filtrar por posición:
+          </label>
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => handleViewCard(player)}
-              className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg border border-blue-400/50"
-              title="Ver tarjeta completa"
+              onClick={() => setFilterPosition('all')}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                filterPosition === 'all'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
             >
-              <span className="text-white text-xs">👁️</span>
+              Todas
             </button>
-
-            {/* Botón evaluar */}
-            {showEvaluation && onEvaluate && (
+            {positions.map(position => (
               <button
-                onClick={() => onEvaluate(player.id, player.stats || {})}
-                className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg border border-green-400/50"
-                title="Evaluar jugador"
+                key={position}
+                onClick={() => setFilterPosition(position)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  filterPosition === position
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
-                <span className="text-white text-xs">📊</span>
+                {position}
               </button>
-            )}
-
-            {/* Botón editar */}
-            {enableEditing && onEdit && (
-              <button
-                onClick={() => onEdit(player)}
-                className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 shadow-lg border border-yellow-400/50"
-                title="Editar jugador"
-              >
-                <span className="text-white text-xs">✏️</span>
-              </button>
-            )}
-
-            {/* Botón eliminar */}
-            {enableEditing && onDelete && (
-              <button
-                onClick={() => onDelete(player.id)}
-                className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg border border-red-400/50"
-                title="Eliminar jugador"
-              >
-                <span className="text-white text-xs">🗑️</span>
-              </button>
-            )}
+            ))}
           </div>
         </div>
-      ))}
+      </div>
+
+      {/* Estadísticas */}
+      <div className="bg-gray-50 rounded-lg p-3">
+        <div className="grid grid-cols-3 gap-4 text-center text-sm">
+          <div>
+            <div className="font-semibold text-gray-900">{players.length}</div>
+            <div className="text-gray-600">Total</div>
+          </div>
+          <div>
+            <div className="font-semibold text-blue-600">{selectedPlayers.length}</div>
+            <div className="text-gray-600">Seleccionados</div>
+          </div>
+          <div>
+            <div className="font-semibold text-gray-900">{filteredPlayers.length}</div>
+            <div className="text-gray-600">Mostrados</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de jugadores */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Jugadores Disponibles
+          </h3>
+          <div className="text-sm text-gray-600">
+            {filteredPlayers.length} jugadores
+          </div>
+        </div>
+
+        {filteredPlayers.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <div className="text-4xl mb-2">🔍</div>
+            <p>No se encontraron jugadores con los filtros aplicados</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredPlayers.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                isSelected={isPlayerSelected(player.id)}
+                onSelect={onPlayerSelect}
+                onDeselect={onPlayerDeselect}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Información adicional */}
+      {selectedPlayers.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-900 mb-2">
+            📋 Jugadores Seleccionados ({selectedPlayers.length})
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {selectedPlayers.map((player) => (
+              <div
+                key={player.id}
+                className="bg-white border border-blue-300 rounded p-2 text-xs"
+              >
+                <div className="font-medium text-gray-900 truncate">
+                  {player.name}
+                </div>
+                <div className="text-gray-600">
+                  {player.position_specific?.abbreviation || player.position_zone.abbreviation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
-} 
+}
+
+export default PlayerList 

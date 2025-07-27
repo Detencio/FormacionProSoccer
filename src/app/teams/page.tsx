@@ -6,345 +6,57 @@ import { useRouter } from 'next/navigation'
 import { countries, getCitiesByCountry, getCommunesByCity } from '@/lib/locations'
 import MainLayout from '@/components/Layout/MainLayout'
 import PlayerModal from '@/components/teams/PlayerModal'
-
-// Datos simulados para equipos (solo como fallback inicial)
-const initialMockTeams = [
-  {
-    id: 1,
-    name: 'Matiz FC',
-    country: 'CL',
-    city: 'Santiago',
-    commune: 'Pudahuel',
-    founded: 2025,
-    logo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM4QjIzMjMiLz4KPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDAiIGZpbGw9IiNGRkZGRkYiLz4KPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMzUiIGZpbGw9IiM4QjIzMjMiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1FPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+',
-    players: [
-      { 
-        id: 101, 
-        name: 'Carlos González', 
-        position: 'Portero', 
-        age: 28,
-        phone: '+56 912345678',
-        email: 'carlos.gonzalez@matizfc.com',
-        jersey_number: 1,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiMzMzc0Q0EiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNHPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 102, 
-        name: 'Miguel Silva', 
-        position: 'Defensa', 
-        age: 25,
-        phone: '+56 923456789',
-        email: 'miguel.silva@matizfc.com',
-        jersey_number: 4,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM2QjcyODAiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1TPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 103, 
-        name: 'Diego Morales', 
-        position: 'Centrocampista', 
-        age: 22,
-        phone: '+56 934567890',
-        email: 'diego.morales@matizfc.com',
-        jersey_number: 8,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM0Q0I1N0QiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkRNPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 104, 
-        name: 'Andrés Rojas', 
-        position: 'Delantero', 
-        age: 24,
-        phone: '+56 945678901',
-        email: 'andres.rojas@matizfc.com',
-        jersey_number: 9,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiNFNTczQzIiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFSPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 105, 
-        name: 'Felipe Torres', 
-        position: 'Defensa', 
-        age: 26,
-        phone: '+56 956789012',
-        email: 'felipe.torres@matizfc.com',
-        jersey_number: 3,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM2QjcyODAiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZUPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 106, 
-        name: 'Roberto Herrera', 
-        position: 'Portero', 
-        age: 29,
-        phone: '+56 967890123',
-        email: 'roberto.herrera@matizfc.com',
-        jersey_number: 12,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiMzMzc0Q0EiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlJIPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 107, 
-        name: 'Sebastián Vega', 
-        position: 'Defensa', 
-        age: 23,
-        phone: '+56 978901234',
-        email: 'sebastian.vega@matizfc.com',
-        jersey_number: 2,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM2QjcyODAiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNWPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 108, 
-        name: 'Matías Contreras', 
-        position: 'Centrocampista', 
-        age: 21,
-        phone: '+56 989012345',
-        email: 'matias.contreras@matizfc.com',
-        jersey_number: 6,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM0Q0I1N0QiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1DPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 109, 
-        name: 'Nicolás Paredes', 
-        position: 'Centrocampista', 
-        age: 24,
-        phone: '+56 990123456',
-        email: 'nicolas.paredes@matizfc.com',
-        jersey_number: 10,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM0Q0I1N0QiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5QPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 110, 
-        name: 'Cristian Muñoz', 
-        position: 'Delantero', 
-        age: 25,
-        phone: '+56 901234567',
-        email: 'cristian.munoz@matizfc.com',
-        jersey_number: 7,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiNFNTczQzIiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNNPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 111, 
-        name: 'Francisco Valenzuela', 
-        position: 'Delantero', 
-        age: 27,
-        phone: '+56 912345678',
-        email: 'francisco.valenzuela@matizfc.com',
-        jersey_number: 11,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiNFNTczQzIiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZWPgo8L3N2Zz4KPC9zdmc+'
-      },
-      { 
-        id: 112, 
-        name: 'Alejandro Castro', 
-        position: 'Defensa', 
-        age: 30,
-        phone: '+56 923456789',
-        email: 'alejandro.castro@matizfc.com',
-        jersey_number: 5,
-        country: 'CL',
-        photo_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM2QjcyODAiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiPgo8dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFDPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+'
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: 'Real Madrid',
-    country: 'ES',
-    city: 'Madrid',
-    commune: 'Madrid',
-    founded: 1902,
-    players: [
-      { 
-        id: 1, 
-        name: 'Vinicius Jr', 
-        position: 'Delantero', 
-        age: 23,
-        phone: '+34 600 111 111',
-        email: 'vinicius@realmadrid.com',
-        jersey_number: 7
-      },
-      { 
-        id: 2, 
-        name: 'Jude Bellingham', 
-        position: 'Centrocampista', 
-        age: 20,
-        phone: '+34 600 222 222',
-        email: 'jude@realmadrid.com',
-        jersey_number: 5
-      },
-      { 
-        id: 3, 
-        name: 'Thibaut Courtois', 
-        position: 'Portero', 
-        age: 31,
-        phone: '+34 600 333 333',
-        email: 'courtois@realmadrid.com',
-        jersey_number: 1
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: 'Barcelona',
-    country: 'ES',
-    city: 'Barcelona',
-    commune: 'Barcelona',
-    founded: 1899,
-    players: [
-      { 
-        id: 4, 
-        name: 'Robert Lewandowski', 
-        position: 'Delantero', 
-        age: 35,
-        phone: '+34 600 444 444',
-        email: 'lewy@barcelona.com',
-        jersey_number: 9
-      },
-      { 
-        id: 5, 
-        name: 'Frenkie de Jong', 
-        position: 'Centrocampista', 
-        age: 26,
-        phone: '+34 600 555 555',
-        email: 'frenkie@barcelona.com',
-        jersey_number: 21
-      },
-      { 
-        id: 6, 
-        name: 'Marc-André ter Stegen', 
-        position: 'Portero', 
-        age: 31,
-        phone: '+34 600 666 666',
-        email: 'terstegen@barcelona.com',
-        jersey_number: 1
-      }
-    ]
-  },
-  {
-    id: 3,
-    name: 'Manchester City',
-    country: 'ES', // Usando España como ejemplo
-    city: 'Madrid',
-    commune: 'Madrid',
-    founded: 1880,
-    players: [
-      { 
-        id: 7, 
-        name: 'Erling Haaland', 
-        position: 'Delantero', 
-        age: 23,
-        phone: '+44 700 777 777',
-        email: 'haaland@mancity.com',
-        jersey_number: 9
-      },
-      { 
-        id: 8, 
-        name: 'Kevin De Bruyne', 
-        position: 'Centrocampista', 
-        age: 32,
-        phone: '+44 700 888 888',
-        email: 'debruyne@mancity.com',
-        jersey_number: 17
-      },
-      { 
-        id: 9, 
-        name: 'Ederson', 
-        position: 'Portero', 
-        age: 30,
-        phone: '+44 700 999 999',
-        email: 'ederson@mancity.com',
-        jersey_number: 31
-      }
-    ]
-  }
-]
+import ProfessionalPlayerCard from '@/components/teams/ProfessionalPlayerCard'
+import PlayerListView from '@/components/teams/PlayerListView'
+import { teamService, Team, Player } from '@/services/teamService'
 
 export default function TeamsPage() {
   const { user, token, isAuthenticated } = useAuthStore()
   const router = useRouter()
-  const [teams, setTeams] = useState<any[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showAuthWarning, setShowAuthWarning] = useState(false)
   
   // Estados para modales
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [showPlayerModal, setShowPlayerModal] = useState(false)
-  const [editingTeam, setEditingTeam] = useState<any>(null)
-  const [editingPlayer, setEditingPlayer] = useState<any>(null)
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null)
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
   const [showDetails, setShowDetails] = useState<number | null>(null)
   
   // Estados para filtrado y vista
   const [selectedFilterTeam, setSelectedFilterTeam] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards')
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('list')
   const [showAllPlayers, setShowAllPlayers] = useState(false)
 
-  // Cargar equipos desde localStorage al iniciar
+  // Cargar equipos desde el backend
   useEffect(() => {
-    const savedTeams = localStorage.getItem('teams-data')
-    if (savedTeams) {
-      const teamsData = JSON.parse(savedTeams)
-      console.log('TeamsPage - Cargando equipos:', teamsData.length)
-      
-      // Corregir IDs duplicados de equipos
-      const correctedTeams = teamsData.map((team: any, index: number) => {
-        // Si el equipo tiene ID duplicado, asignar un nuevo ID único
-        const correctedTeam = { ...team }
-        if (index > 0) {
-          const previousTeams = teamsData.slice(0, index)
-          const maxId = Math.max(...previousTeams.map((t: any) => t.id))
-          if (team.id <= maxId) {
-            correctedTeam.id = maxId + 1
-            console.log(`Corrigiendo ID del equipo "${team.name}" de ${team.id} a ${correctedTeam.id}`)
-          }
-        }
-        
-        // Corregir IDs duplicados de jugadores
-        const correctedPlayers = team.players.map((player: any, playerIndex: number) => {
-          const correctedPlayer = { ...player }
-          if (playerIndex > 0) {
-            const previousPlayers = team.players.slice(0, playerIndex)
-            const maxPlayerId = Math.max(...previousPlayers.map((p: any) => p.id))
-            if (player.id <= maxPlayerId) {
-              correctedPlayer.id = maxPlayerId + 1
-              console.log(`Corrigiendo ID del jugador "${player.name}" de ${player.id} a ${correctedPlayer.id}`)
-            }
-          }
-          return correctedPlayer
-        })
-        
-        correctedTeam.players = correctedPlayers
-        return correctedTeam
-      })
-      
-      correctedTeams.forEach((team: any, index: number) => {
-        console.log(`Team ${index}: id=${team.id}, name=${team.name}, players=${team.players.length}`)
-        team.players.forEach((player: any, playerIndex: number) => {
-          console.log(`  Player ${playerIndex}: id=${player.id}, name=${player.name}`)
-        })
-      })
-      
-      // Guardar los datos corregidos
-      localStorage.setItem('teams-data', JSON.stringify(correctedTeams))
-      setTeams(correctedTeams)
-    } else {
-      // Solo usar datos simulados si no hay datos guardados
-      setTeams(initialMockTeams)
-      localStorage.setItem('teams-data', JSON.stringify(initialMockTeams))
-    }
-  }, [])
+    const loadTeams = async () => {
+      if (!isAuthenticated) {
+        setLoading(false)
+        return
+      }
 
-  // Guardar equipos en localStorage cuando cambien
-  useEffect(() => {
-    if (teams.length > 0) {
-      localStorage.setItem('teams-data', JSON.stringify(teams))
+      try {
+        setLoading(true)
+        setError(null)
+        console.log('TeamsPage - Cargando equipos desde el backend...')
+        const teamsData = await teamService.getTeams()
+        console.log('TeamsPage - Equipos cargados:', teamsData)
+        setTeams(teamsData)
+      } catch (error) {
+        console.error('Error cargando equipos:', error)
+        setError('Error al cargar equipos desde el servidor')
+        setTeams([])
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [teams])
+
+    loadTeams()
+  }, [isAuthenticated])
 
   useEffect(() => {
     // Mostrar advertencia si no está autenticado
@@ -357,11 +69,6 @@ export default function TeamsPage() {
     router.push('/login')
   }
 
-  const handleDebug = () => {
-    router.push('/debug')
-  }
-
-  // Funciones para equipos
   const handleAddTeam = () => {
     setEditingTeam(null)
     setShowTeamModal(true)
@@ -372,32 +79,61 @@ export default function TeamsPage() {
     setShowTeamModal(true)
   }
 
-  const handleDeleteTeam = (teamId: number) => {
+  const handleDeleteTeam = async (teamId: number) => {
     if (confirm('¿Estás seguro de que quieres eliminar este equipo?')) {
-      setTeams(prev => prev.filter(team => team.id !== teamId))
-    }
-  }
-
-  const handleTeamSubmit = (formData: any) => {
-    if (editingTeam) {
-      // Actualizar equipo existente
-      setTeams(prev => prev.map(team => 
-        team.id === editingTeam.id 
-          ? { ...team, ...formData }
-          : team
-      ))
-    } else {
-      // Crear nuevo equipo
-      const newTeam = {
-        id: Math.max(...teams.map(t => t.id)) + 1,
-        ...formData,
-        players: []
+      try {
+        await teamService.deleteTeam(teamId);
+        // Recargar equipos desde el backend
+        const updatedTeams = await teamService.getTeams();
+        setTeams(updatedTeams);
+        console.log('✅ Equipo eliminado exitosamente');
+      } catch (error) {
+        console.error('Error al eliminar equipo:', error);
+        alert('Error al eliminar equipo. Por favor, inténtalo de nuevo.');
       }
-      setTeams(prev => [...prev, newTeam])
     }
-    setShowTeamModal(false)
-    setEditingTeam(null)
-  }
+  };
+
+  const handleTeamSubmit = async (formData: any) => {
+    try {
+      if (editingTeam) {
+        // Actualizar equipo existente
+        console.log('Actualizando equipo:', editingTeam.id, formData);
+        await teamService.updateTeam(editingTeam.id, {
+          name: formData.name,
+          city: formData.city,
+          country: formData.country,
+          founded: parseInt(formData.founded) || undefined,
+          description: formData.description,
+          logo_url: formData.logo_url
+        });
+        console.log('✅ Equipo actualizado exitosamente');
+      } else {
+        // Crear nuevo equipo
+        console.log('Creando nuevo equipo:', formData);
+        await teamService.createTeam({
+          name: formData.name,
+          city: formData.city,
+          country: formData.country,
+          founded: parseInt(formData.founded) || undefined,
+          description: formData.description,
+          logo_url: formData.logo_url
+        });
+        console.log('✅ Equipo creado exitosamente');
+      }
+      
+      // Recargar equipos desde el backend
+      const updatedTeams = await teamService.getTeams();
+      setTeams(updatedTeams);
+      
+      setShowTeamModal(false);
+      setEditingTeam(null);
+      
+    } catch (error) {
+      console.error('Error al guardar equipo:', error);
+      alert('Error al guardar equipo. Por favor, inténtalo de nuevo.');
+    }
+  };
 
   // Funciones para jugadores
   const handleAddPlayer = (teamId: number) => {
@@ -412,43 +148,77 @@ export default function TeamsPage() {
     setShowPlayerModal(true)
   }
 
-  const handleDeletePlayer = (playerId: number, teamId: number) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este jugador?')) return
-    const savedTeams = localStorage.getItem('teams-data')
-    if (!savedTeams) return
-    const teamsData = JSON.parse(savedTeams)
-    const team = teamsData.find((t: any) => t.id === teamId)
-    if (!team) return
-    team.players = team.players.filter((p: any) => p.id !== playerId)
-    localStorage.setItem('teams-data', JSON.stringify(teamsData))
-    setTeams([...teamsData])
-  }
-
-  const handlePlayerSubmit = (formData: any) => {
-    if (!selectedTeamId) return;
-    const savedTeams = localStorage.getItem('teams-data');
-    if (!savedTeams) return;
-    const teamsData = JSON.parse(savedTeams);
-    const team = teamsData.find((t: any) => t.id === selectedTeamId);
-    if (!team) return;
-    if (editingPlayer) {
-      // Actualizar jugador existente
-      team.players = team.players.map((p: any) =>
-        p.id === editingPlayer.id ? { ...p, ...formData } : p
-      );
-    } else {
-      // Crear nuevo jugador
-      const newId = Math.max(0, ...teamsData.flatMap((t: any) => t.players.map((p: any) => p.id))) + 1;
-      const newPlayer = { id: newId, ...formData };
-      team.players.push(newPlayer);
+  const handleDeletePlayer = async (playerId: number, teamId: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este jugador?')) return;
+    
+    try {
+      await teamService.deletePlayer(playerId);
+      // Recargar equipos desde el backend
+      const updatedTeams = await teamService.getTeams();
+      setTeams(updatedTeams);
+      console.log('✅ Jugador eliminado exitosamente');
+    } catch (error) {
+      console.error('Error al eliminar jugador:', error);
+      alert('Error al eliminar jugador. Por favor, inténtalo de nuevo.');
     }
-    localStorage.setItem('teams-data', JSON.stringify(teamsData));
-    setTeams([...teamsData]);
-    setShowPlayerModal(false);
-    setEditingPlayer(null);
-    setSelectedTeamId(null);
-    // Disparar evento personalizado para notificar a otros módulos
-    window.dispatchEvent(new CustomEvent('teams-data-updated'));
+  };
+
+  const handlePlayerSubmit = async (formData: any) => {
+    if (!selectedTeamId) return;
+    
+    try {
+      if (editingPlayer) {
+        // Actualizar jugador existente
+        console.log('Actualizando jugador:', editingPlayer.id, formData);
+        await teamService.updatePlayer(editingPlayer.id, {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          date_of_birth: formData.date_of_birth,
+          nationality: formData.country,
+          position_zone_id: formData.position_zone_id,
+          position_specific_id: formData.position_specific_id,
+          jersey_number: parseInt(formData.jersey_number) || undefined,
+          skill_level: parseInt(formData.skill_level) || 5,
+          height: parseInt(formData.height) || undefined,
+          weight: parseInt(formData.weight) || undefined,
+          is_active: true
+        });
+        console.log('✅ Jugador actualizado exitosamente');
+      } else {
+        // Crear nuevo jugador
+        console.log('Creando nuevo jugador:', formData);
+        await teamService.createPlayer({
+          user_id: 1, // ID temporal, se asignará automáticamente
+          team_id: selectedTeamId,
+          position_zone_id: formData.position_zone_id,
+          position_specific_id: formData.position_specific_id,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          date_of_birth: formData.date_of_birth,
+          nationality: formData.country,
+          jersey_number: parseInt(formData.jersey_number) || undefined,
+          skill_level: parseInt(formData.skill_level) || 5,
+          height: parseInt(formData.height) || undefined,
+          weight: parseInt(formData.weight) || undefined,
+          is_active: true
+        });
+        console.log('✅ Jugador creado exitosamente');
+      }
+      
+      // Recargar equipos desde el backend
+      const updatedTeams = await teamService.getTeams();
+      setTeams(updatedTeams);
+      
+      setShowPlayerModal(false);
+      setEditingPlayer(null);
+      setSelectedTeamId(null);
+      
+    } catch (error) {
+      console.error('Error al guardar jugador:', error);
+      alert('Error al guardar jugador. Por favor, inténtalo de nuevo.');
+    }
   };
 
   // Función para mostrar/ocultar detalles
@@ -460,6 +230,14 @@ export default function TeamsPage() {
   const handleFilterChange = (teamId: number | null) => {
     setSelectedFilterTeam(teamId)
     setShowAllPlayers(false)
+    
+    // Si se selecciona un equipo específico, cambiar a vista de tarjetas
+    if (teamId) {
+      setViewMode('cards')
+    } else {
+      // Si se deselecciona (todos los equipos), cambiar a vista de lista
+      setViewMode('list')
+    }
   }
 
   const toggleViewMode = () => {
@@ -468,17 +246,23 @@ export default function TeamsPage() {
 
   const toggleShowAllPlayers = () => {
     setShowAllPlayers(!showAllPlayers)
+    
+    // Si se activa "Ver todos los jugadores", cambiar a vista de lista
+    if (!showAllPlayers) {
+      setViewMode('list')
+      setSelectedFilterTeam(null) // Limpiar filtro de equipo
+    }
   }
 
   // Obtener jugadores filtrados
   const getFilteredPlayers = () => {
     if (selectedFilterTeam) {
       const team = teams.find(t => t.id === selectedFilterTeam)
-      return team ? team.players : []
+      return team?.players || []
     }
     if (showAllPlayers) {
       const allPlayers = teams.flatMap((team: any) => 
-        team.players.map((player: any) => ({
+        (team.players || []).map((player: any) => ({
           ...player,
           teamName: team.name,
           teamId: team.id
@@ -536,18 +320,6 @@ export default function TeamsPage() {
                     <span>Registrar Jugador</span>
                   </div>
                 </button>
-                <button
-                  onClick={handleDebug}
-                  className="px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-2xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-yellow-400/30"
-                >
-                  <div className="flex items-center space-x-3">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826-3.31-2.37-2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>Debug</span>
-                  </div>
-                </button>
                 {!isAuthenticated && (
                   <button
                     onClick={handleLogin}
@@ -566,71 +338,6 @@ export default function TeamsPage() {
           </div>
         </div>
 
-        {/* Información con diseño FIFA 26 */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl border border-gray-600/30 p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/10"></div>
-          <div className="relative z-10">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-white">Diferencia entre funciones</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-2xl p-6 shadow-xl border border-blue-500/30">
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-sm font-bold">📝</span>
-                  </div>
-                  <h4 className="font-bold text-white text-lg">"Agregar Jugador" (en cada equipo)</h4>
-                </div>
-                <ul className="space-y-3 text-sm text-blue-100">
-                  <li className="flex items-start">
-                    <span className="text-blue-300 mr-3 text-lg">•</span>
-                    Solo agrega datos del jugador al equipo
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-300 mr-3 text-lg">•</span>
-                    No crea cuenta de usuario
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-300 mr-3 text-lg">•</span>
-                    Para gestión interna de equipos
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-2xl p-6 shadow-xl border border-green-500/30">
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-sm font-bold">👤</span>
-                  </div>
-                  <h4 className="font-bold text-white text-lg">"Registrar Jugador" (botón verde)</h4>
-                </div>
-                <ul className="space-y-3 text-sm text-green-100">
-                  <li className="flex items-start">
-                    <span className="text-green-300 mr-3 text-lg">•</span>
-                    Crea cuenta de usuario con email
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-300 mr-3 text-lg">•</span>
-                    Asigna jugador a un equipo
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-300 mr-3 text-lg">•</span>
-                    El jugador puede iniciar sesión
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-300 mr-3 text-lg">•</span>
-                    Contraseña por defecto: 123456
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Advertencia de autenticación con diseño FIFA 26 */}
         {showAuthWarning && (
           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-300 rounded-2xl p-6 mb-8 shadow-lg">
@@ -638,7 +345,7 @@ export default function TeamsPage() {
             <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.35 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
               </div>
@@ -761,6 +468,7 @@ export default function TeamsPage() {
                   onClick={() => {
                     setSelectedFilterTeam(null)
                     setShowAllPlayers(false)
+                    setViewMode('list') // Cambiar a vista de lista al limpiar filtro
                   }}
                   className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
                 >
@@ -777,123 +485,20 @@ export default function TeamsPage() {
             {viewMode === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredPlayers.map((player: any) => (
-                  <div key={player.id} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div className="flex items-center space-x-4 mb-4">
-                      {player.photo_url && (
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-green-100 rounded-xl flex items-center justify-center shadow-lg border-2 border-gray-200">
-                          <img 
-                            src={player.photo_url} 
-                            alt={`Foto ${player.name}`}
-                            className="w-12 h-12 object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h4 className="text-lg font-bold text-gray-900">{player.name}</h4>
-                        <p className="text-sm text-gray-600">{player.position}</p>
-                        {player.teamName && (
-                          <p className="text-xs text-blue-600 font-medium">{player.teamName}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Edad:</span>
-                        <span className="font-semibold">{player.age} años</span>
-                      </div>
-                      {player.jersey_number && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Número:</span>
-                          <span className="font-semibold">#{player.jersey_number}</span>
-                        </div>
-                      )}
-                      {player.email && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Email:</span>
-                          <span className="font-semibold truncate">{player.email}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2 mt-4 pt-4 border-t">
-                      <button
-                        onClick={() => handleEditPlayer(player, player.teamId || selectedFilterTeam)}
-                        className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-semibold"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlayer(player.id, player.teamId || selectedFilterTeam)}
-                        className="flex-1 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-semibold"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
+                  <ProfessionalPlayerCard
+                    key={player.id}
+                    player={player}
+                    onEdit={() => handleEditPlayer(player, player.team_id || selectedFilterTeam)}
+                    onDelete={() => handleDeletePlayer(player.id, player.team_id || selectedFilterTeam)}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gradient-to-r from-blue-600 to-green-600 text-white">
-                      <tr>
-                        <th className="px-6 py-4 text-left font-semibold">Jugador</th>
-                        <th className="px-6 py-4 text-left font-semibold">Equipo</th>
-                        <th className="px-6 py-4 text-left font-semibold">Posición</th>
-                        <th className="px-6 py-4 text-left font-semibold">Edad</th>
-                        <th className="px-6 py-4 text-left font-semibold">Número</th>
-                        <th className="px-6 py-4 text-left font-semibold">Email</th>
-                        <th className="px-6 py-4 text-center font-semibold">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {filteredPlayers.map((player: any) => (
-                        <tr key={player.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center space-x-3">
-                              {player.photo_url && (
-                                <img 
-                                  src={player.photo_url} 
-                                  alt={`Foto ${player.name}`}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
-                              )}
-                              <span className="font-semibold text-gray-900">{player.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">{player.teamName || teams.find(t => t.id === selectedFilterTeam)?.name}</td>
-                          <td className="px-6 py-4 text-gray-600">{player.position}</td>
-                          <td className="px-6 py-4 text-gray-600">{player.age} años</td>
-                          <td className="px-6 py-4 text-gray-600">{player.jersey_number ? `#${player.jersey_number}` : '-'}</td>
-                          <td className="px-6 py-4 text-gray-600">{player.email || '-'}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2 justify-center">
-                              <button
-                                onClick={() => handleEditPlayer(player, player.teamId || selectedFilterTeam)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Editar jugador"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handleDeletePlayer(player.id, player.teamId || selectedFilterTeam)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Eliminar jugador"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <PlayerListView
+                players={filteredPlayers}
+                onEdit={(player) => handleEditPlayer(player, player.team_id || selectedFilterTeam || 0)}
+                onDelete={(playerId) => handleDeletePlayer(playerId, selectedFilterTeam || 0)}
+              />
             )}
           </div>
         )}
@@ -917,7 +522,7 @@ export default function TeamsPage() {
                 <div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-2">{team.name}</h3>
                       <p className="text-gray-600 font-medium">
-                    {team.commune && `${team.commune}, `}{team.city}, CL
+                    {team.city && `${team.city}, `}CL
                   </p>
                       <p className="text-sm text-gray-500 mt-1">Fundado: {team.founded}</p>
                 </div>
@@ -946,7 +551,7 @@ export default function TeamsPage() {
 
             <div className="border-t pt-4">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium text-gray-900">Jugadores ({team.players.length})</h4>
+                <h4 className="font-medium text-gray-900">Jugadores ({(team.players || []).length})</h4>
                 <button
                   onClick={() => handleAddPlayer(team.id)}
                   className="text-green-500 hover:text-green-700 text-sm"
@@ -956,73 +561,14 @@ export default function TeamsPage() {
               </div>
               
               <div className="space-y-2">
-                {team.players.map((player: any) => (
-                  <div key={player.id} className="p-3 bg-gray-50 rounded border">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-2">
-                        {player.photo_url && (
-                          <img 
-                            src={player.photo_url} 
-                            alt={`Foto ${player.name}`}
-                            className="w-8 h-8 object-cover border rounded"
-                          />
-                        )}
-                        <span className="font-medium text-gray-900">{player.name}</span>
-                        {player.jersey_number && (
-                          <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                            #{player.jersey_number}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleEditPlayer(player, team.id)}
-                          className="text-blue-500 hover:text-blue-700 p-1"
-                          title="Editar jugador"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeletePlayer(player.id, team.id)}
-                          className="text-red-500 hover:text-red-700 p-1"
-                          title="Eliminar jugador"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {player.position}
-                        </span>
-                        <span>{player.age} años</span>
-                      </div>
-                      
-                      {player.email && (
-                        <div className="flex items-center gap-1">
-                          <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          <span className="truncate">{player.email}</span>
-                        </div>
-                      )}
-                      
-                      {player.phone && (
-                        <div className="flex items-center gap-1">
-                          <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span>{player.phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                {(team.players || []).map((player: any) => (
+                  <ProfessionalPlayerCard
+                    key={player.id}
+                    player={player}
+                    compact={true}
+                    onEdit={() => handleEditPlayer(player, team.id)}
+                    onDelete={() => handleDeletePlayer(player.id, team.id)}
+                  />
                 ))}
               </div>
             </div>
@@ -1051,7 +597,7 @@ export default function TeamsPage() {
                     <p><strong>Ciudad:</strong> {team.city}</p>
                     <p><strong>País:</strong> CL</p>
                     <p><strong>Fundado:</strong> {team.founded}</p>
-                    <p><strong>Total Jugadores:</strong> {team.players.length}</p>
+                    <p><strong>Total Jugadores:</strong> {(team.players || []).length}</p>
                   </div>
                 </div>
               )}

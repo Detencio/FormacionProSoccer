@@ -738,7 +738,7 @@ const server = setupServer(
           {
             id: 1,
             player: { id: 1, name: 'Juan Pérez' },
-            amount: 50000,
+      amount: 50000,
             status: 'PAID',
             payment_date: '2024-01-15T00:00:00Z'
           }
