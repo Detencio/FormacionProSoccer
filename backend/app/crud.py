@@ -35,6 +35,36 @@ def authenticate_user(db: Session, email: str, password: str):
 def get_user_by_id(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
+# Position functions
+def get_position_zones(db: Session, skip: int = 0, limit: int = 100):
+    """Get all position zones"""
+    return db.query(models.PositionZone).filter(models.PositionZone.is_active == True).offset(skip).limit(limit).all()
+
+def get_position_zone_by_abbreviation(db: Session, abbreviation: str):
+    """Get position zone by abbreviation"""
+    return db.query(models.PositionZone).filter(
+        models.PositionZone.abbreviation == abbreviation,
+        models.PositionZone.is_active == True
+    ).first()
+
+def get_position_specifics(db: Session, skip: int = 0, limit: int = 100):
+    """Get all position specifics"""
+    return db.query(models.PositionSpecific).filter(models.PositionSpecific.is_active == True).offset(skip).limit(limit).all()
+
+def get_position_specifics_by_zone(db: Session, zone_id: int):
+    """Get position specifics by zone"""
+    return db.query(models.PositionSpecific).filter(
+        models.PositionSpecific.zone_id == zone_id,
+        models.PositionSpecific.is_active == True
+    ).all()
+
+def get_position_specific_by_abbreviation(db: Session, abbreviation: str):
+    """Get position specific by abbreviation"""
+    return db.query(models.PositionSpecific).filter(
+        models.PositionSpecific.abbreviation == abbreviation,
+        models.PositionSpecific.is_active == True
+    ).first()
+
 # Team functions
 def create_team(db: Session, team: schemas.TeamCreate):
     db_team = models.Team(**team.dict())
@@ -86,6 +116,24 @@ def get_players_by_team(db: Session, team_id: int):
 
 def get_player_by_user_id(db: Session, user_id: int):
     return db.query(models.Player).filter(models.Player.user_id == user_id).first()
+
+def get_all_players(db: Session, skip: int = 0, limit: int = 100):
+    """Get all players with position information"""
+    return db.query(models.Player).filter(models.Player.is_active == True).offset(skip).limit(limit).all()
+
+def get_players_by_position_zone(db: Session, zone_id: int):
+    """Get players by position zone"""
+    return db.query(models.Player).filter(
+        models.Player.position_zone_id == zone_id,
+        models.Player.is_active == True
+    ).all()
+
+def get_players_by_position_specific(db: Session, specific_id: int):
+    """Get players by position specific"""
+    return db.query(models.Player).filter(
+        models.Player.position_specific_id == specific_id,
+        models.Player.is_active == True
+    ).all()
 
 def update_player(db: Session, player_id: int, player: schemas.PlayerUpdate):
     db_player = get_player(db, player_id)

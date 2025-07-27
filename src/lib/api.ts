@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { ApiResponse } from '@/types'
+import { ApiResponse, PositionZone, PositionSpecific, Player } from '@/types'
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -155,6 +155,81 @@ export const apiClient = {
 
   updateProfile: async (data: any) => {
     const response = await api.put<ApiResponse<any>>('/users/profile', data)
+    return response.data
+  },
+
+  // Positions
+  getPositionZones: async () => {
+    const response = await api.get<PositionZone[]>('/positions/zones')
+    return response.data
+  },
+
+  getPositionZoneByAbbreviation: async (abbreviation: string) => {
+    const response = await api.get<PositionZone>(`/positions/zones/${abbreviation}`)
+    return response.data
+  },
+
+  getPositionSpecifics: async () => {
+    const response = await api.get<PositionSpecific[]>('/positions/specifics')
+    return response.data
+  },
+
+  getPositionSpecificsByZone: async (zoneId: number) => {
+    const response = await api.get<PositionSpecific[]>(`/positions/specifics/zone/${zoneId}`)
+    return response.data
+  },
+
+  getPositionSpecificByAbbreviation: async (abbreviation: string) => {
+    const response = await api.get<PositionSpecific>(`/positions/specifics/${abbreviation}`)
+    return response.data
+  },
+
+  // Players
+  getPlayers: async () => {
+    const response = await api.get<Player[]>('/players')
+    return response.data
+  },
+
+  getPlayer: async (id: number) => {
+    const response = await api.get<Player>(`/players/${id}`)
+    return response.data
+  },
+
+  createPlayer: async (data: {
+    full_name: string
+    email: string
+    phone?: string
+    position_zone: string
+    position_specific?: string
+    date_of_birth?: string
+    nationality?: string
+    jersey_number?: number
+    height?: number
+    weight?: number
+    skill_level: number
+    team_id: number
+  }) => {
+    const response = await api.post<Player>('/players/register', data)
+    return response.data
+  },
+
+  updatePlayer: async (id: number, data: Partial<Player>) => {
+    const response = await api.put<Player>(`/players/${id}`, data)
+    return response.data
+  },
+
+  deletePlayer: async (id: number) => {
+    const response = await api.delete(`/players/${id}`)
+    return response.data
+  },
+
+  assignPlayerToTeam: async (playerId: number, teamId: number) => {
+    const response = await api.post(`/players/${playerId}/assign/${teamId}`)
+    return response.data
+  },
+
+  removePlayerFromTeam: async (playerId: number) => {
+    const response = await api.post(`/players/${playerId}/remove`)
     return response.data
   },
 }

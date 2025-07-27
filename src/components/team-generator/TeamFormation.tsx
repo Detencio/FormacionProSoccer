@@ -70,23 +70,23 @@ export default function TeamFormation({
         ]
       case '2-2-2': // 7 jugadores
         return [
-          { id: 'portero', position: 'Portero', x: isTeamA ? 12 : 88, y: 50 },
-          { id: 'defensa1', position: 'Defensa', x: isTeamA ? 30 : 70, y: 30 },
-          { id: 'defensa2', position: 'Defensa', x: isTeamA ? 30 : 70, y: 70 },
-          { id: 'medio1', position: 'Mediocampista', x: isTeamA ? 50 : 50, y: 35 },
-          { id: 'medio2', position: 'Mediocampista', x: isTeamA ? 50 : 50, y: 65 },
-          { id: 'delantero1', position: 'Delantero', x: isTeamA ? 70 : 30, y: 35 },
-          { id: 'delantero2', position: 'Delantero', x: isTeamA ? 70 : 30, y: 65 }
+          { id: 'portero', position: 'Portero', x: isTeamA ? 5 : 95, y: 50 },
+          { id: 'defensa1', position: 'Defensa', x: isTeamA ? 22 : 78, y: 25 },
+          { id: 'defensa2', position: 'Defensa', x: isTeamA ? 22 : 78, y: 75 },
+          { id: 'medio1', position: 'Mediocampista', x: isTeamA ? 45 : 55, y: 25 },
+          { id: 'medio2', position: 'Mediocampista', x: isTeamA ? 45 : 55, y: 75 },
+          { id: 'delantero1', position: 'Delantero', x: isTeamA ? 78 : 22, y: 25 },
+          { id: 'delantero2', position: 'Delantero', x: isTeamA ? 78 : 22, y: 75 }
         ]
       case '1-2-2-2': // 7 jugadores (Futbolito)
         return [
-          { id: 'portero', position: 'Portero', x: isTeamA ? 12 : 88, y: 50 },
-          { id: 'defensa1', position: 'Defensa', x: isTeamA ? 25 : 75, y: 35 },
-          { id: 'defensa2', position: 'Defensa', x: isTeamA ? 25 : 75, y: 65 },
-          { id: 'medio1', position: 'Mediocampista', x: isTeamA ? 45 : 55, y: 35 },
-          { id: 'medio2', position: 'Mediocampista', x: isTeamA ? 45 : 55, y: 65 },
-          { id: 'delantero1', position: 'Delantero', x: isTeamA ? 70 : 30, y: 35 },
-          { id: 'delantero2', position: 'Delantero', x: isTeamA ? 70 : 30, y: 65 }
+          { id: 'portero', position: 'Portero', x: isTeamA ? 5 : 95, y: 50 },
+          { id: 'defensa1', position: 'Defensa', x: isTeamA ? 18 : 82, y: 25 },
+          { id: 'defensa2', position: 'Defensa', x: isTeamA ? 18 : 82, y: 75 },
+          { id: 'medio1', position: 'Mediocampista', x: isTeamA ? 42 : 58, y: 25 },
+          { id: 'medio2', position: 'Mediocampista', x: isTeamA ? 42 : 58, y: 75 },
+          { id: 'delantero1', position: 'Delantero', x: isTeamA ? 78 : 22, y: 25 },
+          { id: 'delantero2', position: 'Delantero', x: isTeamA ? 78 : 22, y: 75 }
         ]
       default:
         return []
@@ -285,9 +285,9 @@ export default function TeamFormation({
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              {/* Tarjeta hexagonal del jugador */}
+              {/* Tarjeta compacta del jugador */}
               <div
-                className={`w-20 h-24 bg-gray-800 rounded-lg flex flex-col items-center justify-center transition-all hover:scale-110 shadow-lg border-2 border-gray-600 relative ${
+                className={`w-20 h-16 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg flex flex-col items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg border-2 border-gray-600 relative overflow-hidden ${
                   editable ? 'hover:border-green-400 hover:shadow-green-400/50' : ''
                 } ${isPlayerDragging ? 'shadow-2xl scale-110 shadow-green-400/50' : ''}`}
                 onMouseDown={(e) => handleMouseDown(e, player)}
@@ -298,42 +298,30 @@ export default function TeamFormation({
                   pointerEvents: 'auto'
                 }}
               >
+                {/* Fondo con patrón sutil */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-700/20 to-gray-800/20"></div>
+                
                 {/* Nombre del jugador */}
-                <div className="text-white font-bold text-xs px-2 text-center leading-tight mb-1">
+                <div className="text-white font-bold text-xs px-1 text-center leading-tight mb-1 relative z-10">
                   {player.name.length > 8 ? player.name.substring(0, 8) + '...' : player.name}
                 </div>
                 
-                {/* Rol del jugador */}
-                <div className="text-gray-300 text-xs text-center mb-1">
-                  {player.position}
-                </div>
-                
-                {/* Instrucción/Mentalidad */}
-                <div className="text-gray-400 text-xs text-center mb-1">
-                  {player.position === 'Portero' ? 'Defend' : 
-                   player.position === 'Defensa' ? 'Defend' : 
-                   player.position === 'Delantero' ? 'Attack' : 'Balanced'}
-                </div>
-                
                 {/* Posición abreviada */}
-                <div className={`w-6 h-6 ${getPositionColor(player.position)} rounded-full flex items-center justify-center shadow-lg border border-white`}>
+                <div className={`w-6 h-6 ${getPositionColor(player.position)} rounded-full flex items-center justify-center shadow-md border border-white/80 relative z-10`}>
                   <span className="text-xs text-white font-bold">
                     {getPositionAbbr(player.position)}
                   </span>
                 </div>
                 
-                {/* Indicadores de habilidad */}
-                <div className="absolute -top-1 -right-1 flex space-x-1">
-                  {player.skill >= 4 && <span className="text-green-400 text-xs">+</span>}
-                  {player.skill >= 5 && <span className="text-green-400 text-xs">+</span>}
-                </div>
-                
                 {/* Indicador de edición */}
                 {editable && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border border-white">
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg border border-white/80">
                     <span className="text-xs text-white">✏️</span>
                   </div>
                 )}
+                
+                {/* Borde de posición */}
+                <div className={`absolute inset-0 rounded-lg border-2 ${getPositionColor(player.position).replace('bg-', 'border-')} opacity-30`}></div>
               </div>
             </div>
           )
@@ -341,15 +329,17 @@ export default function TeamFormation({
 
         {/* Información de formación */}
         <div className="absolute top-4 left-4">
-          <div className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-            {formation} ({playersPerTeam} jugadores)
+          <div className="bg-gradient-to-r from-gray-900/90 to-gray-800/90 text-white text-xs px-4 py-2 rounded-lg border border-gray-600 shadow-lg backdrop-blur-sm">
+            <div className="font-bold">{formation}</div>
+            <div className="text-gray-300">({playersPerTeam} jugadores)</div>
           </div>
         </div>
 
         {/* Contador de jugadores */}
         <div className="absolute top-4 right-4">
-          <div className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-            {players.length}/{playersPerTeam}
+          <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 text-white text-xs px-4 py-2 rounded-lg border border-blue-500 shadow-lg backdrop-blur-sm">
+            <div className="font-bold">{players.length}/{playersPerTeam}</div>
+            <div className="text-blue-200">Jugadores</div>
           </div>
         </div>
 

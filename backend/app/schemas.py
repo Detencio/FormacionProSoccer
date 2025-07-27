@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -37,6 +37,37 @@ class Token(BaseModel):
     token_type: str
     user: UserOut
 
+# Position Schemas
+class PositionZoneBase(BaseModel):
+    abbreviation: str
+    name_es: str
+    name_en: str
+    is_active: bool = True
+
+class PositionZoneOut(PositionZoneBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PositionSpecificBase(BaseModel):
+    abbreviation: str
+    name_es: str
+    name_en: str
+    zone_id: int
+    description_es: Optional[str] = None
+    description_en: Optional[str] = None
+    is_active: bool = True
+
+class PositionSpecificOut(PositionSpecificBase):
+    id: int
+    created_at: datetime
+    zone: PositionZoneOut
+
+    class Config:
+        from_attributes = True
+
 # Team Schemas
 class TeamBase(BaseModel):
     name: str
@@ -68,11 +99,23 @@ class TeamOut(TeamBase):
 
 # Player Schemas
 class PlayerBase(BaseModel):
-    position: Optional[str] = None
-    jersey_number: Optional[int] = None
-    age: Optional[int] = None
+    # Sistema de posiciones por zona y específicas
+    position_zone_id: int
+    position_specific_id: Optional[int] = None
+    
+    # Información personal
+    name: str
+    email: EmailStr
     phone: Optional[str] = None
-    email: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    nationality: Optional[str] = None
+    
+    # Información física y técnica
+    jersey_number: Optional[int] = None
+    height: Optional[int] = None  # en centímetros
+    weight: Optional[int] = None  # en kilogramos
+    skill_level: int = 5  # 1-10
+    
     is_active: bool = True
 
 class PlayerCreate(PlayerBase):
@@ -81,11 +124,17 @@ class PlayerCreate(PlayerBase):
 
 class PlayerUpdate(BaseModel):
     team_id: Optional[int] = None
-    position: Optional[str] = None
-    jersey_number: Optional[int] = None
-    age: Optional[int] = None
+    position_zone_id: Optional[int] = None
+    position_specific_id: Optional[int] = None
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    email: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    nationality: Optional[str] = None
+    jersey_number: Optional[int] = None
+    height: Optional[int] = None
+    weight: Optional[int] = None
+    skill_level: Optional[int] = None
     is_active: Optional[bool] = None
 
 class PlayerOut(PlayerBase):
@@ -96,6 +145,8 @@ class PlayerOut(PlayerBase):
     updated_at: Optional[datetime] = None
     user: UserOut
     team: Optional[TeamOut] = None
+    position_zone: PositionZoneOut
+    position_specific: Optional[PositionSpecificOut] = None
 
     class Config:
         from_attributes = True
@@ -104,12 +155,17 @@ class PlayerOut(PlayerBase):
 class TeamWithPlayers(TeamOut):
     players: List[PlayerOut] = []
 
-# Player Registration
+# Player Registration (Formulario de registro)
 class PlayerRegistration(BaseModel):
     full_name: str
     email: EmailStr
     phone: Optional[str] = None
-    position: str
-    age: int
-    team_id: int
+    position_zone: str  # POR, DEF, MED, DEL
+    position_specific: Optional[str] = None  # LD, LI, DFC, etc.
+    date_of_birth: Optional[date] = None
+    nationality: Optional[str] = None
     jersey_number: Optional[int] = None
+    height: Optional[int] = None
+    weight: Optional[int] = None
+    skill_level: int = 5
+    team_id: int

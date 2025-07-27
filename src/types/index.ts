@@ -1,3 +1,53 @@
+// Position Types
+export interface PositionZone {
+  id: number
+  abbreviation: 'POR' | 'DEF' | 'MED' | 'DEL'
+  name_es: string
+  name_en: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface PositionSpecific {
+  id: number
+  abbreviation: 'LD' | 'LI' | 'DFC' | 'CAI' | 'CAD' | 'MCD' | 'MC' | 'MCO' | 'MD' | 'MI' | 'ED' | 'EI' | 'DC' | 'SD'
+  name_es: string
+  name_en: string
+  zone_id: number
+  description_es?: string
+  description_en?: string
+  is_active: boolean
+  created_at: string
+  zone: PositionZone
+}
+
+export type PositionAbbreviation = PositionZone['abbreviation'] | PositionSpecific['abbreviation']
+
+// Player Types
+export interface Player {
+  id: number
+  user_id: number
+  team_id?: number
+  position_zone_id: number
+  position_specific_id?: number
+  name: string
+  email: string
+  phone?: string
+  date_of_birth?: string
+  nationality?: string
+  jersey_number?: number
+  height?: number // en centímetros
+  weight?: number // en kilogramos
+  skill_level: number // 1-10
+  is_active: boolean
+  created_at: string
+  updated_at?: string
+  position_zone: PositionZone
+  position_specific?: PositionSpecific
+  team?: Team
+  user?: User
+}
+
 // User Types
 export interface User {
   id: string

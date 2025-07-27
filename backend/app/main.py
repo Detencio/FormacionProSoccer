@@ -205,3 +205,88 @@ def remove_player_from_team(player_id: int, db: Session = Depends(get_db), curre
     if not player:
         raise HTTPException(status_code=404, detail="Jugador no encontrado")
     return {"message": "Jugador removido del equipo"}
+
+# Position routes
+@app.get("/positions/zones/", response_model=list[schemas.PositionZoneOut])
+def get_position_zones(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get all position zones"""
+    return crud.get_position_zones(db, skip=skip, limit=limit)
+
+@app.get("/positions/zones/{abbreviation}", response_model=schemas.PositionZoneOut)
+def get_position_zone_by_abbreviation(abbreviation: str, db: Session = Depends(get_db)):
+    """Get position zone by abbreviation"""
+    zone = crud.get_position_zone_by_abbreviation(db, abbreviation)
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zona de posición no encontrada")
+    return zone
+
+@app.get("/positions/specifics/", response_model=list[schemas.PositionSpecificOut])
+def get_position_specifics(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get all position specifics"""
+    return crud.get_position_specifics(db, skip=skip, limit=limit)
+
+@app.get("/positions/specifics/zone/{zone_id}", response_model=list[schemas.PositionSpecificOut])
+def get_position_specifics_by_zone(zone_id: int, db: Session = Depends(get_db)):
+    """Get position specifics by zone"""
+    specifics = crud.get_position_specifics_by_zone(db, zone_id)
+    return specifics
+
+@app.get("/positions/specifics/{abbreviation}", response_model=schemas.PositionSpecificOut)
+def get_position_specific_by_abbreviation(abbreviation: str, db: Session = Depends(get_db)):
+    """Get position specific by abbreviation"""
+    specific = crud.get_position_specific_by_abbreviation(db, abbreviation)
+    if not specific:
+        raise HTTPException(status_code=404, detail="Posición específica no encontrada")
+    return specific
+
+# Player registration with positions
+@app.post("/players/register/", response_model=schemas.PlayerOut)
+def register_player(player_data: schemas.PlayerRegistration, db: Session = Depends(get_db)):
+    """Register a new player with position information"""
+    # Verificar que la zona de posición existe
+    zone = crud.get_position_zone_by_abbreviation(db, player_data.position_zone)
+    if not zone:
+        raise HTTPException(status_code=400, detail="Zona de posición inválida")
+    
+    # Verificar que la posición específica existe si se proporciona
+    specific_id = None
+    if player_data.position_specific:
+        specific = crud.get_position_specific_by_abbreviation(db, player_data.position_specific)
+        if not specific:
+            raise HTTPException(status_code=400, detail="Posición específica inválida")
+        if specific.zone_id != zone.id:
+            raise HTTPException(status_code=400, detail="La posición específica no pertenece a la zona seleccionada")
+        specific_id = specific.id
+    
+    # Crear usuario primero
+    user_data = schemas.UserCreate(
+        email=player_data.email,
+        password="temp_password_123",  # El usuario deberá cambiar su contraseña
+        full_name=player_data.full_name,
+        phone=player_data.phone,
+        is_player=True
+    )
+    
+    # Verificar si el usuario ya existe
+    existing_user = crud.get_user_by_email(db, player_data.email)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+    
+    user = crud.create_user(db, user_data)
+    
+    # Crear jugador
+    player_data_dict = player_data.dict()
+    player_data_dict["user_id"] = user.id
+    player_data_dict["position_zone_id"] = zone.id
+    player_data_dict["position_specific_id"] = specific_id
+    
+    # Remover campos que no van al modelo Player
+    del player_data_dict["position_zone"]
+    del player_data_dict["position_specific"]
+    del player_data_dict["full_name"]
+    del player_data_dict["team_id"]
+    
+    player_create = schemas.PlayerCreate(**player_data_dict)
+    player = crud.create_player(db, player_create)
+    
+    return player

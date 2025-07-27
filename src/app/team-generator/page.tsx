@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import MainLayout from '@/components/Layout/MainLayout'
 import PlayerCard from '@/components/team-generator/PlayerCard'
 import TeamFormation from '@/components/team-generator/TeamFormation'
+import PlayerList from '@/components/team-generator/PlayerList'
+import PlayerCardModal from '@/components/team-generator/PlayerCardModal'
 import { countries } from '@/lib/countries'
 
 
@@ -98,6 +100,8 @@ export default function TeamGeneratorPage() {
   const [showReserveModal, setShowReserveModal] = useState(false)
   const [showEvaluationModal, setShowEvaluationModal] = useState(false)
   const [evaluatingPlayer, setEvaluatingPlayer] = useState<Player | null>(null)
+  const [selectedPlayerForCard, setSelectedPlayerForCard] = useState<Player | null>(null)
+  const [showPlayerCardModal, setShowPlayerCardModal] = useState(false)
   const [dragState, setDragState] = useState<{
     isDragging: boolean
     draggedPlayer: Player | null
@@ -1481,21 +1485,21 @@ export default function TeamGeneratorPage() {
                       {/* Lista de jugadores */}
                       <div className="space-y-3">
                         <h4 className="font-semibold text-gray-300 mb-4 text-lg">Jugadores ({team.players.length})</h4>
-                        {team.players.map((player: any) => (
-                          <div key={player.id} className="flex items-center justify-between p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
-                            <PlayerCard
-                              player={player}
-                              onEdit={() => {
-                                setEditingPlayer(player)
-                                setShowAddPlayerModal(true)
-                              }}
-                              onDelete={() => removePlayerFromTeam(player.id, team.id)}
-                              onEvaluate={handlePlayerEvaluation}
-                              showEvaluation={showEvaluation}
-                              enableEditing={enableEditing}
-                            />
-                          </div>
-                        ))}
+                        <PlayerList
+                          players={team.players}
+                          onEdit={(player) => {
+                            setEditingPlayer(player)
+                            setShowAddPlayerModal(true)
+                          }}
+                          onDelete={(playerId) => removePlayerFromTeam(playerId, team.id)}
+                          onEvaluate={handlePlayerEvaluation}
+                          showEvaluation={showEvaluation}
+                          enableEditing={enableEditing}
+                          onViewCard={(player) => {
+                            setSelectedPlayerForCard(player)
+                            setShowPlayerCardModal(true)
+                          }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -1582,6 +1586,17 @@ export default function TeamGeneratorPage() {
                defensa: number
                fisico: number
              }) => handleEvaluationSave(evaluatingPlayer.id, newStats)}
+            />
+          )}
+
+          {/* Modal de tarjeta del jugador */}
+          {showPlayerCardModal && (
+            <PlayerCardModal
+              player={selectedPlayerForCard}
+              onClose={() => {
+                setShowPlayerCardModal(false)
+                setSelectedPlayerForCard(null)
+              }}
             />
           )}
         </div>

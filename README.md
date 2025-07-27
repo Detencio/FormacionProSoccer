@@ -1,134 +1,290 @@
-# ⚽ Formación ProSoccer
+# ⚽ Formación Pro Soccer - Generador de Equipos Profesional
 
-Plataforma digital integral para fútbol amateur y de barrio.
+## 📋 Descripción del Proyecto
 
-## 🚀 Descripción
+**Formación Pro Soccer** es una aplicación web moderna para la gestión y generación automática de equipos de fútbol. Diseñada para clubes deportivos, entrenadores y organizadores de partidos, ofrece una interfaz intuitiva y profesional para crear formaciones equilibradas basadas en las habilidades de los jugadores.
 
-**Formación ProSoccer** es una plataforma web completa diseñada específicamente para el fútbol amateur. Simplifica la organización de partidos, fomenta la camaradería del equipo y asegura una gestión financiera fluida para los clubes de fútbol amateur.
+## 🎯 Características Principales
 
-## ✨ Características Principales
+### 🏆 Generador de Equipos Inteligente
+- **Algoritmo de balanceo automático** basado en habilidades de jugadores
+- **Múltiples modos de juego**: Baby Fútbol (5v5), Futbolito (7v7), Fútbol (11v11)
+- **Formaciones personalizables** con posiciones optimizadas
+- **Visualización en tiempo real** de formaciones en cancha virtual
 
-- 🏟️ **Organización de Partidos**: Creación y gestión intuitiva de partidos
-- 👥 **Gestión de Equipos**: Administración completa de equipos y jugadores
-- 📅 **Calendario Inteligente**: Organización de eventos y horarios
-- 💰 **Gestión Financiera**: Control de cuotas, gastos y presupuestos
-- 📱 **Interfaz Responsive**: Diseño optimizado para móvil y desktop
-- 🔐 **Autenticación Segura**: Sistema de login y registro seguro
+### 👥 Gestión de Jugadores
+- **Perfiles completos** con estadísticas detalladas
+- **Sistema de asistencia** para partidos
+- **Evaluación de habilidades** con métricas específicas
+- **Historial de rendimiento** y estadísticas
 
-## 🛠️ Stack Tecnológico
+### 🎨 Interfaz Profesional
+- **Diseño EA SPORTS FC** con gradientes y efectos visuales
+- **Tarjetas compactas** de jugadores en cancha
+- **Listado optimizado** de jugadores por equipo
+- **Modales informativos** con detalles completos
+
+## 🏗️ Arquitectura del Proyecto
+
+### Estructura de Carpetas
+
+```
+FormacionProSoccer/
+├── 📁 src/                          # Código fuente principal
+│   ├── 📁 app/                      # Páginas Next.js 14 (App Router)
+│   │   ├── 📁 team-generator/       # Módulo principal de generación
+│   │   ├── 📁 dashboard/            # Panel de control
+│   │   ├── 📁 teams/                # Gestión de equipos
+│   │   ├── 📁 players/              # Gestión de jugadores
+│   │   └── 📁 auth/                 # Autenticación
+│   ├── 📁 components/               # Componentes reutilizables
+│   │   ├── 📁 team-generator/       # Componentes específicos
+│   │   ├── 📁 Layout/               # Componentes de layout
+│   │   ├── 📁 teams/                # Componentes de equipos
+│   │   └── 📁 ui/                   # Componentes UI base
+│   ├── 📁 services/                 # Servicios y APIs
+│   ├── 📁 hooks/                    # Custom React hooks
+│   ├── 📁 lib/                      # Utilidades y configuraciones
+│   ├── 📁 store/                    # Estado global (Zustand)
+│   └── 📁 types/                    # Definiciones TypeScript
+├── 📁 backend/                      # API REST (Python/FastAPI)
+├── 📁 public/                       # Assets estáticos
+└── 📁 docs/                         # Documentación técnica
+```
+
+## 🚀 Tecnologías Utilizadas
 
 ### Frontend
-- **Next.js 14** - Framework React empresarial
+- **Next.js 14** - Framework React con App Router
 - **TypeScript** - Tipado estático
-- **Chakra UI** - Sistema de diseño
-- **React Query** - Gestión de estado del servidor
-- **Zustand** - Gestión de estado local
-- **React Hook Form** - Formularios optimizados
+- **Tailwind CSS** - Framework CSS utilitario
+- **Zustand** - Gestión de estado
+- **React Hook Form** - Manejo de formularios
 
-### Backend (Próximamente)
-- **Node.js + Express** - API REST
-- **PostgreSQL** - Base de datos
-- **Prisma ORM** - Gestión de base de datos
-- **JWT** - Autenticación
+### Backend
+- **Python 3.11+** - Lenguaje principal
+- **FastAPI** - Framework web moderno
+- **SQLAlchemy** - ORM para base de datos
+- **PostgreSQL** - Base de datos principal
+- **Pydantic** - Validación de datos
 
-## 🚀 Instalación
+### Herramientas de Desarrollo
+- **ESLint** - Linting de código
+- **Prettier** - Formateo de código
+- **Jest** - Testing framework
+- **Git** - Control de versiones
+
+## 📦 Instalación y Configuración
 
 ### Prerrequisitos
 - Node.js 18+ 
-- npm o yarn
+- Python 3.11+
+- PostgreSQL 14+
 
-### Pasos de Instalación
+### Instalación Frontend
+```bash
+# Clonar repositorio
+git clone https://github.com/tu-usuario/formacion-pro-soccer.git
+cd formacion-pro-soccer
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/Detencio/FormacionProSoccer.git
-   cd FormacionProSoccer
-   ```
+# Instalar dependencias
+npm install
 
-2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus configuraciones
 
-3. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env.local
-   # Editar .env.local con tus configuraciones
-   ```
-
-4. **Ejecutar en desarrollo**
-   ```bash
-   npm run dev
-   ```
-
-5. **Abrir en el navegador**
-   ```
-   http://localhost:3000
-   ```
-
-## 📝 Scripts Disponibles
-
-- `npm run dev` - Ejecutar en modo desarrollo
-- `npm run build` - Construir para producción
-- `npm run start` - Ejecutar en modo producción
-- `npm run lint` - Ejecutar linter
-- `npm run test` - Ejecutar tests
-- `npm run test:coverage` - Tests con cobertura
-
-## 🏗️ Estructura del Proyecto
-
+# Ejecutar en desarrollo
+npm run dev
 ```
-src/
-├── app/                 # App Router (Next.js 14)
-├── components/          # Componentes reutilizables
-├── lib/                # Utilidades y configuración
-├── store/              # Estado global (Zustand)
-├── types/              # Tipos TypeScript
-├── hooks/              # Custom hooks
-└── utils/              # Funciones utilitarias
+
+### Instalación Backend
+```bash
+# Navegar al directorio backend
+cd backend
+
+# Crear entorno virtual
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Configurar base de datos
+python create_admin.py
+
+# Ejecutar servidor
+uvicorn app.main:app --reload
 ```
+
+## 🎮 Uso de la Aplicación
+
+### 1. Configuración Inicial
+1. **Seleccionar Equipo**: Elegir el equipo base con jugadores
+2. **Modo de Juego**: Seleccionar formato (5v5, 7v7, 11v11)
+3. **Configurar Asistencia**: Marcar jugadores presentes
+
+### 2. Generación de Equipos
+1. **Revisar Asistencia**: Verificar jugadores disponibles
+2. **Generar Equipos**: Clic en "Generar Equipos"
+3. **Visualizar Formación**: Revisar posiciones en cancha
+4. **Ajustar Manualmente**: Mover jugadores si es necesario
+
+### 3. Gestión Avanzada
+- **Evaluar Jugadores**: Asignar estadísticas detalladas
+- **Gestionar Reservas**: Manejar jugadores suplentes
+- **Exportar Datos**: Generar reportes en Excel
+- **Compartir Equipos**: Enviar formaciones por WhatsApp
+
+## 🔧 Configuración Avanzada
+
+### Variables de Entorno
+```env
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_APP_NAME=Formación Pro Soccer
+
+# Backend (.env)
+DATABASE_URL=postgresql://user:pass@localhost:5432/formacion_pro
+SECRET_KEY=tu-clave-secreta-aqui
+```
+
+### Configuración de Base de Datos
+```sql
+-- Crear base de datos
+CREATE DATABASE formacion_pro;
+
+-- Ejecutar migraciones
+python -m alembic upgrade head
+```
+
+## 📚 Documentación de Módulos
+
+### 🎯 Módulo Team Generator
+**Ubicación**: `src/app/team-generator/`
+
+**Funcionalidades**:
+- Generación automática de equipos balanceados
+- Visualización de formaciones en cancha virtual
+- Gestión de asistencia de jugadores
+- Configuración de modos de juego
+
+**Componentes Principales**:
+- `page.tsx` - Página principal del generador
+- `TeamFormation.tsx` - Visualización de cancha
+- `PlayerList.tsx` - Listado de jugadores
+- `PlayerCardModal.tsx` - Modal de detalles
+
+### 👥 Módulo de Jugadores
+**Ubicación**: `src/app/register-player/`
+
+**Funcionalidades**:
+- Registro de nuevos jugadores
+- Edición de perfiles existentes
+- Evaluación de habilidades
+- Gestión de fotos y datos personales
+
+### 🏆 Módulo de Equipos
+**Ubicación**: `src/app/teams/`
+
+**Funcionalidades**:
+- Creación y gestión de equipos
+- Asignación de jugadores
+- Visualización de plantillas
+- Estadísticas de equipo
+
+### 💰 Módulo de Pagos
+**Ubicación**: `src/app/payments/`
+
+**Funcionalidades**:
+- Gestión de cuotas mensuales
+- Historial de pagos
+- Notificaciones de vencimiento
+- Reportes financieros
 
 ## 🧪 Testing
 
-El proyecto incluye configuración completa de testing:
-
-- **Jest** - Framework de testing
-- **React Testing Library** - Testing de componentes
-- **Cobertura de código** - >80% requerida
-
+### Ejecutar Tests
 ```bash
-npm run test           # Ejecutar tests
-npm run test:watch     # Tests en modo watch
-npm run test:coverage  # Tests con cobertura
+# Tests unitarios
+npm run test
+
+# Tests de integración
+npm run test:integration
+
+# Coverage
+npm run test:coverage
 ```
 
-## 📚 Documentación
+### Estructura de Tests
+```
+tests/
+├── unit/                    # Tests unitarios
+├── integration/             # Tests de integración
+├── e2e/                    # Tests end-to-end
+└── fixtures/               # Datos de prueba
+```
 
-- [Guía de Desarrollo](./docs/development.md)
-- [API Documentation](./docs/api.md)
-- [Componentes](./docs/components.md)
+## 🚀 Deployment
+
+### Frontend (Vercel)
+```bash
+# Build de producción
+npm run build
+
+# Deploy automático
+git push origin main
+```
+
+### Backend (Railway/Heroku)
+```bash
+# Configurar variables de entorno
+# Deploy automático desde GitHub
+```
+
+## 📊 Monitoreo y Analytics
+
+### Métricas de Rendimiento
+- **Core Web Vitals** - Optimización de UX
+- **Error Tracking** - Sentry para errores
+- **Performance Monitoring** - Vercel Analytics
+
+### Logs y Debugging
+- **Structured Logging** - Winston para backend
+- **Error Boundaries** - React error handling
+- **Development Tools** - React DevTools
 
 ## 🤝 Contribución
 
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+### Guías de Contribución
+1. **Fork del repositorio**
+2. **Crear rama feature**: `git checkout -b feature/nueva-funcionalidad`
+3. **Commit cambios**: `git commit -m 'feat: agregar nueva funcionalidad'`
+4. **Push a rama**: `git push origin feature/nueva-funcionalidad`
+5. **Crear Pull Request**
+
+### Estándares de Código
+- **ESLint** - Reglas de linting
+- **Prettier** - Formateo automático
+- **TypeScript** - Tipado estricto
+- **Conventional Commits** - Mensajes de commit
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-## 👥 Equipo
+## 👨‍💻 Equipo de Desarrollo
 
-- **Detencio** - Desarrollador Principal
+- **Desarrollador Principal**: [Tu Nombre]
+- **Diseño UI/UX**: [Diseñador]
+- **Testing**: [QA Engineer]
 
-## 📞 Contacto
+## 📞 Soporte
 
-- Email: datencio.trabajo@gmail.com
-- GitHub: [@Detencio](https://github.com/Detencio)
+- **Email**: soporte@formacionprosoccer.com
+- **Documentación**: [Link a docs]
+- **Issues**: [GitHub Issues]
 
 ---
 
-⭐ Si te gusta este proyecto, ¡dale una estrella! 
+**Formación Pro Soccer** - Generando equipos profesionales desde 2024 ⚽ 

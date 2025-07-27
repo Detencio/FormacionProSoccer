@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -15,6 +15,33 @@ class User(Base):
     must_change_password = Column(Boolean, default=False)  # Para cambio obligatorio de contraseña
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class PositionZone(Base):
+    __tablename__ = "position_zones"
+    id = Column(Integer, primary_key=True, index=True)
+    abbreviation = Column(String(3), unique=True, nullable=False)  # POR, DEF, MED, DEL
+    name_es = Column(String(20), nullable=False)
+    name_en = Column(String(20), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relación con posiciones específicas
+    specific_positions = relationship("PositionSpecific", back_populates="zone")
+
+class PositionSpecific(Base):
+    __tablename__ = "position_specifics"
+    id = Column(Integer, primary_key=True, index=True)
+    abbreviation = Column(String(3), unique=True, nullable=False)  # LD, LI, DFC, etc.
+    name_es = Column(String(20), nullable=False)
+    name_en = Column(String(20), nullable=False)
+    zone_id = Column(Integer, ForeignKey("position_zones.id"), nullable=False)
+    description_es = Column(Text, nullable=True)
+    description_en = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relación con zona
+    zone = relationship("PositionZone", back_populates="specific_positions")
 
 class Team(Base):
     __tablename__ = "teams"
@@ -36,11 +63,25 @@ class Player(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
-    position = Column(String, nullable=True)  # Delantero, Mediocampista, Defensa, Portero
+    
+    # Sistema de posiciones por zona y específicas
+    position_zone_id = Column(Integer, ForeignKey("position_zones.id"), nullable=False)
+    position_specific_id = Column(Integer, ForeignKey("position_specifics.id"), nullable=True)
+    
+    # Información personal
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    phone = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    nationality = Column(String, nullable=True)
+    
+    # Información física y técnica
     jersey_number = Column(Integer, nullable=True)
-    age = Column(Integer, nullable=True)
-    phone = Column(String, nullable=True)  # Teléfono específico del jugador
-    email = Column(String, nullable=True)  # Email específico del jugador
+    height = Column(Integer, nullable=True)  # en centímetros
+    weight = Column(Integer, nullable=True)  # en kilogramos
+    skill_level = Column(Integer, nullable=False, default=5)  # 1-10
+    
+    # Estado
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -48,3 +89,5 @@ class Player(Base):
     # Relaciones
     user = relationship("User", backref="player_profile")
     team = relationship("Team", back_populates="players")
+    position_zone = relationship("PositionZone")
+    position_specific = relationship("PositionSpecific")
