@@ -115,6 +115,7 @@ class PlayerBase(BaseModel):
     height: Optional[int] = None  # en centímetros
     weight: Optional[int] = None  # en kilogramos
     skill_level: int = 5  # 1-10
+    photo_url: Optional[str] = None  # URL de la foto del jugador
     
     # Habilidades específicas
     rit: Optional[int] = None  # Ritmo (1-100)
@@ -143,6 +144,7 @@ class PlayerUpdate(BaseModel):
     height: Optional[int] = None
     weight: Optional[int] = None
     skill_level: Optional[int] = None
+    photo_url: Optional[str] = None  # URL de la foto del jugador
     # Habilidades específicas
     rit: Optional[int] = None
     tir: Optional[int] = None

@@ -85,6 +85,7 @@ class Player(Base):
     height = Column(Integer, nullable=True)  # en centímetros
     weight = Column(Integer, nullable=True)  # en kilogramos
     skill_level = Column(Integer, nullable=False, default=5)  # 1-10
+    photo_url = Column(String, nullable=True)  # URL de la foto del jugador
     
     # Habilidades específicas
     rit = Column(Integer, nullable=True)  # Ritmo (1-100)
