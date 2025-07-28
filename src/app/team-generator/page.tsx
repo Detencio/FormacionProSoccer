@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Player } from '@/types'
 import { useTeamGenerator } from '@/hooks/useTeamGenerator'
 import { useAuthStore } from '@/store/authStore'
@@ -11,6 +11,7 @@ import PlayerPreviewModal from '@/components/team-generator/PlayerPreviewModal'
 import DebugInfo from '@/components/team-generator/DebugInfo'
 import { teamGeneratorService } from '@/services/teamGeneratorService'
 import MainLayout from '@/components/Layout/MainLayout'
+import { usePathname } from 'next/navigation'
 
 // Datos mock para pruebas
 const mockPlayers: Player[] = [
@@ -332,6 +333,7 @@ export default function TeamGenerator() {
   const [loadingTeams, setLoadingTeams] = useState(false)
   const [showAddManualPlayerModal, setShowAddManualPlayerModal] = useState(false)
   const [previewPlayer, setPreviewPlayer] = useState<Player | null>(null)
+  const pathname = usePathname()
 
   // Determinar el equipo del usuario según su rol
   const getUserTeam = () => {
@@ -406,17 +408,37 @@ export default function TeamGenerator() {
   }, [selectedTeamId])
 
   // Combinar jugadores reales con jugadores manuales
-  const allPlayers = [...availablePlayers, ...manualPlayers]
+  const allPlayers = useMemo(() => [...availablePlayers, ...manualPlayers], [availablePlayers, manualPlayers])
   
-  // Debug: Mostrar información de jugadores
+  // Debug: Log cuando cambia el pathname
+  useEffect(() => {
+    console.log(`[Sidebar] Pathname changed to: ${pathname}`)
+  }, [pathname])
+
+  // Cleanup effect para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      // Limpiar cualquier intervalo o timeout al desmontar
+      console.log('TeamGenerator component unmounting')
+    }
+  }, [])
+
+  // Optimizar re-renders: solo ejecutar debug cuando realmente cambien los datos
+  const debugInfo = useMemo(() => ({
+    availablePlayersCount: availablePlayers.length,
+    manualPlayersCount: manualPlayers.length,
+    selectedPlayersCount: selectedPlayers.length,
+    totalPlayersCount: allPlayers.length
+  }), [availablePlayers.length, manualPlayers.length, selectedPlayers.length, allPlayers.length])
+
   useEffect(() => {
     console.log('=== DEBUG JUGADORES ===')
-    console.log('Jugadores disponibles:', availablePlayers.length)
-    console.log('Jugadores manuales:', manualPlayers.length)
-    console.log('Total jugadores:', allPlayers.length)
-    console.log('Jugadores seleccionados:', selectedPlayers.length)
+    console.log('Jugadores disponibles:', debugInfo.availablePlayersCount)
+    console.log('Jugadores manuales:', debugInfo.manualPlayersCount)
+    console.log('Total jugadores:', debugInfo.totalPlayersCount)
+    console.log('Jugadores seleccionados:', debugInfo.selectedPlayersCount)
     console.log('========================')
-  }, [availablePlayers, manualPlayers, allPlayers, selectedPlayers])
+  }, [debugInfo])
 
   // Guardar configuración cuando cambie
   useEffect(() => {
@@ -427,15 +449,15 @@ export default function TeamGenerator() {
       manualPlayers: manualPlayers.map(p => p.id)
     }
     localStorage.setItem('teamGeneratorConfig', JSON.stringify(config))
-  }, [selectedPlayers, gameType, formation, manualPlayers])
+  }, [selectedPlayers.map(p => p.id).join(','), gameType, formation, manualPlayers.map(p => p.id).join(',')])
 
-  // Cargar configuración guardada
+  // Cargar configuración guardada (solo una vez al montar)
   useEffect(() => {
     const savedConfig = localStorage.getItem('teamGeneratorConfig')
     if (savedConfig) {
       try {
         const config = JSON.parse(savedConfig)
-        if (config.selectedPlayers) {
+        if (config.selectedPlayers && availablePlayers.length > 0) {
           const players = allPlayers.filter(p => config.selectedPlayers.includes(p.id))
           setSelectedPlayers(players)
         }
@@ -449,17 +471,17 @@ export default function TeamGenerator() {
         console.error('Error loading saved config:', error)
       }
     }
-  }, [allPlayers, setSelectedPlayers, setGameType, setFormation])
+  }, [availablePlayers.length]) // Solo cuando cambie la cantidad de jugadores disponibles
 
-  const handleGameTypeChange = (newGameType: string) => {
+  const handleGameTypeChange = useCallback((newGameType: string) => {
     setGameType(newGameType as "5v5" | "7v7" | "11v11")
     // Reset formation to default for new game type
     const defaultFormation = newGameType === '5v5' ? '2-2-1' : 
                            newGameType === '7v7' ? '3-2-1' : '4-4-2'
     setFormation(defaultFormation as any)
-  }
+  }, [])
 
-  const handleGenerateTeams = () => {
+  const handleGenerateTeams = useCallback(() => {
     console.log('handleGenerateTeams called, selectedPlayers:', selectedPlayers.length)
     if (selectedPlayers.length === 0) {
       alert('Selecciona al menos un jugador para generar equipos')
@@ -467,37 +489,37 @@ export default function TeamGenerator() {
     }
     console.log('Calling generateTeams...')
     generateTeams()
-  }
+  }, [selectedPlayers.length, generateTeams])
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     console.log('handleClear called')
     clearSelection()
     setManualPlayers([])
     localStorage.removeItem('teamGeneratorConfig')
-  }
+  }, [clearSelection])
 
-  const handleAddManualPlayer = (player: Player) => {
+  const handleAddManualPlayer = useCallback((player: Player) => {
     console.log('Agregando jugador manual:', player)
     setManualPlayers(prev => {
       const newManualPlayers = [...prev, player]
       console.log('Jugadores manuales actualizados:', newManualPlayers)
       return newManualPlayers
     })
-  }
+  }, [])
 
-  const handleRemoveManualPlayer = (playerId: number) => {
+  const handleRemoveManualPlayer = useCallback((playerId: number) => {
     console.log('Eliminando jugador manual:', playerId)
     setManualPlayers(prev => prev.filter(p => p.id !== playerId))
     setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
-  }
+  }, [])
 
-  const handlePlayerPreview = (player: Player) => {
+  const handlePlayerPreview = useCallback((player: Player) => {
     setPreviewPlayer(player)
-  }
+  }, [])
 
-  const handleTeamFilterChange = (teamId: number | null) => {
+  const handleTeamFilterChange = useCallback((teamId: number | null) => {
     setSelectedTeamId(teamId)
-  }
+  }, [])
 
   // Obtener el nombre del equipo seleccionado
   const getSelectedTeamName = () => {
@@ -522,6 +544,18 @@ export default function TeamGenerator() {
     console.log('Moviendo jugador:', { playerId, fromTeam, fromRole, toTeam, toRole })
     movePlayer(playerId, fromTeam, fromRole, toTeam, toRole)
   }
+
+  const onPlayerSelect = useCallback((player: Player) => {
+    console.log('onPlayerSelect called for:', player.name, 'selected:', selectedPlayers.some(p => p.id === player.id))
+    if (!selectedPlayers.some(p => p.id === player.id)) {
+      setSelectedPlayers(prev => [...prev, player])
+    }
+  }, [selectedPlayers])
+
+  const onPlayerDeselect = useCallback((playerId: number) => {
+    console.log('onPlayerDeselect called for playerId:', playerId)
+    setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
+  }, [])
 
   return (
     <MainLayout>
@@ -741,18 +775,8 @@ export default function TeamGenerator() {
               <PlayerList
                 players={allPlayers}
                 selectedPlayers={selectedPlayers}
-                onPlayerSelect={(player: Player) => {
-                  setSelectedPlayers(prev => {
-                    if (prev.find(p => p.id === player.id)) {
-                      return prev.filter(p => p.id !== player.id)
-                    } else {
-                      return [...prev, player]
-                    }
-                  })
-                }}
-                onPlayerDeselect={(playerId: number) => {
-                  setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
-                }}
+                onPlayerSelect={onPlayerSelect}
+                onPlayerDeselect={onPlayerDeselect}
                 onRemoveManualPlayer={handleRemoveManualPlayer}
                 showManualPlayerControls={true}
                 onPlayerPreview={handlePlayerPreview}
@@ -773,6 +797,8 @@ export default function TeamGenerator() {
             {distribution ? (
               <TeamManager
                 distribution={distribution}
+                gameType={gameType}
+                formation={formation?.name || '4-4-2'}
                 onPlayerMove={handleMovePlayer}
                 onRegenerate={regenerateTeams}
                 onSave={() => {}}

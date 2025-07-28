@@ -97,16 +97,11 @@ const PlayerPreviewModal: React.FC<PlayerPreviewModalProps> = ({
               </div>
             </div>
 
-            {/* Nivel de habilidad elegante */}
+            {/* Nivel de habilidad simple y elegante */}
             <div className="text-right">
               <div className="flex items-center justify-center">
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20">
-                    <span className="text-slate-900 font-bold text-xl">{validSkillLevel}</span>
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-xs font-bold text-slate-800">5</span>
-                  </div>
+                <div className="bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-md">
+                  <span className="text-gray-800 font-bold text-lg">{validSkillLevel}</span>
                 </div>
               </div>
               <div className="text-gray-300 text-sm mt-2">

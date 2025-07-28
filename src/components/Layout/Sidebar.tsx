@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface MenuItem {
   name: string
@@ -116,6 +116,7 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const pathname = usePathname()
+  const router = useRouter()
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -130,10 +131,29 @@ export default function Sidebar() {
     )
   }
 
+  // Función para navegar con logging
+  const handleNavigation = (href: string, itemName: string) => {
+    console.log(`[Sidebar] Attempting to navigate to: ${href} (${itemName})`)
+    console.log(`[Sidebar] Current pathname: ${pathname}`)
+    
+    // Forzar la navegación
+    router.push(href)
+    
+    // Verificar después de un breve delay
+    setTimeout(() => {
+      console.log(`[Sidebar] Pathname after navigation: ${window.location.pathname}`)
+    }, 100)
+  }
+
+  // Debug: Log cuando cambia el pathname
+  useEffect(() => {
+    console.log(`[Sidebar] Pathname changed to: ${pathname}`)
+  }, [pathname])
+
   return (
     <div className={`bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } min-h-screen flex flex-col shadow-2xl border-r border-gray-700 relative z-50`}>
+    } min-h-screen flex flex-col shadow-2xl border-r border-gray-700 relative z-[9999]`}>
       
       {/* Header con diseño FIFA 26 */}
       <div className="p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600 to-green-600">
@@ -202,10 +222,14 @@ export default function Sidebar() {
                 {!isCollapsed && expandedItems.includes(item.name) && (
                   <div className="ml-6 mt-3 space-y-2">
                     {item.submenu.map((subItem) => (
-                      <Link
+                      <button
                         key={subItem.href}
-                        href={subItem.href}
-                        className={`block px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleNavigation(subItem.href, subItem.name)
+                        }}
+                        className={`block w-full text-left px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                           isActive(subItem.href)
                             ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-lg'
                             : 'text-gray-300 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white'
@@ -213,16 +237,20 @@ export default function Sidebar() {
                       >
                         <p className="text-sm font-medium">{subItem.name}</p>
                         <p className="text-xs text-gray-400">{subItem.description}</p>
-                      </Link>
+                      </button>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
               // Item sin submenú
-              <Link
-                href={item.href}
-                className={`group flex items-center space-x-3 px-4 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleNavigation(item.href, item.name)
+                }}
+                className={`group w-full flex items-center space-x-3 px-4 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                   isActive(item.href)
                     ? 'bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-xl'
                     : 'text-gray-200 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white'
@@ -232,12 +260,12 @@ export default function Sidebar() {
                   {item.icon}
                 </div>
                 {!isCollapsed && (
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-left">
                     <p className="text-sm font-semibold truncate">{item.name}</p>
                     <p className="text-xs text-gray-300 truncate">{item.description}</p>
                   </div>
                 )}
-              </Link>
+              </button>
             )}
           </div>
         ))}
