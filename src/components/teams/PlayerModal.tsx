@@ -58,6 +58,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
     weight: '',
     skill_level: 5,
     photo_url: '',
+    team_id: teamId,
     // Nuevas habilidades específicas
     rit: 70,
     tir: 70,
@@ -69,6 +70,8 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
   const [teams, setTeams] = useState<any[]>([]);
   const [availableSpecifics, setAvailableSpecifics] = useState<any[]>([]);
   const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   // Cargar equipos desde el backend
   useEffect(() => {
@@ -101,15 +104,16 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         email: player.email || '',
         country: player.nationality || '',
         phone: player.phone || '',
-        date_of_birth: player.date_of_birth ? player.date_of_birth.split('T')[0] : '',
+        date_of_birth: player.date_of_birth || '',
         position_zone_id: player.position_zone_id || 1,
-        position_specific_id: player.position_specific_id || undefined,
-        jersey_number: player.jersey_number ? player.jersey_number.toString() : '',
-        height: player.height ? player.height.toString() : '',
-        weight: player.weight ? player.weight.toString() : '',
+        position_specific_id: player.position_specific_id,
+        jersey_number: player.jersey_number?.toString() || '',
+        height: player.height?.toString() || '',
+        weight: player.weight?.toString() || '',
         skill_level: player.skill_level || 5,
         photo_url: player.photo_url || '',
-        // Cargar habilidades específicas si existen, sino usar valores por defecto
+        team_id: player.team_id || teamId,
+        // Habilidades específicas
         rit: player.rit || 70,
         tir: player.tir || 70,
         pas: player.pas || 70,
@@ -119,7 +123,6 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
       });
       setPhotoPreview(player.photo_url || '');
     } else {
-      console.log('PlayerModal: Creando nuevo jugador');
       setFormData({
         name: '',
         email: '',
@@ -133,7 +136,8 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         weight: '',
         skill_level: 5,
         photo_url: '',
-        // Valores por defecto para habilidades
+        team_id: teamId,
+        // Habilidades específicas
         rit: 70,
         tir: 70,
         pas: 70,
@@ -143,7 +147,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
       });
       setPhotoPreview('');
     }
-  }, [player, isOpen]);
+  }, [player, teamId]);
 
   // Calcular edad basada en fecha de nacimiento
   const calculateAge = (dateOfBirth: string) => {
@@ -171,7 +175,8 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    console.log('🔍 DEBUG - handleSubmit iniciado');
+    setIsLoading(true);
     
     try {
       console.log('🔍 DEBUG - Datos del formulario antes de enviar:', {
@@ -204,27 +209,17 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
       };
       
       console.log('🔍 DEBUG - Datos procesados para enviar:', playerData);
+      console.log('🔍 DEBUG - Llamando a onSubmit con playerData');
       
-      if (player) {
-        // Actualizar jugador existente
-        await teamService.updatePlayer(player.id, playerData);
-        onClose();
-        if (onPlayerUpdated) {
-          onPlayerUpdated();
-        }
-      } else {
-        // Crear nuevo jugador
-        await teamService.createPlayer(playerData);
-        onClose();
-        if (onPlayerCreated) {
-          onPlayerCreated();
-        }
-      }
+      // Usar la prop onSubmit en lugar de llamar directamente al servicio
+      onSubmit(playerData);
+      console.log('🔍 DEBUG - onSubmit ejecutado, cerrando modal');
+      onClose();
     } catch (error) {
       console.error('❌ Error en el formulario:', error);
       setError('Error al guardar jugador. Por favor, inténtalo de nuevo.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -673,10 +668,10 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-green-600 rounded-lg hover:from-blue-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Guardando...' : (player ? 'Actualizar Jugador' : 'Crear Jugador')}
+              {isLoading ? 'Guardando...' : (player ? 'Actualizar Jugador' : 'Crear Jugador')}
             </button>
           </div>
         </form>

@@ -239,14 +239,22 @@ def get_player(player_id: int, db: Session = Depends(get_db), current_user: mode
 
 @app.put("/players/{player_id}", response_model=schemas.PlayerOut)
 def update_player(player_id: int, player: schemas.PlayerUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    print(f"🔍 DEBUG - Endpoint PUT /players/{player_id} llamado")
+    print(f"🔍 DEBUG - Usuario autenticado: {current_user.email if current_user else 'None'}")
+    print(f"🔍 DEBUG - Datos recibidos en backend: player_id={player_id}, player_data={player.dict()}")
+    
     if not current_user.is_admin:
+        print(f"❌ ERROR - Usuario {current_user.email} no es admin")
         raise HTTPException(status_code=403, detail="Solo administradores pueden actualizar jugadores")
     
-    print(f"🔍 DEBUG - Datos recibidos en backend: player_id={player_id}, player_data={player.dict()}")
+    print(f"✅ DEBUG - Usuario {current_user.email} es admin, procediendo con actualización")
     
     db_player = crud.update_player(db, player_id, player)
     if not db_player:
+        print(f"❌ ERROR - Jugador {player_id} no encontrado")
         raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    
+    print(f"✅ DEBUG - Jugador {player_id} actualizado exitosamente")
     return db_player
 
 @app.delete("/players/{player_id}")

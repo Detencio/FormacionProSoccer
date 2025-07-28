@@ -152,9 +152,11 @@ export default function TeamsPage() {
     if (!selectedTeamId) return;
     
     try {
+      console.log('🔍 DEBUG - handlePlayerSubmit recibió:', formData);
+      
       if (editingPlayer) {
         // Actualizar jugador existente
-        // console.log('Actualizando jugador:', editingPlayer.id, formData);
+        console.log('🔍 DEBUG - Actualizando jugador:', editingPlayer.id);
         await teamService.updatePlayer(editingPlayer.id, {
           name: formData.name,
           email: formData.email,
@@ -167,12 +169,13 @@ export default function TeamsPage() {
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
+          photo_url: formData.photo_url, // Agregar photo_url
           is_active: true
         });
-        // console.log('✅ Jugador actualizado exitosamente');
+        console.log('✅ Jugador actualizado exitosamente');
       } else {
         // Crear nuevo jugador
-        // console.log('Creando nuevo jugador:', formData);
+        console.log('🔍 DEBUG - Creando nuevo jugador');
         await teamService.createPlayer({
           user_id: 1, // ID temporal, se asignará automáticamente
           team_id: selectedTeamId,
@@ -187,9 +190,10 @@ export default function TeamsPage() {
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
+          photo_url: formData.photo_url, // Agregar photo_url
           is_active: true
         });
-        // console.log('✅ Jugador creado exitosamente');
+        console.log('✅ Jugador creado exitosamente');
       }
       
       // Recargar equipos desde el backend
@@ -201,7 +205,7 @@ export default function TeamsPage() {
       setSelectedTeamId(null);
       
     } catch (error) {
-      // console.error('Error al guardar jugador:', error);
+      console.error('❌ Error al guardar jugador:', error);
       alert('Error al guardar jugador. Por favor, inténtalo de nuevo.');
     }
   };
