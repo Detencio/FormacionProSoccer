@@ -688,5 +688,5 @@ curl -X POST "http://localhost:9000/teams/generate/" \
 
 ---
 
-_Documentación de API actualizada: Julio 2025_ _Versión: 1.0.0 - Team Generator
+_Documentación de API actualizada: Julio 2025_ _Versión: 1.0.0 - ProSoccer
 Avanzado_

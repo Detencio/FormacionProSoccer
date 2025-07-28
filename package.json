@@ -1,5 +1,5 @@
 {
-  "name": "formacion-pro-soccer",
+  "name": "prosoccer",
   "version": "1.0.0",
   "description": "Plataforma digital integral para fútbol amateur y de barrio",
   "private": true,
@@ -20,8 +20,8 @@
     "clean": "rm -rf .next out dist",
     "clean:all": "npm run clean && rm -rf node_modules package-lock.json",
     "install:clean": "npm run clean:all && npm install",
-    "docker:build": "docker build -t formacion-pro-soccer .",
-    "docker:run": "docker run -p 3000:3000 formacion-pro-soccer",
+    "docker:build": "docker build -t prosoccer .",
+    "docker:run": "docker run -p 3000:3000 prosoccer",
     "docs:dev": "next dev --port 3001",
     "docs:build": "next build && next export -o docs",
     "prepare": "husky install"

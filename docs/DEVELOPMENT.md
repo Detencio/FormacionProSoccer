@@ -3,9 +3,8 @@
 ## 🎯 **Descripción General**
 
 Esta guía proporciona información completa para desarrolladores que trabajen en
-el proyecto **Formación Pro Soccer**. Incluye configuración del entorno,
-arquitectura del sistema, patrones de desarrollo y mejores prácticas
-implementadas.
+el proyecto **ProSoccer**. Incluye configuración del entorno, arquitectura del
+sistema, patrones de desarrollo y mejores prácticas implementadas.
 
 ---
 
@@ -846,7 +845,7 @@ npm cache clean --force
 
 ## 🎯 **Conclusión**
 
-Esta guía proporciona una base sólida para el desarrollo en **Formación Pro
+Esta guía proporciona una base sólida para el desarrollo en **ProSoccer
 Soccer**. El proyecto utiliza las mejores prácticas de desarrollo moderno, con
 un enfoque en performance, mantenibilidad y escalabilidad.
 

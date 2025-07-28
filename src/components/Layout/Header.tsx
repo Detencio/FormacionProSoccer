@@ -37,7 +37,7 @@ export default function Header() {
           <div className='w-12 h-12 bg-gradient-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center shadow-2xl border border-blue-500/30 overflow-hidden'>
             <Image
               src='/logo.PNG'
-              alt='FormaciónPro Soccer Logo'
+              alt='ProSoccer Logo'
               width={48}
               height={48}
               className='object-cover rounded-lg'
@@ -46,7 +46,7 @@ export default function Header() {
           </div>
           <div>
             <h1 className='text-2xl font-bold text-white bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent'>
-              FormaciónPro
+              ProSoccer
             </h1>
             <p className='text-sm text-gray-300 font-medium'>Soccer Management</p>
           </div>

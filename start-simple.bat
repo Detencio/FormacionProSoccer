@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo    FORMACION PROSOCCER - TEAM GENERATOR
+echo    PROSOCCER - TEAM GENERATOR
 echo ========================================
 echo.
 echo Limpiando puertos y procesos anteriores...

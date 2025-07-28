@@ -1,4 +1,4 @@
-# ⚽ Formación ProSoccer - Sistema de Gestión de Equipos de Fútbol
+# ⚽ ProSoccer - Sistema de Gestión de Equipos de Fútbol
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -364,7 +364,7 @@ python add_real_players.py
 
 ## 📞 Contacto
 
-- **Proyecto**: Formación ProSoccer
+- **Proyecto**: ProSoccer
 - **Versión**: 1.0.0
 - **Última actualización**: Julio 2025
 - **Estado**: Completamente funcional
@@ -376,6 +376,6 @@ más detalles.
 
 ---
 
-**Formación ProSoccer** - Construyendo el futuro del fútbol ⚽
+**ProSoccer** - Construyendo el futuro del fútbol ⚽
 
 _Desarrollado con ❤️ para la comunidad futbolística_

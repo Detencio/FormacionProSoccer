@@ -3,11 +3,11 @@ import './globals.css';
 import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
-  title: 'Formación ProSoccer - Plataforma de Fútbol Amateur',
+  title: 'ProSoccer - Plataforma de Fútbol Amateur',
   description:
     'Plataforma digital integral para la organización de partidos de fútbol amateur, gestión de equipos y camaradería deportiva.',
   keywords: 'fútbol, amateur, equipos, partidos, deporte, organización',
-  authors: [{ name: 'Formación ProSoccer Team' }],
+  authors: [{ name: 'ProSoccer Team' }],
   icons: {
     icon: '/favicon.ico',
     apple: '/logo.PNG',

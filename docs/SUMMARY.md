@@ -2,11 +2,11 @@
 
 ## 🎯 **Descripción del Proyecto**
 
-**Formación Pro Soccer** es una plataforma digital integral diseñada
-específicamente para la gestión y organización de equipos de fútbol amateur y de
-barrio. El sistema proporciona herramientas avanzadas para la administración de
-jugadores, equipos, pagos, gastos y, especialmente, un **generador de equipos
-inteligente** que revoluciona la forma de organizar partidos.
+**ProSoccer** es una plataforma digital integral diseñada específicamente para
+la gestión y organización de equipos de fútbol amateur y de barrio. El sistema
+proporciona herramientas avanzadas para la administración de jugadores, equipos,
+pagos, gastos y, especialmente, un **generador de equipos inteligente** que
+revoluciona la forma de organizar partidos.
 
 ### **Características Principales**
 
@@ -354,8 +354,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 ## 🎯 **Conclusión**
 
-**Formación Pro Soccer** representa una solución integral y moderna para la
-gestión de equipos de fútbol amateur. Con su **Team Generator revolucionario** y
+**ProSoccer** representa una solución integral y moderna para la gestión de
+equipos de fútbol amateur. Con su **Team Generator revolucionario** y
 funcionalidades avanzadas, el sistema está diseñado para crecer y adaptarse a
 las necesidades de cualquier club o liga.
 

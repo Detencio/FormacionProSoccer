@@ -3,9 +3,9 @@
 ## 🎯 **Resumen Ejecutivo**
 
 Este documento detalla todas las dependencias utilizadas en el proyecto
-**Formación Pro Soccer**, incluyendo su propósito, versión y configuración. El
-proyecto utiliza un stack tecnológico moderno con **Next.js 14** para el
-frontend y **FastAPI** para el backend.
+**ProSoccer**, incluyendo su propósito, versión y configuración. El proyecto
+utiliza un stack tecnológico moderno con **Next.js 14** para el frontend y
+**FastAPI** para el backend.
 
 ---
 

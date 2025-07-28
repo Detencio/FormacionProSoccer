@@ -2,7 +2,7 @@
 
 ## 🎯 **Descripción General**
 
-El **Team Generator** es el módulo más avanzado y revolucionario de **Formación
+El **Team Generator** es el módulo más avanzado y revolucionario de **ProSoccer
 Pro Soccer**. Este sistema inteligente permite generar equipos equilibrados para
 diferentes tipos de partidos, con funcionalidades únicas como cancha
 interactiva, sistema de intercambios y preservación de posiciones
@@ -592,9 +592,9 @@ const trackPlayerSwap = (fromRole: string, toRole: string) => {
 ## 🎯 **Conclusión**
 
 El **Team Generator** representa la funcionalidad más avanzada y revolucionaria
-de **Formación Pro Soccer**. Con su combinación de algoritmos inteligentes,
-interfaz interactiva y funcionalidades únicas, proporciona una experiencia de
-usuario excepcional para la organización de partidos de fútbol.
+de **ProSoccer**. Con su combinación de algoritmos inteligentes, interfaz
+interactiva y funcionalidades únicas, proporciona una experiencia de usuario
+excepcional para la organización de partidos de fútbol.
 
 El sistema está diseñado para ser escalable, mantenible y extensible,
 permitiendo futuras mejoras y nuevas funcionalidades sin comprometer la

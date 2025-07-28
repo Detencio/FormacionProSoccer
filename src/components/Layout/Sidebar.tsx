@@ -202,7 +202,7 @@ export default function Sidebar() {
               <div className='w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden'>
                 <Image
                   src='/logo.PNG'
-                  alt='FormaciónPro Soccer Logo'
+                  alt='ProSoccer Logo'
                   width={40}
                   height={40}
                   className='object-cover rounded-lg'
@@ -210,7 +210,7 @@ export default function Sidebar() {
                 />
               </div>
               <div>
-                <h1 className='font-bold text-xl text-white'>FormaciónPro</h1>
+                <h1 className='font-bold text-xl text-white'>ProSoccer</h1>
                 <p className='text-sm text-blue-100 font-medium'>Soccer</p>
               </div>
             </div>

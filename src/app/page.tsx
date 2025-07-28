@@ -23,14 +23,14 @@ export default function HomePage() {
           <div className='mx-auto w-32 h-32 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-6 overflow-hidden shadow-2xl'>
             <Image
               src='/logo.PNG'
-              alt='FormaciónPro Soccer Logo'
+              alt='ProSoccer Logo'
               width={128}
               height={128}
               className='object-cover rounded-full'
               priority
             />
           </div>
-          <h1 className='text-5xl font-bold text-white mb-4'>Formación ProSoccer</h1>
+          <h1 className='text-5xl font-bold text-white mb-4'>ProSoccer</h1>
           <p className='text-xl text-gray-300 max-w-2xl mx-auto'>
             Sistema avanzado de generación de equipos de fútbol con inteligencia artificial
           </p>
