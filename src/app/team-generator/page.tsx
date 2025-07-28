@@ -312,17 +312,25 @@ export default function TeamGenerator() {
   const { user, isAuthenticated } = useAuthStore()
   
   const {
+    distribution,
     selectedPlayers,
     gameType,
     formation,
-    distribution,
+    isGenerating,
+    error: teamError,
+    swapPlayer,
+    generateTeams,
+    regenerateTeams,
+    movePlayer,
+    addPlayer,
+    removePlayer,
+    clearSelection,
+    changeGameType,
+    changeFormation,
     setSelectedPlayers,
     setGameType,
     setFormation,
-    generateTeams,
-    movePlayer,
-    regenerateTeams,
-    clearSelection
+    swapTwoPlayers
   } = useTeamGenerator()
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([])
   const [manualPlayers, setManualPlayers] = useState<Player[]>([])
@@ -334,6 +342,28 @@ export default function TeamGenerator() {
   const [showAddManualPlayerModal, setShowAddManualPlayerModal] = useState(false)
   const [previewPlayer, setPreviewPlayer] = useState<Player | null>(null)
   const pathname = usePathname()
+  const [savedTeams, setSavedTeams] = useState<any[]>([])
+  const [showSavedTeams, setShowSavedTeams] = useState(false)
+  const [currentGeneratedTeams, setCurrentGeneratedTeams] = useState<any>(null)
+  const [showPlayerPreviewModal, setShowPlayerPreviewModal] = useState(false)
+  const [selectedPlayerForPreview, setSelectedPlayerForPreview] = useState<Player | null>(null)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+
+  // Función para mostrar notificaciones
+  const showNotification = useCallback((type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 3000)
+  }, [])
+
+  // Función para manejar errores del hook
+  const handleTeamGeneratorError = useCallback((error: string) => {
+    showNotification('error', error)
+  }, [showNotification])
+
+  // Función para manejar intercambios exitosos
+  const handleSuccessfulSwap = useCallback((playerName: string, newRole: string) => {
+    showNotification('success', `${playerName} movido a ${newRole}`)
+  }, [showNotification])
 
   // Determinar el equipo del usuario según su rol
   const getUserTeam = () => {
@@ -410,6 +440,43 @@ export default function TeamGenerator() {
   // Combinar jugadores reales con jugadores manuales
   const allPlayers = useMemo(() => [...availablePlayers, ...manualPlayers], [availablePlayers, manualPlayers])
   
+  // Funciones para guardar y recuperar equipos
+  const loadSavedTeams = useCallback(() => {
+    const savedTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
+    return savedTeams.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  }, [])
+
+  const saveGeneratedTeams = useCallback((teams: any, metadata: any) => {
+    const savedTeams = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      teams,
+      metadata: {
+        ...metadata,
+        gameType,
+        formation,
+        selectedPlayers: selectedPlayers.map(p => p.id),
+        manualPlayers: manualPlayers.map(p => p.id)
+      }
+    }
+    
+    const existingTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
+    existingTeams.push(savedTeams)
+    localStorage.setItem('savedTeams', JSON.stringify(existingTeams))
+    
+    console.log('Teams saved:', savedTeams)
+    return savedTeams.id
+  }, [gameType, formation, selectedPlayers, manualPlayers])
+
+  const deleteSavedTeam = useCallback((teamId: number) => {
+    const savedTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
+    const filteredTeams = savedTeams.filter((team: any) => team.id !== teamId)
+    localStorage.setItem('savedTeams', JSON.stringify(filteredTeams))
+    console.log('Team deleted:', teamId)
+  }, [])
+
+
+
   // Debug: Log cuando cambia el pathname
   useEffect(() => {
     console.log(`[Sidebar] Pathname changed to: ${pathname}`)
@@ -443,13 +510,14 @@ export default function TeamGenerator() {
   // Guardar configuración cuando cambie
   useEffect(() => {
     const config = {
-      selectedPlayers: selectedPlayers.map(p => p.id),
+      // NO guardar jugadores seleccionados para evitar pre-selección
+      // selectedPlayers: selectedPlayers.map(p => p.id),
       gameType,
       formation,
       manualPlayers: manualPlayers.map(p => p.id)
     }
     localStorage.setItem('teamGeneratorConfig', JSON.stringify(config))
-  }, [selectedPlayers.map(p => p.id).join(','), gameType, formation, manualPlayers.map(p => p.id).join(',')])
+  }, [gameType, formation, manualPlayers.map(p => p.id).join(',')])
 
   // Cargar configuración guardada (solo una vez al montar)
   useEffect(() => {
@@ -457,10 +525,11 @@ export default function TeamGenerator() {
     if (savedConfig) {
       try {
         const config = JSON.parse(savedConfig)
-        if (config.selectedPlayers && availablePlayers.length > 0) {
-          const players = allPlayers.filter(p => config.selectedPlayers.includes(p.id))
-          setSelectedPlayers(players)
-        }
+        // NO cargar jugadores seleccionados automáticamente
+        // if (config.selectedPlayers && availablePlayers.length > 0) {
+        //   const players = allPlayers.filter(p => config.selectedPlayers.includes(p.id))
+        //   setSelectedPlayers(players)
+        // }
         if (config.gameType) setGameType(config.gameType as "5v5" | "7v7" | "11v11")
         if (config.formation) setFormation(config.formation as any)
         if (config.manualPlayers) {
@@ -472,6 +541,12 @@ export default function TeamGenerator() {
       }
     }
   }, [availablePlayers.length]) // Solo cuando cambie la cantidad de jugadores disponibles
+
+  // Cargar equipos guardados
+  useEffect(() => {
+    const teams = loadSavedTeams()
+    setSavedTeams(teams)
+  }, [loadSavedTeams])
 
   const handleGameTypeChange = useCallback((newGameType: string) => {
     setGameType(newGameType as "5v5" | "7v7" | "11v11")
@@ -489,7 +564,222 @@ export default function TeamGenerator() {
     }
     console.log('Calling generateTeams...')
     generateTeams()
-  }, [selectedPlayers.length, generateTeams])
+    
+    // Guardar equipos generados automáticamente
+    const teams = distribution
+    if (teams && teams.homeTeam && teams.awayTeam) {
+      const metadata = {
+        gameType,
+        formation: formation?.name || '4-4-2',
+        totalPlayers: selectedPlayers.length,
+        manualPlayersCount: manualPlayers.length
+      }
+      
+      const savedId = saveGeneratedTeams(teams, metadata)
+      setCurrentGeneratedTeams({ ...teams, savedId })
+      
+      // Actualizar lista de equipos guardados
+      const updatedTeams = loadSavedTeams()
+      setSavedTeams(updatedTeams)
+      
+      console.log('Teams generated and saved with ID:', savedId)
+    }
+  }, [selectedPlayers.length, generateTeams, distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
+
+  const handleSaveTeams = useCallback(() => {
+    if (distribution && distribution.homeTeam && distribution.awayTeam) {
+      const metadata = {
+        gameType,
+        formation: formation?.name || '4-4-2',
+        totalPlayers: selectedPlayers.length,
+        manualPlayersCount: manualPlayers.length
+      }
+      
+      const savedId = saveGeneratedTeams(distribution, metadata)
+      setCurrentGeneratedTeams({ ...distribution, savedId })
+      
+      // Actualizar lista de equipos guardados
+      const updatedTeams = loadSavedTeams()
+      setSavedTeams(updatedTeams)
+      
+      console.log('Teams manually saved with ID:', savedId)
+      alert('Equipos guardados exitosamente!')
+    }
+  }, [distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
+
+  const generateTeamsImage = useCallback((teams: any, metadata: any) => {
+    // Crear un canvas para generar la imagen
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    if (!ctx) {
+      alert('No se pudo generar la imagen')
+      return
+    }
+    
+    // Configurar canvas
+    canvas.width = 800
+    canvas.height = 1000
+    
+    // Fondo
+    ctx.fillStyle = '#1f2937'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    
+    // Gradiente de fondo
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+    gradient.addColorStop(0, '#3b82f6')
+    gradient.addColorStop(1, '#10b981')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    
+    // Título
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 32px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('⚽ EQUIPOS GENERADOS', canvas.width / 2, 50)
+    ctx.fillText('FormaciónPro Soccer', canvas.width / 2, 80)
+    
+    // Información del partido
+    ctx.font = '18px Arial'
+    const formationName = metadata.formation || 'Sin formación específica'
+    const gameTypeLabel = metadata.gameType === '5v5' ? 'BabyFutbol' : 
+                         metadata.gameType === '7v7' ? 'Futbolito' : 'Fútbol 11'
+    ctx.fillText(`${gameTypeLabel} | ${formationName}`, canvas.width / 2, 120)
+    ctx.fillText(new Date().toLocaleString(), canvas.width / 2, 150)
+    
+    // Equipo A
+    ctx.fillStyle = '#3b82f6'
+    ctx.fillRect(50, 180, 340, 350)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 24px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('🔵 EQUIPO A', canvas.width / 2, 210)
+    
+    ctx.font = '16px Arial'
+    ctx.textAlign = 'left'
+    let yPos = 240
+    teams.homeTeam.starters.forEach((player: any, index: number) => {
+      // Obtener posición de manera más flexible
+      let position = 'N/A'
+      if (player.position_specific?.abbreviation) {
+        position = player.position_specific.abbreviation
+      } else if (player.position_zone?.abbreviation) {
+        position = player.position_zone.abbreviation
+      } else if (player.is_guest) {
+        position = 'INV'
+      }
+      
+      ctx.fillText(`${index + 1}. ${player.name} (${position})`, 70, yPos)
+      yPos += 25
+    })
+    
+    // Equipo B
+    ctx.fillStyle = '#ef4444'
+    ctx.fillRect(410, 180, 340, 350)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 24px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('🔴 EQUIPO B', canvas.width / 2, 210)
+    
+    ctx.font = '16px Arial'
+    ctx.textAlign = 'left'
+    yPos = 240
+    teams.awayTeam.starters.forEach((player: any, index: number) => {
+      // Obtener posición de manera más flexible
+      let position = 'N/A'
+      if (player.position_specific?.abbreviation) {
+        position = player.position_specific.abbreviation
+      } else if (player.position_zone?.abbreviation) {
+        position = player.position_zone.abbreviation
+      } else if (player.is_guest) {
+        position = 'INV'
+      }
+      
+      ctx.fillText(`${index + 1}. ${player.name} (${position})`, 430, yPos)
+      yPos += 25
+    })
+    
+    // Sin asignar
+    if (teams.unassigned && teams.unassigned.length > 0) {
+      ctx.fillStyle = '#6b7280'
+      ctx.fillRect(50, 550, 700, 150)
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 20px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText('⏳ SIN ASIGNAR', canvas.width / 2, 580)
+      
+      ctx.font = '14px Arial'
+      ctx.textAlign = 'left'
+      yPos = 610
+      teams.unassigned.forEach((player: any) => {
+        ctx.fillText(`- ${player.name}`, 70, yPos)
+        yPos += 20
+      })
+    }
+    
+    // Footer
+    ctx.fillStyle = '#ffffff'
+    ctx.font = '14px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('Generado con FormaciónPro Soccer', canvas.width / 2, 950)
+    
+    // Convertir canvas a blob y compartir
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'equipos-generados.png', { type: 'image/png' })
+        
+        if (navigator.share) {
+          navigator.share({
+            title: 'Equipos Generados - FormaciónPro',
+            text: 'Equipos generados con FormaciónPro Soccer',
+            files: [file]
+          }).catch(() => {
+            // Fallback si no se puede compartir archivo
+            downloadImage(canvas)
+          })
+        } else {
+          // Fallback para navegadores sin API de compartir
+          downloadImage(canvas)
+        }
+      }
+    }, 'image/png')
+  }, [])
+
+  const downloadImage = useCallback((canvas: HTMLCanvasElement) => {
+    const link = document.createElement('a')
+    link.download = `equipos-generados-${Date.now()}.png`
+    link.href = canvas.toDataURL()
+    link.click()
+    alert('Imagen descargada! Puedes compartirla por WhatsApp, email, etc.')
+  }, [])
+
+  const handleShareTeams = useCallback(() => {
+    if (distribution && distribution.homeTeam && distribution.awayTeam) {
+      // Validar que los equipos tengan jugadores
+      const homeCount = distribution.homeTeam.starters.length
+      const awayCount = distribution.awayTeam.starters.length
+      
+      if (homeCount === 0 || awayCount === 0) {
+        alert('Los equipos no están completos. Genera equipos válidos primero.')
+        return
+      }
+      
+      // Para partidos internos, no es necesario validar posiciones específicas
+      const isInternalMatch = gameType === '5v5' || gameType === '7v7'
+      
+      const metadata = {
+        gameType,
+        formation: isInternalMatch ? 'Distribución interna' : (formation?.name || 'Sin formación específica'),
+        totalPlayers: selectedPlayers.length,
+        manualPlayersCount: manualPlayers.length
+      }
+      
+      // Generar imagen para compartir
+      generateTeamsImage(distribution, metadata)
+    } else {
+      alert('No hay equipos generados para compartir. Genera equipos primero.')
+    }
+  }, [distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, generateTeamsImage])
 
   const handleClear = useCallback(() => {
     console.log('handleClear called')
@@ -557,6 +847,72 @@ export default function TeamGenerator() {
     setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
   }, [])
 
+  const handleSelectAll = useCallback(() => {
+    console.log('handleSelectAll called, total players:', allPlayers.length)
+    setSelectedPlayers(allPlayers)
+  }, [allPlayers])
+
+  const handleDeselectAll = useCallback(() => {
+    console.log('handleDeselectAll called')
+    setSelectedPlayers([])
+  }, [])
+
+  const handleSelectByPosition = useCallback((position: string) => {
+    console.log('handleSelectByPosition called for position:', position)
+    const playersInPosition = allPlayers.filter(player => 
+      player.position_zone?.abbreviation === position || 
+      player.position_specific?.abbreviation === position
+    )
+    setSelectedPlayers(prev => {
+      const newSelected = [...prev]
+      playersInPosition.forEach(player => {
+        if (!newSelected.some(p => p.id === player.id)) {
+          newSelected.push(player)
+        }
+      })
+      return newSelected
+    })
+  }, [allPlayers])
+
+  const handleSelectRandom = useCallback((count: number) => {
+    console.log('handleSelectRandom called for count:', count)
+    const availablePlayers = allPlayers.filter(player => 
+      !selectedPlayers.some(p => p.id === player.id)
+    )
+    
+    if (availablePlayers.length === 0) return
+    
+    const randomCount = Math.min(count, availablePlayers.length)
+    const shuffled = [...availablePlayers].sort(() => 0.5 - Math.random())
+    const randomPlayers = shuffled.slice(0, randomCount)
+    
+    setSelectedPlayers(prev => [...prev, ...randomPlayers])
+  }, [allPlayers, selectedPlayers])
+
+  // Manejar errores del hook
+  useEffect(() => {
+    if (teamError) {
+      handleTeamGeneratorError(teamError)
+    }
+  }, [teamError, handleTeamGeneratorError])
+
+  // Limpiar configuración guardada al abrir el módulo (solo una vez)
+  useEffect(() => {
+    // Limpiar jugadores seleccionados guardados para evitar pre-selección
+    const savedConfig = localStorage.getItem('teamGeneratorConfig')
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig)
+        // Remover jugadores seleccionados de la configuración guardada
+        const { selectedPlayers, ...cleanConfig } = config
+        localStorage.setItem('teamGeneratorConfig', JSON.stringify(cleanConfig))
+        console.log('Configuración de jugadores seleccionados limpiada')
+      } catch (error) {
+        console.error('Error limpiando configuración:', error)
+      }
+    }
+  }, []) // Solo se ejecuta una vez al montar el componente
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -576,7 +932,12 @@ export default function TeamGenerator() {
                 </div>
                 <div>
                   <h1 className="text-5xl font-bold text-white mb-2">Generador de Equipos</h1>
-                  <p className="text-xl text-blue-100 font-medium">Selección aleatoria equilibrada para partidos</p>
+                  <p className="text-xl text-blue-100 font-medium">
+                    {gameType === '5v5' || gameType === '7v7' 
+                      ? 'Partidos amistosos entre amigos del club' 
+                      : 'Selección aleatoria equilibrada para partidos'
+                    }
+                  </p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -741,14 +1102,251 @@ export default function TeamGenerator() {
               Generar Equipos
             </button>
             <button
+              onClick={handleSaveTeams}
+              className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+            >
+              <span>💾</span>
+              Guardar Equipos
+            </button>
+            <button
+              onClick={handleShareTeams}
+              disabled={distribution && distribution.homeTeam && distribution.awayTeam ? false : true}
+              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+            >
+              <span>📤</span>
+              Compartir Equipos
+            </button>
+            <button
               onClick={handleClear}
               className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
             >
               <span>🗑️</span>
               Limpiar Todo
             </button>
+            <button
+              onClick={() => setShowSavedTeams(!showSavedTeams)}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+            >
+              <span>💾</span>
+              Equipos Guardados ({savedTeams.length})
+            </button>
           </div>
         </div>
+
+        {/* Equipos Guardados */}
+        {showSavedTeams && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <span className="text-gray-500">💾</span>
+              Equipos Guardados ({savedTeams.length})
+            </h2>
+            
+            {savedTeams.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-6xl mb-4">💾</div>
+                <p className="text-gray-500 text-lg">No hay equipos guardados</p>
+                <p className="text-gray-400 text-sm">Los equipos se guardan automáticamente cuando los generas</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {savedTeams.map((savedTeam: any) => (
+                  <div key={savedTeam.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          Equipos del {new Date(savedTeam.timestamp).toLocaleDateString()}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {new Date(savedTeam.timestamp).toLocaleTimeString()} | 
+                          {savedTeam.metadata.gameType} | 
+                          Formación: {savedTeam.metadata.formation}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            // Generar imagen para compartir
+                            const canvas = document.createElement('canvas')
+                            const ctx = canvas.getContext('2d')
+                            
+                            if (!ctx) {
+                              alert('No se pudo generar la imagen')
+                              return
+                            }
+                            
+                            // Configurar canvas
+                            canvas.width = 800
+                            canvas.height = 1000
+                            
+                            // Fondo
+                            ctx.fillStyle = '#1f2937'
+                            ctx.fillRect(0, 0, canvas.width, canvas.height)
+                            
+                            // Gradiente de fondo
+                            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+                            gradient.addColorStop(0, '#3b82f6')
+                            gradient.addColorStop(1, '#10b981')
+                            ctx.fillStyle = gradient
+                            ctx.fillRect(0, 0, canvas.width, canvas.height)
+                            
+                            // Título
+                            ctx.fillStyle = '#ffffff'
+                            ctx.font = 'bold 32px Arial'
+                            ctx.textAlign = 'center'
+                            ctx.fillText('⚽ EQUIPOS GENERADOS', canvas.width / 2, 50)
+                            ctx.fillText('FormaciónPro Soccer', canvas.width / 2, 80)
+                            
+                            // Información del partido
+                            ctx.font = '18px Arial'
+                            const formationName = savedTeam.metadata.formation || '4-4-2'
+                            ctx.fillText(`${savedTeam.metadata.gameType} | Formación: ${formationName}`, canvas.width / 2, 120)
+                            ctx.fillText(new Date(savedTeam.timestamp).toLocaleString(), canvas.width / 2, 150)
+                            
+                            // Equipo A
+                            ctx.fillStyle = '#3b82f6'
+                            ctx.fillRect(50, 180, 340, 350)
+                            ctx.fillStyle = '#ffffff'
+                            ctx.font = 'bold 24px Arial'
+                            ctx.textAlign = 'center'
+                            ctx.fillText('🔵 EQUIPO A', canvas.width / 2, 210)
+                            
+                            ctx.font = '16px Arial'
+                            ctx.textAlign = 'left'
+                            let yPos = 240
+                            savedTeam.teams.homeTeam.starters.forEach((player: any, index: number) => {
+                              const position = player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A'
+                              ctx.fillText(`${index + 1}. ${player.name} (${position})`, 70, yPos)
+                              yPos += 25
+                            })
+                            
+                            // Equipo B
+                            ctx.fillStyle = '#ef4444'
+                            ctx.fillRect(410, 180, 340, 350)
+                            ctx.fillStyle = '#ffffff'
+                            ctx.font = 'bold 24px Arial'
+                            ctx.textAlign = 'center'
+                            ctx.fillText('🔴 EQUIPO B', canvas.width / 2, 210)
+                            
+                            ctx.font = '16px Arial'
+                            ctx.textAlign = 'left'
+                            yPos = 240
+                            savedTeam.teams.awayTeam.starters.forEach((player: any, index: number) => {
+                              const position = player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A'
+                              ctx.fillText(`${index + 1}. ${player.name} (${position})`, 430, yPos)
+                              yPos += 25
+                            })
+                            
+                            // Sin asignar
+                            if (savedTeam.teams.unassigned.length > 0) {
+                              ctx.fillStyle = '#6b7280'
+                              ctx.fillRect(50, 550, 700, 150)
+                              ctx.fillStyle = '#ffffff'
+                              ctx.font = 'bold 20px Arial'
+                              ctx.textAlign = 'center'
+                              ctx.fillText('⏳ SIN ASIGNAR', canvas.width / 2, 580)
+                              
+                              ctx.font = '14px Arial'
+                              ctx.textAlign = 'left'
+                              yPos = 610
+                              savedTeam.teams.unassigned.forEach((player: any) => {
+                                ctx.fillText(`- ${player.name}`, 70, yPos)
+                                yPos += 20
+                              })
+                            }
+                            
+                            // Footer
+                            ctx.fillStyle = '#ffffff'
+                            ctx.font = '14px Arial'
+                            ctx.textAlign = 'center'
+                            ctx.fillText('Generado con FormaciónPro Soccer', canvas.width / 2, 950)
+                            
+                            // Convertir canvas a blob y compartir
+                            canvas.toBlob((blob) => {
+                              if (blob) {
+                                const file = new File([blob], 'equipos-generados.png', { type: 'image/png' })
+                                
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: 'Equipos Generados - FormaciónPro',
+                                    text: 'Equipos generados con FormaciónPro Soccer',
+                                    files: [file]
+                                  }).catch(() => {
+                                    // Fallback si no se puede compartir archivo
+                                    const link = document.createElement('a')
+                                    link.download = `equipos-generados-${Date.now()}.png`
+                                    link.href = canvas.toDataURL()
+                                    link.click()
+                                    alert('Imagen descargada! Puedes compartirla por WhatsApp, email, etc.')
+                                  })
+                                } else {
+                                  // Fallback para navegadores sin API de compartir
+                                  const link = document.createElement('a')
+                                  link.download = `equipos-generados-${Date.now()}.png`
+                                  link.href = canvas.toDataURL()
+                                  link.click()
+                                  alert('Imagen descargada! Puedes compartirla por WhatsApp, email, etc.')
+                                }
+                              }
+                            }, 'image/png')
+                          }}
+                          className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-xs"
+                        >
+                          📤 Compartir
+                        </button>
+                        <button
+                          onClick={() => {
+                            deleteSavedTeam(savedTeam.id)
+                            setSavedTeams(loadSavedTeams())
+                          }}
+                          className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-xs"
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-blue-50 rounded-lg p-3">
+                        <h4 className="font-medium text-blue-800 mb-2">🔵 Equipo A</h4>
+                        <div className="space-y-1">
+                          {savedTeam.teams.homeTeam.starters.map((player: any, index: number) => (
+                            <div key={player.id} className="text-sm text-blue-700">
+                              {index + 1}. {player.name} ({player.position_specific?.abbreviation || player.position_zone?.abbreviation})
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-red-50 rounded-lg p-3">
+                        <h4 className="font-medium text-red-800 mb-2">🔴 Equipo B</h4>
+                        <div className="space-y-1">
+                          {savedTeam.teams.awayTeam.starters.map((player: any, index: number) => (
+                            <div key={player.id} className="text-sm text-red-700">
+                              {index + 1}. {player.name} ({player.position_specific?.abbreviation || player.position_zone?.abbreviation})
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {savedTeam.teams.unassigned.length > 0 && (
+                      <div className="mt-3 bg-gray-50 rounded-lg p-3">
+                        <h4 className="font-medium text-gray-800 mb-2">⏳ Sin Asignar</h4>
+                        <div className="space-y-1">
+                          {savedTeam.teams.unassigned.map((player: any) => (
+                            <div key={player.id} className="text-sm text-gray-600">
+                              - {player.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Available Players */}
@@ -760,6 +1358,100 @@ export default function TeamGenerator() {
             <p className="text-gray-600 mb-6">
               Selecciona los jugadores para generar los equipos. Los jugadores invitados aparecen con un ícono especial.
             </p>
+            
+            {/* Botones de selección masiva */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span>⚡</span>
+                Selección Rápida
+              </h3>
+              
+              {/* Indicador de estado */}
+              <div className="mb-3 p-2 bg-white rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">Estado de selección:</span>
+                  <span className="font-semibold text-blue-600">
+                    {selectedPlayers.length} de {allPlayers.length} jugadores seleccionados
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${allPlayers.length > 0 ? (selectedPlayers.length / allPlayers.length) * 100 : 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button
+                  onClick={handleSelectAll}
+                  disabled={selectedPlayers.length === allPlayers.length}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center gap-1"
+                >
+                  <span>✅</span>
+                  Seleccionar Todos ({allPlayers.length})
+                </button>
+                <button
+                  onClick={handleDeselectAll}
+                  disabled={selectedPlayers.length === 0}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center gap-1"
+                >
+                  <span>❌</span>
+                  Deseleccionar Todos
+                </button>
+              </div>
+              
+              {/* Selección aleatoria */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                <span className="text-sm text-gray-600 font-medium">Selección aleatoria:</span>
+                <button
+                  onClick={() => handleSelectRandom(5)}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                >
+                  🎲 5 Jugadores
+                </button>
+                <button
+                  onClick={() => handleSelectRandom(10)}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                >
+                  🎲 10 Jugadores
+                </button>
+                <button
+                  onClick={() => handleSelectRandom(15)}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                >
+                  🎲 15 Jugadores
+                </button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm text-gray-600 font-medium">Seleccionar por posición:</span>
+                <button
+                  onClick={() => handleSelectByPosition('POR')}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors text-xs font-medium"
+                >
+                  🥅 Porteros
+                </button>
+                <button
+                  onClick={() => handleSelectByPosition('DEF')}
+                  className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-xs font-medium"
+                >
+                  🛡️ Defensas
+                </button>
+                <button
+                  onClick={() => handleSelectByPosition('MED')}
+                  className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-xs font-medium"
+                >
+                  ⚽ Mediocampistas
+                </button>
+                <button
+                  onClick={() => handleSelectByPosition('DEL')}
+                  className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-xs font-medium"
+                >
+                  ⚡ Delanteros
+                </button>
+              </div>
+            </div>
             
             {loadingPlayers ? (
               <div className="text-center py-12">
@@ -798,11 +1490,11 @@ export default function TeamGenerator() {
               <TeamManager
                 distribution={distribution}
                 gameType={gameType}
-                formation={formation?.name || '4-4-2'}
-                onPlayerMove={handleMovePlayer}
-                onRegenerate={regenerateTeams}
-                onSave={() => {}}
-                isGenerating={false}
+                formation={formation}
+                onRegenerate={handleGenerateTeams}
+                onSwapPlayer={swapPlayer}
+                onSwapTwoPlayers={swapTwoPlayers}
+                isGenerating={isGenerating}
               />
             ) : (
               <div className="text-center py-16 text-gray-500">
@@ -911,6 +1603,43 @@ export default function TeamGenerator() {
           user={user}
         />
       </div>
+
+      {/* Sistema de Notificaciones */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+          notification.type === 'success' ? 'bg-green-500 text-white' :
+          notification.type === 'error' ? 'bg-red-500 text-white' :
+          'bg-blue-500 text-white'
+        }`}>
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">
+              {notification.type === 'success' ? '✅' : 
+               notification.type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <span className="font-medium">{notification.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Modales */}
+      {showAddManualPlayerModal && (
+        <AddManualPlayerModal
+          isOpen={showAddManualPlayerModal}
+          onClose={() => setShowAddManualPlayerModal(false)}
+          onAddPlayer={handleAddManualPlayer}
+        />
+      )}
+
+      {showPlayerPreviewModal && selectedPlayerForPreview && (
+        <PlayerPreviewModal
+          isOpen={showPlayerPreviewModal}
+          player={selectedPlayerForPreview}
+          onClose={() => {
+            setShowPlayerPreviewModal(false)
+            setSelectedPlayerForPreview(null)
+          }}
+        />
+      )}
     </MainLayout>
   )
 } 

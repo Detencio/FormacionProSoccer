@@ -1,19 +1,15 @@
 'use client'
 
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
-import { Player } from '@/types'
-import PlayerMoveModal from './PlayerMoveModal'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { Player, TeamSection, TeamFormation } from '@/types'
+import SwapPlayerModal from './SwapPlayerModal'
 
 interface FootballFieldProps {
-  team: {
-    starters: Player[]
-    substitutes: Player[]
-  }
+  team: TeamSection
   teamName: string
   teamColor: string
-  formation?: string
-  gameType?: '5v5' | '7v7' | '11v11'
-  onPlayerClick?: (player: Player) => void
+  gameType: '5v5' | '7v7' | '11v11'
+  formation?: TeamFormation | null
   onPlayerMove?: (
     playerId: number,
     fromTeam: 'home' | 'away',
@@ -21,6 +17,8 @@ interface FootballFieldProps {
     toTeam: 'home' | 'away',
     toRole: 'starter' | 'substitute'
   ) => void
+  onSwapPlayer?: (playerId: number) => void
+  onSwapTwoPlayers?: (player1Id: number, player2Id: number) => void
 }
 
 interface Position {
@@ -34,62 +32,71 @@ const FootballField: React.FC<FootballFieldProps> = ({
   team,
   teamName,
   teamColor,
-  formation = '4-4-2',
-  gameType = '11v11',
-  onPlayerClick,
-  onPlayerMove
+  gameType = '5v5',
+  formation,
+  onPlayerMove,
+  onSwapPlayer,
+  onSwapTwoPlayers
 }) => {
-  const [moveModal, setMoveModal] = useState<{
-    isOpen: boolean
-    player: Player | null
-    currentTeam: 'home' | 'away'
-    currentRole: 'starter' | 'substitute'
-  }>({
-    isOpen: false,
-    player: null,
-    currentTeam: 'home',
-    currentRole: 'starter'
-  })
-
+  const [playerPositions, setPlayerPositions] = useState<Record<number, { x: number; y: number }>>({})
   const [draggedPlayer, setDraggedPlayer] = useState<Player | null>(null)
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [playerPositions, setPlayerPositions] = useState<Record<number, { x: number; y: number }>>({})
+  const [customPositions, setCustomPositions] = useState<{ [playerId: number]: Position }>({})
+  const [showSwapModal, setShowSwapModal] = useState(false)
+  const [selectedSubstitute, setSelectedSubstitute] = useState<Player | null>(null)
+  const [lastTeamIds, setLastTeamIds] = useState<string>('')
   const fieldRef = useRef<HTMLDivElement>(null)
 
-  // Efecto para manejar eventos globales y cancelar drag and drop
+  // Limpiar posiciones personalizadas solo cuando se regeneren completamente los equipos
   useEffect(() => {
-    const handleGlobalMouseUp = (e: MouseEvent) => {
-      if (isDragging && draggedPlayer) {
-        // Si el click fue fuera del área de la cancha, cancelar el drag
-        if (fieldRef.current && !fieldRef.current.contains(e.target as Node)) {
-          setDraggedPlayer(null)
-          setDragPosition(null)
-          setIsDragging(false)
-        }
+    const currentTeamIds = team.starters.map(p => p.id).sort().join(',')
+    
+    // Solo limpiar si es una regeneración completa (cambio drástico en la composición)
+    if (lastTeamIds && lastTeamIds !== currentTeamIds) {
+      // Verificar si es un cambio drástico (más de 2 jugadores diferentes)
+      const lastIds = lastTeamIds.split(',').map(Number)
+      const currentIds = currentTeamIds.split(',').map(Number)
+      const differentPlayers = lastIds.filter(id => !currentIds.includes(id)).length
+      
+      if (differentPlayers > 2) {
+        console.log('FootballField - Regeneración completa detectada, limpiando posiciones personalizadas')
+        setCustomPositions({})
       }
     }
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isDragging) {
-        setDraggedPlayer(null)
-        setDragPosition(null)
-        setIsDragging(false)
-      }
-    }
-
-    if (isDragging) {
-      document.addEventListener('mouseup', handleGlobalMouseUp)
-      document.addEventListener('keydown', handleGlobalKeyDown)
-    }
-
-    return () => {
-      document.removeEventListener('mouseup', handleGlobalMouseUp)
-      document.removeEventListener('keydown', handleGlobalKeyDown)
-    }
-  }, [isDragging, draggedPlayer])
+    
+    setLastTeamIds(currentTeamIds)
+  }, [team.starters.map(p => p.id).sort().join(','), lastTeamIds])
 
   const isTeamA = teamName === 'Equipo A'
+
+  // Limpiar modal después de un swap exitoso
+  useEffect(() => {
+    if (!showSwapModal && selectedSubstitute) {
+      // Si el modal se cerró pero aún hay un suplente seleccionado, limpiarlo
+      setSelectedSubstitute(null)
+    }
+  }, [showSwapModal, selectedSubstitute])
+
+  // Forzar re-render cuando cambie el equipo
+  useEffect(() => {
+    console.log('FootballField: Equipo actualizado:', {
+      teamName,
+      starters: team.starters.length,
+      substitutes: team.substitutes.length
+    })
+    
+    // Solo limpiar modal si está abierto Y el equipo realmente cambió
+    // (no cuando se abre el modal por primera vez)
+    if (showSwapModal && selectedSubstitute) {
+      // Verificar si el suplente seleccionado ya no existe en el equipo
+      const substituteStillExists = team.substitutes.some(p => p.id === selectedSubstitute.id)
+      if (!substituteStillExists) {
+        setShowSwapModal(false)
+        setSelectedSubstitute(null)
+      }
+    }
+  }, [team, teamName, showSwapModal, selectedSubstitute])
 
   // Configuración de posiciones según el tipo de juego y formación
   const getFormationPositions = (gameType: string, formation: string, isTeamA: boolean) => {
@@ -114,7 +121,7 @@ const FootballField: React.FC<FootballFieldProps> = ({
         { x: 50, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const }
       ]
     } else {
-      // Fútbol 11: Todas las posiciones (como antes)
+      // Fútbol 11: Todas las posiciones
       const basePositions = {
         '4-4-2': [
           { x: 50, y: isTeamA ? 85 : 15, role: 'POR', zone: 'goalkeeper' as const },
@@ -162,135 +169,124 @@ const FootballField: React.FC<FootballFieldProps> = ({
 
   // Función para asignar jugadores a posiciones según sus roles
   const assignPlayersToPositions = useMemo(() => {
-    const formationPositions = getFormationPositions(gameType, formation, isTeamA)
+    const formationPositions = getFormationPositions(gameType, formation?.name || '4-4-2', isTeamA)
     const players = [...team.starters]
     const assignedPositions: { player: Player; position: Position }[] = []
     const unassignedPlayers: Player[] = []
 
-    // Primera pasada: asignar jugadores según su posición específica
-    const positionsByRole: { [key: string]: Position[] } = {
-      'POR': formationPositions.filter(p => p.role === 'POR'),
-      'DEF': formationPositions.filter(p => p.role === 'DEF'),
-      'MED': formationPositions.filter(p => p.role === 'MED'),
-      'DEL': formationPositions.filter(p => p.role === 'DEL')
-    }
+    // Verificar si hay posiciones personalizadas
+    const hasCustomPositions = Object.keys(customPositions).length > 0
+    console.log('FootballField - Custom positions:', customPositions)
+    console.log('FootballField - Has custom positions:', hasCustomPositions)
 
-    // Asignar porteros primero
-    const goalkeepers = players.filter(p => 
-      p.position_specific?.abbreviation === 'POR' || p.position_zone?.abbreviation === 'POR'
-    )
-    goalkeepers.forEach((player, index) => {
-      if (positionsByRole['POR'][index]) {
-        assignedPositions.push({ player, position: positionsByRole['POR'][index] })
-      }
-    })
+    if (hasCustomPositions) {
+      // Si hay posiciones personalizadas, usarlas primero
+      players.forEach(player => {
+        if (customPositions[player.id]) {
+          console.log(`FootballField - Using custom position for ${player.name}:`, customPositions[player.id])
+          assignedPositions.push({ player, position: customPositions[player.id] })
+        }
+      })
 
-    // Asignar defensas (incluye LD, LI, DFC, etc.)
-    const defenders = players.filter(p => 
-      p.position_specific?.abbreviation === 'DEF' || p.position_zone?.abbreviation === 'DEF' ||
-      p.position_specific?.abbreviation === 'LD' || p.position_specific?.abbreviation === 'LI' ||
-      p.position_specific?.abbreviation === 'DFC'
-    )
-    defenders.forEach((player, index) => {
-      if (positionsByRole['DEF'][index]) {
-        assignedPositions.push({ player, position: positionsByRole['DEF'][index] })
-      }
-    })
-
-    // Asignar mediocampistas (incluye MC, MCD, MCO, MD, MI, etc.)
-    const midfielders = players.filter(p => 
-      p.position_specific?.abbreviation === 'MED' || p.position_zone?.abbreviation === 'MED' ||
-      p.position_specific?.abbreviation === 'MC' || p.position_specific?.abbreviation === 'MCD' ||
-      p.position_specific?.abbreviation === 'MCO' || p.position_specific?.abbreviation === 'MD' ||
-      p.position_specific?.abbreviation === 'MI'
-    )
-    midfielders.forEach((player, index) => {
-      if (positionsByRole['MED'][index]) {
-        assignedPositions.push({ player, position: positionsByRole['MED'][index] })
-      }
-    })
-
-    // Asignar delanteros (incluye DC, SD, ED, EI, etc.)
-    const forwards = players.filter(p => 
-      p.position_specific?.abbreviation === 'DEL' || p.position_zone?.abbreviation === 'DEL' ||
-      p.position_specific?.abbreviation === 'DC' || p.position_specific?.abbreviation === 'SD' ||
-      p.position_specific?.abbreviation === 'ED' || p.position_specific?.abbreviation === 'EI'
-    )
-    forwards.forEach((player, index) => {
-      if (positionsByRole['DEL'][index]) {
-        assignedPositions.push({ player, position: positionsByRole['DEL'][index] })
-      }
-    })
-
-    // Segunda pasada: asignar jugadores sin posición específica
-    const remainingPlayers = players.filter(p => 
-      !assignedPositions.some(ap => ap.player.id === p.id)
-    )
-
-    // Obtener posiciones no asignadas
-    const usedPositions = assignedPositions.map(ap => ap.position)
-    const availablePositions = formationPositions.filter(p => 
-      !usedPositions.some(up => up.x === p.x && up.y === p.y)
-    )
-
-    // Asignar jugadores restantes a posiciones disponibles
-    remainingPlayers.forEach((player, index) => {
-      if (availablePositions[index]) {
-        assignedPositions.push({ player, position: availablePositions[index] })
-      } else {
-        unassignedPlayers.push(player)
-      }
-    })
-
-    // Tercera pasada: si aún hay jugadores sin asignar, asignarlos a cualquier posición disponible
-    if (unassignedPlayers.length > 0 && availablePositions.length > assignedPositions.length) {
-      const remainingPositions = formationPositions.filter(p => 
-        !assignedPositions.some(ap => ap.position.x === p.x && ap.position.y === p.y)
+      // Para jugadores sin posición personalizada, usar posiciones de formación
+      const playersWithoutCustom = players.filter(p => !customPositions[p.id])
+      const usedPositions = assignedPositions.map(ap => ap.position)
+      const availablePositions = formationPositions.filter(p => 
+        !usedPositions.some(up => up.x === p.x && up.y === p.y)
       )
-      
-      unassignedPlayers.forEach((player, index) => {
-        if (remainingPositions[index]) {
-          assignedPositions.push({ player, position: remainingPositions[index] })
+
+      playersWithoutCustom.forEach((player, index) => {
+        if (availablePositions[index]) {
+          console.log(`FootballField - Using formation position for ${player.name}:`, availablePositions[index])
+          assignedPositions.push({ player, position: availablePositions[index] })
+        } else {
+          unassignedPlayers.push(player)
+        }
+      })
+    } else {
+      console.log('FootballField - Using formation positions for all players')
+      // Lógica original para asignar según roles
+      const positionsByRole: { [key: string]: Position[] } = {
+        'POR': formationPositions.filter(p => p.role === 'POR'),
+        'DEF': formationPositions.filter(p => p.role === 'DEF'),
+        'MED': formationPositions.filter(p => p.role === 'MED'),
+        'DEL': formationPositions.filter(p => p.role === 'DEL')
+      }
+
+      // Asignar porteros primero
+      const goalkeepers = players.filter(p => {
+        const specificPos = p.position_specific?.abbreviation
+        const zonePos = p.position_zone?.abbreviation
+        return String(specificPos).includes('POR') || String(zonePos).includes('POR')
+      })
+      goalkeepers.forEach((player, index) => {
+        if (positionsByRole['POR'][index]) {
+          assignedPositions.push({ player, position: positionsByRole['POR'][index] })
+        }
+      })
+
+      // Asignar defensas
+      const defenders = players.filter(p => {
+        const specificPos = p.position_specific?.abbreviation
+        const zonePos = p.position_zone?.abbreviation
+        return String(specificPos).includes('DEF') || String(zonePos).includes('DEF')
+      })
+      defenders.forEach((player, index) => {
+        if (positionsByRole['DEF'][index]) {
+          assignedPositions.push({ player, position: positionsByRole['DEF'][index] })
+        }
+      })
+
+      // Asignar mediocampistas
+      const midfielders = players.filter(p => {
+        const specificPos = p.position_specific?.abbreviation
+        const zonePos = p.position_zone?.abbreviation
+        return String(specificPos).includes('MED') || String(zonePos).includes('MED')
+      })
+      midfielders.forEach((player, index) => {
+        if (positionsByRole['MED'][index]) {
+          assignedPositions.push({ player, position: positionsByRole['MED'][index] })
+        }
+      })
+
+      // Asignar delanteros
+      const forwards = players.filter(p => {
+        const specificPos = p.position_specific?.abbreviation
+        const zonePos = p.position_zone?.abbreviation
+        return String(specificPos).includes('DEL') || String(zonePos).includes('DEL')
+      })
+      forwards.forEach((player, index) => {
+        if (positionsByRole['DEL'][index]) {
+          assignedPositions.push({ player, position: positionsByRole['DEL'][index] })
+        }
+      })
+
+      // Segunda pasada: asignar jugadores sin posición específica
+      const remainingPlayers = players.filter(p => 
+        !assignedPositions.some(ap => ap.player.id === p.id)
+      )
+
+      // Obtener posiciones no asignadas
+      const usedPositions = assignedPositions.map(ap => ap.position)
+      const availablePositions = formationPositions.filter(p => 
+        !usedPositions.some(up => up.x === p.x && up.y === p.y)
+      )
+
+      // Asignar jugadores restantes a posiciones disponibles
+      remainingPlayers.forEach((player, index) => {
+        if (availablePositions[index]) {
+          assignedPositions.push({ player, position: availablePositions[index] })
+        } else {
+          unassignedPlayers.push(player)
         }
       })
     }
 
-    // Debug: Log para verificar asignaciones
-    console.log(`[FootballField] ${teamName}:`, {
-      totalPlayers: players.length,
-      assignedPositions: assignedPositions.length,
-      unassignedPlayers: unassignedPlayers.length,
-      formationPositions: formationPositions.length,
-      gameType,
-      formation
-    })
-
+    console.log('FootballField - Final assigned positions:', assignedPositions.map(ap => ({ player: ap.player.name, position: ap.position })))
     return { assignedPositions, unassignedPlayers }
-  }, [team.starters, gameType, formation, isTeamA, teamName])
+  }, [team.starters, team.starters.length, gameType, formation, isTeamA, teamName, customPositions])
 
-  const handlePlayerClick = (player: Player, team: 'home' | 'away', role: 'starter' | 'substitute') => {
-    if (onPlayerMove) {
-      setMoveModal({
-        isOpen: true,
-        player,
-        currentTeam: team,
-        currentRole: role
-      })
-    } else {
-      onPlayerClick?.(player)
-    }
-  }
-
-  const handleCloseModal = () => {
-    setMoveModal({
-      isOpen: false,
-      player: null,
-      currentTeam: 'home',
-      currentRole: 'starter'
-    })
-  }
-
-  // Funciones para drag and drop mejoradas
+  // Funciones para drag and drop
   const handleMouseDown = useCallback((e: React.MouseEvent, player: Player) => {
     e.preventDefault()
     e.stopPropagation()
@@ -325,10 +321,15 @@ const FootballField: React.FC<FootballFieldProps> = ({
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
     
-    // Guardar la nueva posición del jugador
-    setPlayerPositions(prev => ({
+    // Guardar la nueva posición personalizada del jugador
+    setCustomPositions(prev => ({
       ...prev,
-      [draggedPlayer.id]: { x, y }
+      [draggedPlayer.id]: { 
+        x, 
+        y, 
+        role: draggedPlayer.position_specific?.abbreviation || draggedPlayer.position_zone?.abbreviation || 'MED',
+        zone: 'midfield' // Por defecto, pero se puede mejorar
+      }
     }))
     
     setDraggedPlayer(null)
@@ -349,26 +350,80 @@ const FootballField: React.FC<FootballFieldProps> = ({
 
   // Obtener formación y nombre local según el tipo de juego
   const getFormationNameAndLabel = () => {
-    if (gameType === '5v5') return { formation: '1-2-2', label: 'BabyFutbol' }
-    if (gameType === '7v7') return { formation: '2-3-1', label: 'Futbolito' }
-    return { formation, label: 'Fútbol 11' }
+    if (gameType === '5v5') return { formation: '1-2-2', label: 'BabyFutbol (Amistoso)' }
+    if (gameType === '7v7') return { formation: '2-3-1', label: 'Futbolito (Amistoso)' }
+    return { formation: formation?.name || '4-4-2', label: 'Fútbol 11 (Oficial)' }
   }
   const { formation: formationLabel, label: gameTypeLabel } = getFormationNameAndLabel()
 
+  const handleSwapPlayer = useCallback((playerId: number) => {
+    console.log('handleSwapPlayer called for playerId:', playerId)
+    
+    // Buscar si es un suplente
+    const substitute = team.substitutes.find(p => p.id === playerId)
+    if (substitute) {
+      console.log('Suplente encontrado, abriendo modal:', substitute.name)
+      setSelectedSubstitute(substitute)
+      setShowSwapModal(true)
+      return
+    }
+    
+    // Si es titular, NO hacer intercambio automático
+    // Solo permitir movimiento de posición en la cancha
+    console.log('Titular clickeado, permitiendo solo movimiento de posición')
+  }, [team.substitutes])
+
+  const handleSwapConfirm = useCallback((substituteId: number, starterId: number) => {
+    console.log('Confirmando intercambio:', { substituteId, starterId })
+    console.log('FootballField - Posiciones personalizadas ANTES del intercambio:', customPositions)
+    
+    // Transferir posiciones personalizadas en lugar de limpiarlas
+    setCustomPositions(prev => {
+      const newPositions = { ...prev }
+      
+      // Obtener las posiciones personalizadas de ambos jugadores
+      const substitutePosition = newPositions[substituteId]
+      const starterPosition = newPositions[starterId]
+      
+      console.log('FootballField - Posiciones encontradas:', {
+        substitutePosition,
+        starterPosition
+      })
+      
+      // Limpiar las posiciones actuales
+      delete newPositions[substituteId]
+      delete newPositions[starterId]
+      
+      // Transferir las posiciones personalizadas
+      if (substitutePosition) {
+        newPositions[starterId] = substitutePosition // El suplente va a la posición del titular
+        console.log(`FootballField - Transferida posición de suplente ${substituteId} a titular ${starterId}:`, substitutePosition)
+      }
+      if (starterPosition) {
+        newPositions[substituteId] = starterPosition // El titular va a la posición del suplente
+        console.log(`FootballField - Transferida posición de titular ${starterId} a suplente ${substituteId}:`, starterPosition)
+      }
+      
+      console.log('FootballField - Posiciones personalizadas DESPUÉS del intercambio:', newPositions)
+      return newPositions
+    })
+    
+    if (onSwapTwoPlayers) {
+      // Intercambiar directamente las posiciones
+      onSwapTwoPlayers(substituteId, starterId)
+    }
+    
+    setShowSwapModal(false)
+    setSelectedSubstitute(null)
+  }, [onSwapTwoPlayers, customPositions])
+
+  const handleSwapCancel = useCallback(() => {
+    setShowSwapModal(false)
+    setSelectedSubstitute(null)
+  }, [])
+
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-      {/* Overlay invisible para capturar eventos fuera de la cancha */}
-      {isDragging && (
-        <div 
-          className="fixed inset-0 z-50 pointer-events-auto"
-          onClick={() => {
-            setDraggedPlayer(null)
-            setDragPosition(null)
-            setIsDragging(false)
-          }}
-        />
-      )}
-
       {/* Header de la cancha */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -392,28 +447,13 @@ const FootballField: React.FC<FootballFieldProps> = ({
         </div>
       </div>
 
-      {/* Cancha de Fútbol mejorada */}
+      {/* Cancha de Fútbol */}
       <div 
         ref={fieldRef}
         className="relative w-full h-96 rounded-lg shadow-lg overflow-hidden border-2 border-green-600 pointer-events-auto"
-        onMouseMove={(e) => {
-          // Solo manejar eventos si estamos arrastrando y dentro del área de la cancha
-          if (draggedPlayer && fieldRef.current && fieldRef.current.contains(e.target as Node)) {
-            handleMouseMove(e)
-          }
-        }}
-        onMouseUp={(e) => {
-          // Solo manejar eventos si estamos arrastrando y dentro del área de la cancha
-          if (draggedPlayer && fieldRef.current && fieldRef.current.contains(e.target as Node)) {
-            handleMouseUp(e)
-          }
-        }}
-        onMouseLeave={(e) => {
-          // Solo manejar eventos si estamos arrastrando y dentro del área de la cancha
-          if (draggedPlayer && fieldRef.current && fieldRef.current.contains(e.target as Node)) {
-            handleMouseUp(e)
-          }
-        }}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         {/* Imagen de la cancha como fondo */}
         <div 
@@ -444,13 +484,13 @@ const FootballField: React.FC<FootballFieldProps> = ({
           <div className={`absolute top-3/4 left-0 w-full h-1/4 ${getZoneColor('attack')} opacity-20`}></div>
           <div className={`absolute bottom-3/4 left-0 w-full h-1/4 ${getZoneColor('attack')} opacity-20`}></div>
         </div>
-        
+
         {/* Jugadores Asignados */}
         {assignPlayersToPositions.assignedPositions.map(({ player, position }) => {
           // Usar posición personalizada si existe, sino usar la posición asignada
-          const customPosition = playerPositions[player.id]
+          const customPosition = customPositions[player.id]
           const finalPosition = customPosition || position
-
+          
           return (
             <div
               key={`starter-${player.id}`}
@@ -461,28 +501,14 @@ const FootballField: React.FC<FootballFieldProps> = ({
                 left: `${finalPosition.x}%`,
                 top: `${finalPosition.y}%`
               }}
-              onMouseDown={(e) => {
-                // Solo manejar eventos dentro del área de la cancha
-                if (fieldRef.current && fieldRef.current.contains(e.target as Node)) {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleMouseDown(e, player)
-                }
-              }}
-              onClick={(e) => {
-                // Solo manejar clicks dentro del área de la cancha
-                if (fieldRef.current && fieldRef.current.contains(e.target as Node)) {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handlePlayerClick(player, teamName === 'Equipo A' ? 'home' : 'away', 'starter')
-                }
-              }}
-              title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone.abbreviation} (Arrastra para mover)`}
+              onMouseDown={(e) => handleMouseDown(e, player)}
+              onClick={() => handleSwapPlayer(player.id)}
+              title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone?.abbreviation} (Arrastra para mover, clic para intercambiar)`}
             >
               <div className="w-full h-full flex flex-col items-center justify-center text-white text-xs font-bold">
                 <div className="text-[10px] leading-none font-semibold">{player.name.split(' ')[0]}</div>
                 <div className="text-[8px] leading-none opacity-90">
-                  {player.position_specific?.abbreviation || player.position_zone.abbreviation}
+                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation}
                 </div>
               </div>
             </div>
@@ -501,7 +527,7 @@ const FootballField: React.FC<FootballFieldProps> = ({
             <div className="w-full h-full flex flex-col items-center justify-center text-white text-xs font-bold">
               <div className="text-[10px] leading-none font-semibold">{draggedPlayer.name.split(' ')[0]}</div>
               <div className="text-[8px] leading-none opacity-90">
-                {draggedPlayer.position_specific?.abbreviation || draggedPlayer.position_zone.abbreviation}
+                {draggedPlayer.position_specific?.abbreviation || draggedPlayer.position_zone?.abbreviation}
               </div>
             </div>
           </div>
@@ -517,12 +543,12 @@ const FootballField: React.FC<FootballFieldProps> = ({
               <div
                 key={`substitute-${player.id}`}
                 className={`p-2 ${teamColor} rounded-lg text-white text-xs cursor-pointer hover:opacity-80 transition-opacity`}
-                onClick={() => handlePlayerClick(player, teamName === 'Equipo A' ? 'home' : 'away', 'substitute')}
-                title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone.abbreviation} (Click para mover)`}
+                onClick={() => handleSwapPlayer(player.id)}
+                title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone?.abbreviation} (Click para intercambiar)`}
               >
                 <div className="font-semibold truncate">{player.name}</div>
                 <div className="text-[10px] opacity-90">
-                  {player.position_specific?.abbreviation || player.position_zone.abbreviation}
+                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation}
                 </div>
               </div>
             ))}
@@ -553,15 +579,16 @@ const FootballField: React.FC<FootballFieldProps> = ({
         </div>
       </div>
 
-      {/* Modal para mover jugadores */}
-      <PlayerMoveModal
-        isOpen={moveModal.isOpen}
-        onClose={handleCloseModal}
-        player={moveModal.player}
-        currentTeam={moveModal.currentTeam}
-        currentRole={moveModal.currentRole}
-        onMovePlayer={onPlayerMove || (() => {})}
-      />
+      {/* Modal de Intercambio */}
+      {showSwapModal && selectedSubstitute && (
+        <SwapPlayerModal
+          isOpen={showSwapModal}
+          substitute={selectedSubstitute}
+          availableStarters={team.starters}
+          onConfirm={handleSwapConfirm}
+          onCancel={handleSwapCancel}
+        />
+      )}
     </div>
   )
 }

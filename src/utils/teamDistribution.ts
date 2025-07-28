@@ -85,41 +85,221 @@ export const calculateTeamDistribution = (
   const startersPerTeam = config.startersPerTeam
   const substitutesPerTeam = Math.min(playersPerTeam - startersPerTeam, config.maxSubstitutesPerTeam)
 
-  // Mezclar jugadores para distribución aleatoria
-  const shuffledPlayers = shuffleArray([...players])
+  // Para partidos internos del club (5v5, 7v7), las posiciones son referenciales
+  // No es obligatorio tener un portero específico - son partidos amistosos entre amigos
+  const isInternalMatch = gameType === '5v5' || gameType === '7v7'
+  
+  if (isInternalMatch) {
+    // Distribución flexible para partidos amistosos entre amigos
+    // No es necesario seguir reglas estrictas de posiciones
+    const shuffledPlayers = shuffleArray([...players])
+    
+    console.log(`[TeamDistribution] 🏆 Partido amistoso: ${players.length} jugadores para ${gameType}`)
+    console.log(`[TeamDistribution] Titulares por equipo: ${startersPerTeam}`)
+    
+    // Distribuir jugadores titulares equitativamente
+    const homeStarters = shuffledPlayers.slice(0, startersPerTeam)
+    const awayStarters = shuffledPlayers.slice(startersPerTeam, startersPerTeam * 2)
+    
+    console.log(`[TeamDistribution] Equipo A titulares: ${homeStarters.length}`)
+    console.log(`[TeamDistribution] Equipo B titulares: ${awayStarters.length}`)
+    
+    // Los jugadores restantes se convierten en suplentes distribuidos aleatoriamente
+    // En partidos amistosos, no importa si hay más suplentes en un equipo que en otro
+    const remainingPlayers = shuffledPlayers.slice(startersPerTeam * 2)
+    
+    console.log(`[TeamDistribution] Jugadores restantes para suplentes: ${remainingPlayers.length}`)
+    
+    // Distribuir suplentes de forma completamente aleatoria
+    // En partidos amistosos, la distribución desigual es normal
+    const shuffledRemaining = shuffleArray([...remainingPlayers])
+    const totalSubstitutes = remainingPlayers.length
+    
+    // Distribuir suplentes de forma aleatoria (puede ser desigual)
+    let homeSubstitutes: Player[] = []
+    let awaySubstitutes: Player[] = []
+    
+    if (totalSubstitutes > 0) {
+      // Para partidos amistosos, distribuir de forma más aleatoria
+      // Puede que un equipo tenga más suplentes que otro
+      const homeSubstitutesCount = Math.floor(totalSubstitutes / 2)
+      const awaySubstitutesCount = totalSubstitutes - homeSubstitutesCount
+      
+      homeSubstitutes = shuffledRemaining.slice(0, homeSubstitutesCount)
+      awaySubstitutes = shuffledRemaining.slice(homeSubstitutesCount)
+      
+      console.log(`[TeamDistribution] Equipo A suplentes: ${homeSubstitutes.length}`)
+      console.log(`[TeamDistribution] Equipo B suplentes: ${awaySubstitutes.length}`)
+      console.log(`[TeamDistribution] 💡 Distribución flexible para partido amistoso`)
+    }
+    
+    // Crear equipos
+    const homeTeam: TeamSection = {
+      starters: homeStarters,
+      substitutes: homeSubstitutes,
+      averageSkill: calculateAverageSkill(homeStarters)
+    }
 
-  // Distribuir jugadores equitativamente
-  const homeTeam: TeamSection = {
-    starters: shuffledPlayers.slice(0, startersPerTeam),
-    substitutes: shuffledPlayers.slice(startersPerTeam, startersPerTeam + substitutesPerTeam),
-    averageSkill: 0
+    const awayTeam: TeamSection = {
+      starters: awayStarters,
+      substitutes: awaySubstitutes,
+      averageSkill: calculateAverageSkill(awayStarters)
+    }
+
+    // Jugadores sin asignar (si quedan)
+    const assignedPlayers = [...homeStarters, ...awayStarters, ...homeSubstitutes, ...awaySubstitutes]
+    const unassigned = players.filter(p => !assignedPlayers.some(ap => ap.id === p.id))
+
+    console.log(`[TeamDistribution] Total asignados: ${assignedPlayers.length}`)
+    console.log(`[TeamDistribution] Sin asignar: ${unassigned.length}`)
+    console.log(`[TeamDistribution] ✅ Listo para partido amistoso!`)
+
+    return {
+      homeTeam,
+      awayTeam,
+      unassigned,
+      gameType,
+      formation: formation || undefined,
+      balanceScore: calculateBalanceScore(homeTeam, awayTeam),
+      generatedAt: new Date().toISOString()
+    }
+  } else {
+    // Para fútbol 11 (campeonatos o partidos oficiales), mantener la lógica estricta
+    console.log(`[TeamDistribution] 🏆 Partido oficial: ${players.length} jugadores para ${gameType}`)
+    console.log(`[TeamDistribution] Aplicando reglas estrictas de posiciones`)
+    
+    // Separar jugadores por posición usando includes para evitar errores de tipos
+    const goalkeepers = players.filter(p => {
+      const specificPos = p.position_specific?.abbreviation
+      const zonePos = p.position_zone?.abbreviation
+      return String(specificPos).includes('POR') || String(zonePos).includes('POR')
+    })
+    
+    const defenders = players.filter(p => {
+      const specificPos = p.position_specific?.abbreviation
+      const zonePos = p.position_zone?.abbreviation
+      return String(specificPos).includes('DEF') || String(zonePos).includes('DEF')
+    })
+    
+    const midfielders = players.filter(p => {
+      const specificPos = p.position_specific?.abbreviation
+      const zonePos = p.position_zone?.abbreviation
+      return String(specificPos).includes('MED') || String(zonePos).includes('MED')
+    })
+    
+    const forwards = players.filter(p => {
+      const specificPos = p.position_specific?.abbreviation
+      const zonePos = p.position_zone?.abbreviation
+      return String(specificPos).includes('DEL') || String(zonePos).includes('DEL')
+    })
+    
+    const others = players.filter(p => {
+      const specificPos = p.position_specific?.abbreviation
+      const zonePos = p.position_zone?.abbreviation
+      const specificStr = String(specificPos)
+      const zoneStr = String(zonePos)
+      return !(specificStr.includes('POR') || specificStr.includes('DEF') || specificStr.includes('MED') || specificStr.includes('DEL') ||
+               zoneStr.includes('POR') || zoneStr.includes('DEF') || zoneStr.includes('MED') || zoneStr.includes('DEL'))
+    })
+
+    // Mezclar cada grupo
+    const shuffledGoalkeepers = shuffleArray(goalkeepers)
+    const shuffledDefenders = shuffleArray(defenders)
+    const shuffledMidfielders = shuffleArray(midfielders)
+    const shuffledForwards = shuffleArray(forwards)
+    const shuffledOthers = shuffleArray(others)
+
+    // Distribuir jugadores de forma balanceada
+    const homeStarters: Player[] = []
+    const awayStarters: Player[] = []
+
+    // Asignar porteros primero (1 por equipo)
+    if (shuffledGoalkeepers.length >= 2) {
+      homeStarters.push(shuffledGoalkeepers[0])
+      awayStarters.push(shuffledGoalkeepers[1])
+    } else if (shuffledGoalkeepers.length === 1) {
+      homeStarters.push(shuffledGoalkeepers[0])
+      // Si solo hay 1 portero, asignar un jugador de otra posición al equipo B
+      const availableForAway = [...shuffledDefenders, ...shuffledMidfielders, ...shuffledForwards, ...shuffledOthers]
+      if (availableForAway.length > 0) {
+        awayStarters.push(availableForAway[0])
+      }
+    }
+
+    // Asignar defensas
+    const defendersNeeded = 4 // Para 11v11
+    for (let i = 0; i < defendersNeeded && i < shuffledDefenders.length; i++) {
+      if (homeStarters.length < startersPerTeam) {
+        homeStarters.push(shuffledDefenders[i])
+      } else if (awayStarters.length < startersPerTeam) {
+        awayStarters.push(shuffledDefenders[i])
+      }
+    }
+
+    // Asignar mediocampistas
+    const midfieldersNeeded = 4 // Para 11v11
+    for (let i = 0; i < midfieldersNeeded && i < shuffledMidfielders.length; i++) {
+      if (homeStarters.length < startersPerTeam) {
+        homeStarters.push(shuffledMidfielders[i])
+      } else if (awayStarters.length < startersPerTeam) {
+        awayStarters.push(shuffledMidfielders[i])
+      }
+    }
+
+    // Asignar delanteros
+    const forwardsNeeded = 2 // Para 11v11
+    for (let i = 0; i < forwardsNeeded && i < shuffledForwards.length; i++) {
+      if (homeStarters.length < startersPerTeam) {
+        homeStarters.push(shuffledForwards[i])
+      } else if (awayStarters.length < startersPerTeam) {
+        awayStarters.push(shuffledForwards[i])
+      }
+    }
+
+    // Completar con otros jugadores si es necesario
+    const allRemaining = [
+      ...shuffledGoalkeepers.slice(2),
+      ...shuffledDefenders.slice(defendersNeeded),
+      ...shuffledMidfielders.slice(midfieldersNeeded),
+      ...shuffledForwards.slice(forwardsNeeded),
+      ...shuffledOthers
+    ]
+
+    for (const player of allRemaining) {
+      if (homeStarters.length < startersPerTeam) {
+        homeStarters.push(player)
+      } else if (awayStarters.length < startersPerTeam) {
+        awayStarters.push(player)
+      }
+    }
+
+    // Crear equipos
+    const homeTeam: TeamSection = {
+      starters: homeStarters,
+      substitutes: [],
+      averageSkill: calculateAverageSkill(homeStarters)
+    }
+
+    const awayTeam: TeamSection = {
+      starters: awayStarters,
+      substitutes: [],
+      averageSkill: calculateAverageSkill(awayStarters)
+    }
+
+    // Jugadores sin asignar
+    const assignedPlayers = [...homeStarters, ...awayStarters]
+    const unassigned = players.filter(p => !assignedPlayers.some(ap => ap.id === p.id))
+
+    return {
+      homeTeam,
+      awayTeam,
+      unassigned,
+      gameType,
+      formation: formation || undefined,
+      balanceScore: calculateBalanceScore(homeTeam, awayTeam),
+      generatedAt: new Date().toISOString()
+    }
   }
-
-  const awayTeam: TeamSection = {
-    starters: shuffledPlayers.slice(startersPerTeam + substitutesPerTeam, startersPerTeam * 2 + substitutesPerTeam),
-    substitutes: shuffledPlayers.slice(startersPerTeam * 2 + substitutesPerTeam),
-    averageSkill: 0
-  }
-
-  // Calcular promedios de habilidad
-  homeTeam.averageSkill = calculateAverageSkill(homeTeam.starters)
-  awayTeam.averageSkill = calculateAverageSkill(awayTeam.starters)
-
-  // Jugadores sin asignar (si los hay)
-  const assignedCount = startersPerTeam * 2 + substitutesPerTeam * 2
-  const unassigned = shuffledPlayers.slice(assignedCount)
-
-  const distribution: TeamDistribution = {
-    homeTeam,
-    awayTeam,
-    unassigned,
-    gameType,
-    formation: formation || undefined,
-    balanceScore: calculateBalanceScore(homeTeam, awayTeam),
-    generatedAt: new Date().toISOString()
-  }
-
-  return distribution
 }
 
 // Validar distribución de equipos
@@ -213,6 +393,8 @@ export const movePlayerInDistribution = (
 
   const player = sourceArray[playerIndex]
   console.log('Jugador encontrado:', player.name)
+  
+  // Remover jugador de la posición original
   sourceArray.splice(playerIndex, 1)
 
   // Validar límites antes de mover
@@ -227,10 +409,14 @@ export const movePlayerInDistribution = (
   })
 
   if (toRole === 'starter' && targetArray.length >= config.startersPerTeam) {
+    // Si no se puede agregar como titular, devolver el jugador a su posición original
+    sourceArray.push(player)
     throw new Error(`No se puede agregar más titulares. Máximo: ${config.startersPerTeam}`)
   }
 
   if (toRole === 'substitute' && targetArray.length >= config.maxSubstitutesPerTeam) {
+    // Si no se puede agregar como suplente, devolver el jugador a su posición original
+    sourceArray.push(player)
     throw new Error(`No se puede agregar más suplentes. Máximo: ${config.maxSubstitutesPerTeam}`)
   }
 

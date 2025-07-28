@@ -1,139 +1,124 @@
 'use client'
 
 import React from 'react'
-import { TeamDistribution } from '@/types'
 import FootballField from './FootballField'
+import { TeamDistribution, TeamFormation } from '@/types'
 
 interface TeamManagerProps {
-  distribution: TeamDistribution
-  gameType?: '5v5' | '7v7' | '11v11'
-  formation?: string
-  onPlayerMove: (
-    playerId: number,
-    fromTeam: 'home' | 'away',
-    fromRole: 'starter' | 'substitute',
-    toTeam: 'home' | 'away',
-    toRole: 'starter' | 'substitute'
-  ) => void
+  distribution: TeamDistribution | null
+  gameType: '5v5' | '7v7' | '11v11'
+  formation?: TeamFormation | null
   onRegenerate: () => void
-  onSave: () => void
-  isGenerating: boolean
+  onSwapPlayer?: (playerId: number) => void
+  onSwapTwoPlayers?: (player1Id: number, player2Id: number) => void
+  isGenerating?: boolean
 }
 
 const TeamManager: React.FC<TeamManagerProps> = ({
   distribution,
-  gameType = '11v11',
-  formation = '4-4-2',
-  onPlayerMove,
+  gameType = '5v5',
+  formation,
   onRegenerate,
-  onSave,
-  isGenerating
+  onSwapPlayer,
+  onSwapTwoPlayers,
+  isGenerating = false
 }) => {
+  if (!distribution) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No hay equipos generados</p>
+      </div>
+    )
+  }
+
+  const { homeTeam, awayTeam, unassigned } = distribution
+  
   // Calcular estadísticas
-  const totalPlayers = distribution.homeTeam.starters.length + distribution.awayTeam.starters.length
-  const totalSubstitutes = distribution.homeTeam.substitutes.length + distribution.awayTeam.substitutes.length
-  const totalUnassigned = distribution.unassigned.length
+  const totalPlayers = homeTeam.starters.length + awayTeam.starters.length
+  const totalSubstitutes = homeTeam.substitutes.length + awayTeam.substitutes.length
+  const totalUnassigned = unassigned.length
   
   // Calcular balance (promedio de habilidades)
   const allPlayers = [
-    ...distribution.homeTeam.starters,
-    ...distribution.homeTeam.substitutes,
-    ...distribution.awayTeam.starters,
-    ...distribution.awayTeam.substitutes
+    ...homeTeam.starters,
+    ...homeTeam.substitutes,
+    ...awayTeam.starters,
+    ...awayTeam.substitutes
   ]
   
   const averageSkill = allPlayers.length > 0 
-    ? allPlayers.reduce((acc, player) => acc + player.skill_level, 0) / allPlayers.length
+    ? Math.round(allPlayers.reduce((sum, p) => sum + p.skill_level, 0) / allPlayers.length)
     : 0
-  
-  const balanceScore = Math.round(averageSkill * 10)
 
   return (
     <div className="space-y-6">
-      {/* Resumen de Equipos */}
+      {/* Header con estadísticas */}
       <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <span>🏆</span>
-            Equipos Generados
-          </h3>
-          <div className="flex gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl">🏆</span>
+              <h2 className="text-xl font-bold">
+                {gameType === '5v5' || gameType === '7v7' ? 'Equipos Amistosos' : 'Equipos Generados'}
+              </h2>
+            </div>
+            <div className="flex space-x-6 text-sm">
+              <span>{totalPlayers} Titulares</span>
+              <span>{totalSubstitutes} Suplentes</span>
+              <span>{totalUnassigned} Sin Asignar</span>
+              <span>{averageSkill}/100 Balance</span>
+            </div>
+          </div>
+          <div className="flex space-x-3">
             <button
               onClick={onRegenerate}
               disabled={isGenerating}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+              className="bg-white/20 hover:bg-white/30 disabled:opacity-50 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Regenerar
+              <span className="text-lg">🔄</span>
+              <span>Regenerar</span>
             </button>
-            <button
-              onClick={onSave}
-              disabled={isGenerating}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-              Guardar
-            </button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold">{totalPlayers}</div>
-            <div className="text-sm opacity-90">Titulares</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{totalSubstitutes}</div>
-            <div className="text-sm opacity-90">Suplentes</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{totalUnassigned}</div>
-            <div className="text-sm opacity-90">Sin Asignar</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{balanceScore}/100</div>
-            <div className="text-sm opacity-90">Balance</div>
           </div>
         </div>
       </div>
 
-      {/* Canchas de Fútbol */}
+      {/* Campos de fútbol */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Equipo A */}
         <FootballField
-          team={distribution.homeTeam}
+          key={`home-${homeTeam.starters.length}-${homeTeam.substitutes.length}`}
+          team={homeTeam}
           teamName="Equipo A"
           teamColor="bg-blue-600"
-          formation={formation}
           gameType={gameType}
-          onPlayerMove={onPlayerMove}
+          formation={formation}
+          onSwapPlayer={onSwapPlayer}
+          onSwapTwoPlayers={onSwapTwoPlayers}
         />
 
         {/* Equipo B */}
         <FootballField
-          team={distribution.awayTeam}
+          key={`away-${awayTeam.starters.length}-${awayTeam.substitutes.length}`}
+          team={awayTeam}
           teamName="Equipo B"
           teamColor="bg-red-600"
-          formation={formation}
           gameType={gameType}
-          onPlayerMove={onPlayerMove}
+          formation={formation}
+          onSwapPlayer={onSwapPlayer}
+          onSwapTwoPlayers={onSwapTwoPlayers}
         />
       </div>
 
       {/* Jugadores sin asignar */}
-      {distribution.unassigned.length > 0 && (
+      {unassigned.length > 0 && (
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Jugadores Sin Asignar</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {distribution.unassigned.map((player) => (
+            {unassigned.map((player) => (
               <div key={player.id} className="bg-gray-50 rounded-lg p-3">
                 <div className="font-medium text-gray-900">{player.name}</div>
-                <div className="text-sm text-gray-600">
-                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation} • Nivel {player.skill_level}
+                <div className="text-sm text-gray-500">
+                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A'} • Nivel {player.skill_level}
                 </div>
               </div>
             ))}

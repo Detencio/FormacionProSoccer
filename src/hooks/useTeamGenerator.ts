@@ -1,11 +1,13 @@
-import { useState, useCallback } from 'react'
-import { Player, TeamDistribution, TeamFormation, PlayerMove } from '@/types'
+import { useState, useCallback, useEffect } from 'react'
+import { Player, TeamDistribution, TeamFormation } from '@/types'
 import { 
   calculateTeamDistribution, 
   movePlayerInDistribution, 
-  canMovePlayer,
+  calculateAverageSkill, 
+  calculateBalanceScore,
   validateTeamDistribution,
-  getDistributionStats
+  getDistributionStats,
+  GAME_CONFIGURATIONS 
 } from '@/utils/teamDistribution'
 
 export const useTeamGenerator = () => {
@@ -101,48 +103,178 @@ export const useTeamGenerator = () => {
     toTeam: 'home' | 'away',
     toRole: 'starter' | 'substitute'
   ) => {
-    console.log('movePlayer called with:', { playerId, fromTeam, fromRole, toTeam, toRole })
-    console.log('useTeamGenerator - movePlayer llamado:', {
-      playerId,
-      fromTeam,
-      fromRole,
-      toTeam,
-      toRole,
-      hasDistribution: !!distribution
-    })
-
-    if (!distribution) {
-      console.error('No hay distribución disponible para mover jugador')
-      setError('No hay equipos generados para mover jugadores')
-      return
-    }
+    console.log('movePlayer called:', { playerId, fromTeam, fromRole, toTeam, toRole })
+    if (!distribution) return
 
     try {
-      // Validar si se puede mover
-      if (!canMovePlayer(distribution, toTeam, toRole)) {
-        const errorMsg = 'No se puede mover más jugadores a esa posición'
-        console.error(errorMsg)
-        setError(errorMsg)
+      const newDistribution = movePlayerInDistribution(distribution, playerId, fromTeam, fromRole, toTeam, toRole)
+      setDistribution(newDistribution)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al mover jugador')
+    }
+  }, [distribution])
+
+  // Intercambiar dos jugadores específicos
+  const swapTwoPlayers = useCallback((
+    substituteId: number,
+    starterId: number
+  ) => {
+    console.log('swapTwoPlayers called:', { substituteId, starterId })
+    if (!distribution) return
+
+    try {
+      // Buscar el suplente
+      let substituteTeam: 'home' | 'away' | null = null
+      let substituteRole: 'substitute' = 'substitute'
+      
+      if (distribution.homeTeam.substitutes.some(p => p.id === substituteId)) {
+        substituteTeam = 'home'
+      } else if (distribution.awayTeam.substitutes.some(p => p.id === substituteId)) {
+        substituteTeam = 'away'
+      }
+
+      // Buscar el titular
+      let starterTeam: 'home' | 'away' | null = null
+      let starterRole: 'starter' = 'starter'
+      
+      if (distribution.homeTeam.starters.some(p => p.id === starterId)) {
+        starterTeam = 'home'
+      } else if (distribution.awayTeam.starters.some(p => p.id === starterId)) {
+        starterTeam = 'away'
+      }
+
+      if (!substituteTeam || !starterTeam) {
+        console.error('Uno o ambos jugadores no encontrados')
+        setError('Uno o ambos jugadores no encontrados')
         return
       }
 
-      console.log('Moviendo jugador en distribución...')
-      const newDistribution = movePlayerInDistribution(
-        distribution,
-        playerId,
-        fromTeam,
-        fromRole,
-        toTeam,
-        toRole
-      )
+      console.log('Jugadores encontrados:', {
+        substitute: { team: substituteTeam, role: substituteRole },
+        starter: { team: starterTeam, role: starterRole }
+      })
+
+      // Crear nueva distribución con nuevas referencias de arrays
+      const newDistribution = {
+        ...distribution,
+        homeTeam: {
+          ...distribution.homeTeam,
+          starters: [...distribution.homeTeam.starters],
+          substitutes: [...distribution.homeTeam.substitutes]
+        },
+        awayTeam: {
+          ...distribution.awayTeam,
+          starters: [...distribution.awayTeam.starters],
+          substitutes: [...distribution.awayTeam.substitutes]
+        }
+      }
       
-      console.log('Nueva distribución creada:', newDistribution)
+      // Encontrar y remover jugadores
+      const substituteArray = substituteTeam === 'home' ? newDistribution.homeTeam.substitutes : newDistribution.awayTeam.substitutes
+      const starterArray = starterTeam === 'home' ? newDistribution.homeTeam.starters : newDistribution.awayTeam.starters
+      
+      const substituteIndex = substituteArray.findIndex(p => p.id === substituteId)
+      const starterIndex = starterArray.findIndex(p => p.id === starterId)
+      
+      if (substituteIndex === -1 || starterIndex === -1) {
+        console.error('Jugadores no encontrados en sus arrays')
+        setError('Error al encontrar jugadores')
+        return
+      }
+
+      const substitute = substituteArray[substituteIndex]
+      const starter = starterArray[starterIndex]
+
+      // Remover jugadores de sus posiciones actuales
+      substituteArray.splice(substituteIndex, 1)
+      starterArray.splice(starterIndex, 1)
+
+      // Intercambiar posiciones
+      substituteArray.push(starter)  // Titular va a suplentes
+      starterArray.push(substitute)  // Suplente va a titulares
+
+      // Recalcular promedios
+      newDistribution.homeTeam.averageSkill = calculateAverageSkill(newDistribution.homeTeam.starters)
+      newDistribution.awayTeam.averageSkill = calculateAverageSkill(newDistribution.awayTeam.starters)
+      newDistribution.balanceScore = calculateBalanceScore(newDistribution.homeTeam, newDistribution.awayTeam)
+
       setDistribution(newDistribution)
       setError(null)
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Error al mover jugador'
-      console.error('Error moviendo jugador:', errorMsg)
-      setError(errorMsg)
+      console.log('Intercambio exitoso entre suplente y titular')
+    } catch (error) {
+      console.error('Error en intercambio:', error)
+      setError(error instanceof Error ? error.message : 'Error al intercambiar jugadores')
+    }
+  }, [distribution])
+
+  // Intercambiar jugador titular por suplente
+  const swapPlayer = useCallback((
+    playerId: number
+  ) => {
+    console.log('swapPlayer called:', { playerId })
+    if (!distribution) return
+
+    // Buscar el jugador en ambos equipos
+    let foundTeam: 'home' | 'away' | null = null
+    let foundRole: 'starter' | 'substitute' | null = null
+
+    // Buscar en equipo A
+    if (distribution.homeTeam.starters.some(p => p.id === playerId)) {
+      foundTeam = 'home'
+      foundRole = 'starter'
+    } else if (distribution.homeTeam.substitutes.some(p => p.id === playerId)) {
+      foundTeam = 'home'
+      foundRole = 'substitute'
+    }
+    // Buscar en equipo B
+    else if (distribution.awayTeam.starters.some(p => p.id === playerId)) {
+      foundTeam = 'away'
+      foundRole = 'starter'
+    } else if (distribution.awayTeam.substitutes.some(p => p.id === playerId)) {
+      foundTeam = 'away'
+      foundRole = 'substitute'
+    }
+
+    if (!foundTeam || !foundRole) {
+      console.error('Jugador no encontrado:', playerId)
+      setError('Jugador no encontrado')
+      return
+    }
+
+    console.log('Jugador encontrado:', { foundTeam, foundRole, playerId })
+
+    // Determinar el nuevo rol (intercambiar)
+    const newRole = foundRole === 'starter' ? 'substitute' : 'starter'
+    
+    // Verificar que el movimiento sea válido
+    const targetTeam = foundTeam === 'home' ? distribution.homeTeam : distribution.awayTeam
+    const targetArray = newRole === 'starter' ? targetTeam.starters : targetTeam.substitutes
+    
+    // Verificar límites
+    const config = GAME_CONFIGURATIONS[distribution.gameType]
+    if (newRole === 'starter' && targetArray.length >= config.startersPerTeam) {
+      console.error('No se puede agregar más titulares')
+      setError(`No se puede agregar más titulares. Máximo: ${config.startersPerTeam}`)
+      return
+    }
+
+    if (newRole === 'substitute' && targetArray.length >= config.maxSubstitutesPerTeam) {
+      console.error('No se puede agregar más suplentes')
+      setError(`No se puede agregar más suplentes. Máximo: ${config.maxSubstitutesPerTeam}`)
+      return
+    }
+    
+    console.log('Movimiento válido, ejecutando intercambio...')
+    
+    try {
+      // Mover el jugador
+      const newDistribution = movePlayerInDistribution(distribution, playerId, foundTeam, foundRole, foundTeam, newRole)
+      setDistribution(newDistribution)
+      setError(null)
+      console.log('Intercambio exitoso')
+    } catch (error) {
+      console.error('Error en intercambio:', error)
+      setError(error instanceof Error ? error.message : 'Error al intercambiar jugador')
     }
   }, [distribution])
 
@@ -247,6 +379,18 @@ export const useTeamGenerator = () => {
     return null
   }, [])
 
+  // Notificar cambios en la distribución
+  useEffect(() => {
+    if (distribution) {
+      console.log('useTeamGenerator: Distribución actualizada:', {
+        homeStarters: distribution.homeTeam.starters.length,
+        homeSubstitutes: distribution.homeTeam.substitutes.length,
+        awayStarters: distribution.awayTeam.starters.length,
+        awaySubstitutes: distribution.awayTeam.substitutes.length
+      })
+    }
+  }, [distribution])
+
   return {
     // Estado
     distribution,
@@ -263,6 +407,8 @@ export const useTeamGenerator = () => {
     generateTeams,
     regenerateTeams,
     movePlayer,
+    swapTwoPlayers, // Added swapTwoPlayers to the return object
+    swapPlayer,
     addPlayer,
     removePlayer,
     clearSelection,
