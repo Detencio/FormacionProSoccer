@@ -241,6 +241,9 @@ def get_player(player_id: int, db: Session = Depends(get_db), current_user: mode
 def update_player(player_id: int, player: schemas.PlayerUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Solo administradores pueden actualizar jugadores")
+    
+    print(f"🔍 DEBUG - Datos recibidos en backend: player_id={player_id}, player_data={player.dict()}")
+    
     db_player = crud.update_player(db, player_id, player)
     if not db_player:
         raise HTTPException(status_code=404, detail="Jugador no encontrado")

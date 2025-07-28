@@ -169,24 +169,63 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = {
-      ...formData,
-      jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
-      height: formData.height ? parseInt(formData.height) : undefined,
-      weight: formData.weight ? parseInt(formData.weight) : undefined,
-      skill_level: formData.skill_level,
-      // Incluir habilidades específicas
-      rit: formData.rit,
-      tir: formData.tir,
-      pas: formData.pas,
-      reg: formData.reg,
-      defense: formData.defense,
-      fis: formData.fis,
-      ...(player ? {} : { team_id: teamId })
-    };
-    onSubmit(data);
+    setLoading(true);
+    
+    try {
+      console.log('🔍 DEBUG - Datos del formulario antes de enviar:', {
+        formData,
+        photo_url: formData.photo_url,
+        photoPreview
+      });
+      
+      const playerData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        date_of_birth: formData.date_of_birth,
+        nationality: formData.country,
+        jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
+        height: formData.height ? parseInt(formData.height) : undefined,
+        weight: formData.weight ? parseInt(formData.weight) : undefined,
+        skill_level: formData.skill_level,
+        photo_url: formData.photo_url, // Agregar photo_url
+        // Habilidades específicas
+        rit: formData.rit,
+        tir: formData.tir,
+        pas: formData.pas,
+        reg: formData.reg,
+        defense: formData.defense,
+        fis: formData.fis,
+        position_zone_id: formData.position_zone_id,
+        position_specific_id: formData.position_specific_id,
+        team_id: formData.team_id
+      };
+      
+      console.log('🔍 DEBUG - Datos procesados para enviar:', playerData);
+      
+      if (player) {
+        // Actualizar jugador existente
+        await teamService.updatePlayer(player.id, playerData);
+        onClose();
+        if (onPlayerUpdated) {
+          onPlayerUpdated();
+        }
+      } else {
+        // Crear nuevo jugador
+        await teamService.createPlayer(playerData);
+        onClose();
+        if (onPlayerCreated) {
+          onPlayerCreated();
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error en el formulario:', error);
+      setError('Error al guardar jugador. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

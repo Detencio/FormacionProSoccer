@@ -247,10 +247,21 @@ class TeamService {
   // Actualizar un jugador
   async updatePlayer(playerId: number, playerData: UpdatePlayerRequest): Promise<Player> {
     try {
+      console.log('🔍 DEBUG - Datos enviados al backend:', {
+        playerId,
+        playerData,
+        photo_url: playerData.photo_url
+      });
+      
       const response = await api.put(`/players/${playerId}`, playerData);
       return response.data;
-    } catch (error) {
-      console.error('Error actualizando jugador en el backend:', error);
+    } catch (error: any) {
+      console.error('❌ Error actualizando jugador en el backend:', error);
+      console.error('🔍 DEBUG - Detalles del error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       throw new Error('Error al actualizar jugador');
     }
   }
