@@ -803,9 +803,7 @@ export default function TeamGenerator() {
     setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
   }, [])
 
-  const handlePlayerPreview = useCallback((player: Player) => {
-    setPreviewPlayer(player)
-  }, [])
+
 
   const handleTeamFilterChange = useCallback((teamId: number | null) => {
     setSelectedTeamId(teamId)
@@ -1471,7 +1469,7 @@ export default function TeamGenerator() {
                 onPlayerDeselect={onPlayerDeselect}
                 onRemoveManualPlayer={handleRemoveManualPlayer}
                 showManualPlayerControls={true}
-                onPlayerPreview={handlePlayerPreview}
+
               />
             )}
           </div>
