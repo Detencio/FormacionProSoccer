@@ -1,458 +1,669 @@
-# Guía de Desarrollo - Formación ProSoccer
+# 🛠️ Guía de Desarrollo - Formación Pro Soccer
 
-## Configuración del Entorno
+## 🎯 **Descripción General**
 
-### Requisitos Previos
-- **Node.js** 18+ 
-- **Python** 3.8+
-- **PostgreSQL** 13+
+Esta guía proporciona información completa para desarrolladores que trabajen en
+el proyecto **Formación Pro Soccer**. Incluye configuración del entorno,
+arquitectura del sistema, patrones de desarrollo y mejores prácticas
+implementadas.
+
+---
+
+## 🚀 **Configuración del Entorno**
+
+### **Requisitos Previos**
+
+- **Node.js** 18.0.0 o superior
+- **Python** 3.8 o superior
+- **PostgreSQL** 12 o superior
 - **Git** para control de versiones
 
-### Instalación Rápida
-```bash
-# Clonar repositorio
-git clone [repository-url]
-cd FormacionProSoccer
+### **Instalación Rápida**
 
-# Instalar dependencias frontend
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/formacion-pro-soccer.git
+cd formacion-pro-soccer
+
+# 2. Instalar dependencias frontend
 npm install
 
-# Instalar dependencias backend
-cd backend
-pip install -r requirements.txt
+# 3. Configurar entorno virtual Python
+python -m venv backend/venv
+backend\venv\Scripts\activate  # Windows
+source backend/venv/bin/activate  # Linux/Mac
 
-# Configurar base de datos
-python create_admin.py
-python create_supervisor.py
-python add_real_players.py
+# 4. Instalar dependencias backend
+pip install -r backend/requirements.txt
+
+# 5. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
+
+# 6. Iniciar desarrollo
+.\start-simple.bat
 ```
 
-### Scripts de Inicio
-```batch
-# Inicio completo (recomendado)
+### **Scripts de Desarrollo**
+
+```bash
+# Iniciar servidores
 .\start-simple.bat
 
-# Limpieza y reinicio
-.\clean-dev.bat
+# Validar dependencias
+.\validate-dependencies.bat
 
-# Solo frontend
-npm run dev
+# Limpiar puertos
+.\kill-ports.bat
 
-# Solo backend
-cd backend && uvicorn app.main:app --reload --port 9000
+# Limpiar caché
+npm run clean
 ```
 
-## Arquitectura del Proyecto
+---
 
-### Frontend (Next.js 14)
+## 🏗️ **Arquitectura del Sistema**
 
-#### Estructura de Componentes
+### **Estructura de Directorios**
+
 ```
-src/
-├── app/                    # App Router (Next.js 14)
-│   ├── dashboard/         # Panel principal
-│   ├── teams/            # Gestión de equipos
-│   ├── players/          # Gestión de jugadores
-│   ├── payments/          # Sistema de pagos
-│   ├── expenses/          # Gestión de gastos
-│   ├── matches/           # Partidos
-│   └── team-generator/    # Generador de equipos ⭐
-├── components/            # Componentes reutilizables
-│   ├── Layout/           # Layout principal
-│   ├── ui/               # Componentes base
-│   ├── teams/            # Componentes de equipos
-│   └── team-generator/   # Componentes del generador ⭐
-├── hooks/                # Hooks personalizados
-├── services/             # Servicios API
-├── store/                # Estado global (Zustand)
-├── types/                # Tipos TypeScript
-└── utils/                # Utilidades
+FormacionProSoccer/
+├── src/                          # Frontend (Next.js 14)
+│   ├── app/                     # App Router
+│   │   ├── dashboard/           # Dashboard principal
+│   │   ├── team-generator/      # Generador de equipos ⭐
+│   │   ├── teams/              # Gestión de equipos
+│   │   ├── payments/           # Sistema de pagos
+│   │   ├── expenses/           # Gestión de gastos
+│   │   └── matches/            # Gestión de partidos
+│   ├── components/             # Componentes reutilizables
+│   │   ├── team-generator/     # Componentes del generador
+│   │   ├── Layout/             # Layout y navegación
+│   │   └── ui/                 # Componentes UI base
+│   ├── hooks/                  # Custom React hooks
+│   ├── services/               # Servicios de API
+│   ├── store/                  # Estado global (Zustand)
+│   ├── types/                  # Definiciones TypeScript
+│   └── utils/                  # Utilidades
+├── backend/                     # Backend (FastAPI)
+│   ├── app/
+│   │   ├── models.py           # Modelos de base de datos
+│   │   ├── schemas.py          # Esquemas Pydantic
+│   │   ├── crud.py            # Operaciones CRUD
+│   │   ├── auth.py            # Autenticación JWT
+│   │   └── main.py            # Aplicación principal
+│   ├── requirements.txt        # Dependencias Python
+│   └── database.py            # Configuración DB
+├── docs/                       # Documentación
+├── public/                     # Assets estáticos
+└── scripts/                    # Scripts de automatización
 ```
 
-#### Patrones de Diseño Implementados
+### **Patrones de Diseño Implementados**
 
-##### 1. **Component-Based Architecture**
+#### **1. Component-Based Architecture**
+
 ```typescript
-// Componente reutilizable con props tipadas
-interface PlayerCardProps {
-  player: Player
-  isSelected: boolean
-  onSelect: (player: Player) => void
-  onDeselect: (player: Player) => void
-}
-
-const PlayerCard: React.FC<PlayerCardProps> = React.memo(({
-  player,
-  isSelected,
-  onSelect,
-  onDeselect
-}) => {
-  // Implementación optimizada
-})
-```
-
-##### 2. **Custom Hooks Pattern**
-```typescript
-// Hook personalizado para lógica compleja
-export const useTeamGenerator = () => {
-  const [distribution, setDistribution] = useState<TeamDistribution | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
-  
-  const generateTeams = useCallback((players: Player[]) => {
-    // Lógica de generación
-  }, [])
-  
-  const swapTwoPlayers = useCallback((substituteId: number, starterId: number) => {
-    // Lógica de intercambio
-  }, [distribution])
-  
-  return {
-    distribution,
-    isGenerating,
-    generateTeams,
-    swapTwoPlayers
-  }
-}
-```
-
-##### 3. **Service Layer Pattern**
-```typescript
-// Servicio para comunicación con API
-export class TeamGeneratorService {
-  static async getPlayers(teamId?: number): Promise<Player[]> {
-    const response = await fetch(`/api/players${teamId ? `?team_id=${teamId}` : ''}`)
-    return response.json()
-  }
-  
-  static async generateTeams(players: Player[], config: TeamConfig): Promise<TeamDistribution> {
-    const response = await fetch('/api/teams/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ players, config })
-    })
-    return response.json()
-  }
-}
-```
-
-### Backend (FastAPI)
-
-#### Estructura de la API
-```
-backend/
-├── app/
-│   ├── main.py           # Aplicación principal
-│   ├── config.py         # Configuración
-│   ├── database.py       # Conexión DB
-│   ├── models.py         # Modelos SQLAlchemy
-│   ├── schemas.py        # Esquemas Pydantic
-│   ├── crud.py          # Operaciones CRUD
-│   └── auth.py          # Autenticación
-├── requirements.txt      # Dependencias Python
-└── scripts/             # Scripts de inicialización
-```
-
-#### Patrones de Diseño Backend
-
-##### 1. **Repository Pattern**
-```python
-# Operaciones CRUD centralizadas
-class PlayerRepository:
-    @staticmethod
-    async def get_players_by_team(db: Session, team_id: int) -> List[Player]:
-        return db.query(Player).filter(Player.team_id == team_id).all()
-    
-    @staticmethod
-    async def create_player(db: Session, player_data: PlayerCreate) -> Player:
-        player = Player(**player_data.dict())
-        db.add(player)
-        db.commit()
-        return player
-```
-
-##### 2. **Dependency Injection**
-```python
-# Inyección de dependencias para testing
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@app.get("/players/")
-async def get_players(db: Session = Depends(get_db)):
-    return PlayerRepository.get_all(db)
-```
-
-## Nuevas Funcionalidades Implementadas
-
-### Team Generator - Arquitectura Avanzada
-
-#### 1. **Sistema de Posiciones Personalizadas**
-```typescript
-// Estado para posiciones personalizadas
-const [customPositions, setCustomPositions] = useState<{ 
-  [playerId: number]: Position 
-}>({})
-
-// Preservación durante intercambios
-const handleSwapConfirm = useCallback((substituteId: number, starterId: number) => {
-  setCustomPositions(prev => {
-    const newPositions = { ...prev }
-    const substitutePosition = newPositions[substituteId]
-    const starterPosition = newPositions[starterId]
-    
-    // Transferir posiciones
-    if (substitutePosition) {
-      newPositions[starterId] = substitutePosition
-    }
-    if (starterPosition) {
-      newPositions[substituteId] = starterPosition
-    }
-    
-    return newPositions
-  })
-}, [])
-```
-
-#### 2. **Algoritmos de Distribución Inteligente**
-```typescript
-// Distribución diferenciada por tipo de juego
-const calculateTeamDistribution = (players: Player[], gameType: string) => {
-  const isInternalMatch = ['5v5', '7v7'].includes(gameType)
-  
-  if (isInternalMatch) {
-    // Distribución aleatoria para partidos amistosos
-    return distributeRandomly(players)
-  } else {
-    // Distribución por posiciones para partidos oficiales
-    return distributeByPositions(players)
-  }
-}
-```
-
-#### 3. **Sistema de Intercambios Atómico**
-```typescript
-// Intercambio atómico sin estados intermedios
-const swapTwoPlayers = useCallback((substituteId: number, starterId: number) => {
-  const newDistribution = {
-    ...distribution,
-    homeTeam: {
-      ...distribution.homeTeam,
-      starters: [...distribution.homeTeam.starters],
-      substitutes: [...distribution.homeTeam.substitutes]
-    },
-    awayTeam: {
-      ...distribution.awayTeam,
-      starters: [...distribution.awayTeam.starters],
-      substitutes: [...distribution.awayTeam.substitutes]
-    }
-  }
-  
-  // Intercambio directo
-  const substituteArray = substituteTeam === 'home' ? 
-    newDistribution.homeTeam.substitutes : newDistribution.awayTeam.substitutes
-  const starterArray = starterTeam === 'home' ? 
-    newDistribution.homeTeam.starters : newDistribution.awayTeam.starters
-  
-  // Realizar intercambio
-  const substituteIndex = substituteArray.findIndex(p => p.id === substituteId)
-  const starterIndex = starterArray.findIndex(p => p.id === starterId)
-  
-  const [substitute] = substituteArray.splice(substituteIndex, 1)
-  const [starter] = starterArray.splice(starterIndex, 1)
-  
-  substituteArray.push(starter)
-  starterArray.push(substitute)
-  
-  setDistribution(newDistribution)
-}, [distribution])
-```
-
-### Optimizaciones de Rendimiento
-
-#### 1. **React.memo para Componentes Pesados**
-```typescript
-// Optimización de re-renders
-const PlayerCard = React.memo<PlayerCardProps>(({ 
-  player, 
-  isSelected, 
-  onSelect, 
-  onDeselect 
-}) => {
+// Componente modular y reutilizable
+const PlayerCard = memo(({ player, isSelected, onSelect, onDeselect }) => {
   const handleClick = useCallback(() => {
-    if (isSelected) {
-      onDeselect(player)
-    } else {
-      onSelect(player)
-    }
-  }, [player, isSelected, onSelect, onDeselect])
-  
+    isSelected ? onDeselect(player.id) : onSelect(player.id)
+  }, [player.id, isSelected, onSelect, onDeselect])
+
   return (
-    <div onClick={handleClick}>
-      {/* Contenido optimizado */}
+    <div className={`player-card ${isSelected ? 'selected' : ''}`}>
+      {/* Contenido del componente */}
     </div>
   )
 })
 ```
 
-#### 2. **useMemo para Cálculos Costosos**
+#### **2. Custom Hooks Pattern**
+
 ```typescript
-// Memoización de asignación de posiciones
-const assignPlayersToPositions = useMemo(() => {
-  const formationPositions = getFormationPositions(gameType, formation?.name || '4-4-2', isTeamA)
-  const players = [...team.starters]
-  
-  // Lógica de asignación optimizada
-  if (Object.keys(customPositions).length > 0) {
-    // Usar posiciones personalizadas
-    return assignWithCustomPositions(players, customPositions, formationPositions)
-  } else {
-    // Usar posiciones de formación
-    return assignWithFormationPositions(players, formationPositions)
-  }
-}, [team.starters, customPositions, gameType, formation, isTeamA])
+// useTeamGenerator.ts
+const useTeamGenerator = () => {
+  const [state, setState] = useState<TeamGeneratorState>({
+    selectedPlayers: [],
+    distribution: null,
+    isGenerating: false,
+    gameType: '5v5',
+    formation: null,
+  });
+
+  const generateTeams = useCallback(async (players: Player[]) => {
+    // Lógica de generación
+  }, []);
+
+  const swapTwoPlayers = useCallback(
+    (substituteId: number, starterId: number) => {
+      // Lógica de intercambio
+    },
+    []
+  );
+
+  return {
+    ...state,
+    generateTeams,
+    swapTwoPlayers,
+  };
+};
 ```
 
-#### 3. **Lazy Loading de Componentes**
-```typescript
-// Carga diferida de componentes pesados
-const SwapPlayerModal = lazy(() => import('./SwapPlayerModal'))
-const PlayerPreviewModal = lazy(() => import('./PlayerPreviewModal'))
+#### **3. Service Layer Pattern**
 
-// Suspense para manejo de carga
+```typescript
+// services/teamGeneratorService.ts
+export const teamGeneratorService = {
+  async generateTeams(
+    players: Player[],
+    gameType: string
+  ): Promise<TeamDistribution> {
+    const response = await api.post('/teams/generate', { players, gameType });
+    return response.data;
+  },
+
+  async saveTeams(teams: TeamDistribution): Promise<void> {
+    await api.post('/teams/save', teams);
+  },
+};
+```
+
+---
+
+## 🎮 **Team Generator - Funcionalidades Avanzadas**
+
+### **1. Sistema de Posiciones Personalizadas**
+
+#### **Implementación de Drag & Drop**
+
+```typescript
+// FootballField.tsx
+const handleMouseDown = (e: React.MouseEvent, player: Player) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  setDraggedPlayer(player);
+  setDragStart({ x: e.clientX, y: e.clientY });
+
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+};
+
+const handleMouseMove = useCallback(
+  (e: MouseEvent) => {
+    if (!draggedPlayer || !fieldRef.current) return;
+
+    const rect = fieldRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setCustomPositions(prev => ({
+      ...prev,
+      [draggedPlayer.id]: {
+        x: Math.max(0, Math.min(100, x)),
+        y: Math.max(0, Math.min(100, y)),
+        role: 'starter',
+        zone: getZoneFromPosition(x, y),
+      },
+    }));
+  },
+  [draggedPlayer]
+);
+```
+
+#### **Preservación Durante Swaps**
+
+```typescript
+const handleSwapConfirm = (substituteId: number, starterId: number) => {
+  // Transferir posiciones personalizadas
+  setCustomPositions(prev => {
+    const newPositions = { ...prev };
+    const substitutePosition = newPositions[substituteId];
+    const starterPosition = newPositions[starterId];
+
+    delete newPositions[substituteId];
+    delete newPositions[starterId];
+
+    if (substitutePosition) {
+      newPositions[starterId] = substitutePosition;
+    }
+    if (starterPosition) {
+      newPositions[substituteId] = starterPosition;
+    }
+
+    return newPositions;
+  });
+
+  // Ejecutar intercambio
+  onSwapTwoPlayers(substituteId, starterId);
+};
+```
+
+### **2. Algoritmos de Distribución Inteligente**
+
+#### **Para Partidos Amistosos (5v5/7v7)**
+
+```typescript
+// utils/teamDistribution.ts
+const calculateTeamDistribution = (players: Player[], gameType: string) => {
+  const isInternalMatch = ['5v5', '7v7'].includes(gameType);
+
+  if (isInternalMatch) {
+    // Distribución flexible para partidos amistosos
+    const shuffledPlayers = shuffleArray([...players]);
+    const midPoint = Math.ceil(shuffledPlayers.length / 2);
+
+    const teamA = shuffledPlayers.slice(0, midPoint);
+    const teamB = shuffledPlayers.slice(midPoint);
+
+    // Distribuir suplentes aleatoriamente
+    const remainingPlayers = players.filter(
+      p => !teamA.includes(p) && !teamB.includes(p)
+    );
+
+    remainingPlayers.forEach(player => {
+      if (Math.random() > 0.5) {
+        teamA.push(player);
+      } else {
+        teamB.push(player);
+      }
+    });
+
+    return { teamA, teamB };
+  }
+};
+```
+
+#### **Para Partidos Oficiales (11v11)**
+
+```typescript
+const strictPositionDistribution = (players: Player[]) => {
+  // Separar por posiciones
+  const goalkeepers = players.filter(p => p.position === 'POR');
+  const defenders = players.filter(p => p.position === 'DEF');
+  const midfielders = players.filter(p => p.position === 'MED');
+  const forwards = players.filter(p => p.position === 'DEL');
+
+  // Asignar 1 portero por equipo
+  const teamA = [goalkeepers[0]];
+  const teamB = [goalkeepers[1]];
+
+  // Distribuir resto por habilidades
+  const remainingPlayers = [...defenders, ...midfielders, ...forwards];
+  const sortedBySkill = remainingPlayers.sort(
+    (a, b) => calculateAverageSkill(b) - calculateAverageSkill(a)
+  );
+
+  // Distribución alternada para balance
+  sortedBySkill.forEach((player, index) => {
+    if (index % 2 === 0) {
+      teamA.push(player);
+    } else {
+      teamB.push(player);
+    }
+  });
+
+  return { teamA, teamB };
+};
+```
+
+### **3. Generación de Imágenes para Compartir**
+
+#### **Canvas API Implementation**
+
+```typescript
+const generateTeamsImage = async (
+  teams: TeamDistribution,
+  formation: Formation
+) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = 800;
+  canvas.height = 600;
+
+  // Fondo
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Título
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Formación Pro Soccer', canvas.width / 2, 40);
+
+  // Equipos
+  drawTeam(ctx, teams.teamA, 'Equipo A', 50, 100);
+  drawTeam(ctx, teams.teamB, 'Equipo B', 50, 350);
+
+  // Formación
+  ctx.fillStyle = '#888888';
+  ctx.font = '16px Arial';
+  ctx.fillText(`Formación: ${formation.name}`, canvas.width / 2, 580);
+
+  return new Promise<Blob>(resolve => {
+    canvas.toBlob(blob => {
+      resolve(blob!);
+    }, 'image/png');
+  });
+};
+```
+
+---
+
+## ⚡ **Optimizaciones de Rendimiento**
+
+### **1. React Optimizations**
+
+#### **React.memo para Componentes Pesados**
+
+```typescript
+const PlayerCard = memo(({ player, isSelected, onSelect, onDeselect }) => {
+  const handleClick = useCallback(() => {
+    isSelected ? onDeselect(player.id) : onSelect(player.id)
+  }, [player.id, isSelected, onSelect, onDeselect])
+
+  return (
+    <div className={`player-card ${isSelected ? 'selected' : ''}`}>
+      {/* Contenido optimizado */}
+    </div>
+  )
+}, (prevProps, nextProps) => {
+  // Comparación personalizada para evitar re-renders innecesarios
+  return prevProps.player.id === nextProps.player.id &&
+         prevProps.isSelected === nextProps.isSelected
+})
+```
+
+#### **useCallback para Funciones Estables**
+
+```typescript
+const handlePlayerSelect = useCallback((playerId: number) => {
+  setSelectedPlayers(prev => [...prev, playerId]);
+}, []);
+
+const handlePlayerDeselect = useCallback((playerId: number) => {
+  setSelectedPlayers(prev => prev.filter(id => id !== playerId));
+}, []);
+```
+
+#### **useMemo para Cálculos Costosos**
+
+```typescript
+const filteredPlayers = useMemo(() => {
+  return allPlayers.filter(player => {
+    if (teamFilter && player.team !== teamFilter) return false;
+    if (positionFilter && player.position !== positionFilter) return false;
+    return true;
+  });
+}, [allPlayers, teamFilter, positionFilter]);
+
+const teamStats = useMemo(() => {
+  return calculateTeamStats(distribution);
+}, [distribution]);
+```
+
+### **2. Bundle Optimization**
+
+#### **Code Splitting**
+
+```typescript
+// Lazy loading de componentes pesados
+const PlayerPreviewModal = lazy(() => import('./PlayerPreviewModal'))
+const AddManualPlayerModal = lazy(() => import('./AddManualPlayerModal'))
+
+// Suspense para componentes lazy
 <Suspense fallback={<div>Cargando...</div>}>
-  {showSwapModal && <SwapPlayerModal {...props} />}
+  <PlayerPreviewModal />
 </Suspense>
 ```
 
-### Gestión de Estado Avanzada
+#### **Tree Shaking**
 
-#### 1. **Zustand Store Optimizado**
 ```typescript
-interface AuthStore {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: string | null
-  
-  // Actions
-  login: (credentials: LoginCredentials) => Promise<void>
-  logout: () => void
-  clearError: () => void
+// Importaciones específicas para reducir bundle size
+import { FaFutbol, FaUsers } from 'react-icons/fa';
+import { PieChart, BarChart } from 'recharts';
+```
+
+### **3. API Optimizations**
+
+#### **Caching con React Query**
+
+```typescript
+const { data: players, isLoading } = useQuery({
+  queryKey: ['players', teamFilter],
+  queryFn: () => teamService.getPlayers(teamFilter),
+  staleTime: 5 * 60 * 1000, // 5 minutos
+  cacheTime: 10 * 60 * 1000, // 10 minutos
+});
+```
+
+#### **Pagination para Listas Grandes**
+
+```typescript
+const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  queryKey: ['players'],
+  queryFn: ({ pageParam = 1 }) =>
+    teamService.getPlayers({ page: pageParam, limit: 20 }),
+  getNextPageParam: lastPage => lastPage.nextPage,
+});
+```
+
+---
+
+## 🔐 **Sistema de Autenticación y Seguridad**
+
+### **1. JWT Authentication**
+
+```typescript
+// services/authService.ts
+export const authService = {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    const response = await api.post('/auth/login', credentials);
+    const { access_token, user } = response.data;
+
+    // Guardar token
+    localStorage.setItem('token', access_token);
+
+    return { access_token, user };
+  },
+
+  async logout(): Promise<void> {
+    localStorage.removeItem('token');
+    // Limpiar estado global
+  },
+
+  async refreshToken(): Promise<string> {
+    const response = await api.post('/auth/refresh');
+    const { access_token } = response.data;
+    localStorage.setItem('token', access_token);
+    return access_token;
+  },
+};
+```
+
+### **2. Role-Based Access Control**
+
+```typescript
+// hooks/useAuth.ts
+interface User {
+  id: number;
+  email: string;
+  role: 'admin' | 'supervisor' | 'player' | 'guest';
+  team_id?: number;
 }
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  
-  login: async (credentials) => {
-    set({ isLoading: true, error: null })
-    try {
-      const user = await authService.login(credentials)
-      set({ user, isAuthenticated: true, isLoading: false })
-    } catch (error) {
-      set({ error: error.message, isLoading: false })
+const useAuth = () => {
+  const { user, isAuthenticated } = useAuthStore();
+
+  const canAccessTeamGenerator = useMemo(() => {
+    return ['admin', 'supervisor'].includes(user?.role || '');
+  }, [user?.role]);
+
+  const canViewAllTeams = useMemo(() => {
+    return user?.role === 'admin';
+  }, [user?.role]);
+
+  return {
+    user,
+    isAuthenticated,
+    canAccessTeamGenerator,
+    canViewAllTeams,
+  };
+};
+```
+
+### **3. API Security**
+
+```typescript
+// lib/api.ts
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 10000,
+});
+
+// Interceptor para agregar token
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Interceptor para manejar errores de autenticación
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      // Token expirado, intentar refresh
+      try {
+        const newToken = await authService.refreshToken();
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return api.request(error.config);
+      } catch {
+        // Refresh falló, redirigir a login
+        authService.logout();
+        window.location.href = '/login';
+      }
     }
-  },
-  
-  logout: () => {
-    set({ user: null, isAuthenticated: false, error: null })
-  },
-  
-  clearError: () => set({ error: null })
-}))
+    return Promise.reject(error);
+  }
+);
 ```
 
-#### 2. **Persistencia Inteligente**
+---
+
+## 🧪 **Testing y Calidad de Código**
+
+### **1. Unit Testing**
+
 ```typescript
-// Persistencia selectiva en localStorage
-useEffect(() => {
-  const config = {
-    gameType,
-    formation,
-    manualPlayers: manualPlayers.map(p => p.id)
-    // NO guardar selectedPlayers para evitar pre-selección
-  }
-  localStorage.setItem('teamGeneratorConfig', JSON.stringify(config))
-}, [gameType, formation, manualPlayers.map(p => p.id).join(',')])
+// __tests__/utils/teamDistribution.test.ts
+import {
+  calculateTeamDistribution,
+  calculateAverageSkill,
+} from '@/utils/teamDistribution';
 
-// Limpieza automática
-useEffect(() => {
-  const savedConfig = localStorage.getItem('teamGeneratorConfig')
-  if (savedConfig) {
-    const { selectedPlayers, ...cleanConfig } = JSON.parse(savedConfig)
-    localStorage.setItem('teamGeneratorConfig', JSON.stringify(cleanConfig))
-  }
-}, [])
-```
-
-## Testing y Calidad de Código
-
-### Estrategia de Testing
-
-#### 1. **Unit Tests**
-```typescript
-// Test de utilidades
-describe('teamDistribution', () => {
+describe('Team Distribution', () => {
   test('should distribute players correctly for 5v5', () => {
-    const players = createMockPlayers(10)
-    const result = calculateTeamDistribution(players, '5v5')
-    
-    expect(result.homeTeam.starters).toHaveLength(5)
-    expect(result.awayTeam.starters).toHaveLength(5)
-    expect(result.homeTeam.substitutes.length + result.awayTeam.substitutes.length).toBe(0)
-  })
-})
+    const players = createMockPlayers(10);
+    const result = calculateTeamDistribution(players, '5v5');
+
+    expect(result.teamA).toHaveLength(5);
+    expect(result.teamB).toHaveLength(5);
+  });
+
+  test('should preserve goalkeeper requirement for 11v11', () => {
+    const players = createMockPlayers(22);
+    const result = calculateTeamDistribution(players, '11v11');
+
+    const teamAGoalkeepers = result.teamA.filter(p => p.position === 'POR');
+    const teamBGoalkeepers = result.teamB.filter(p => p.position === 'POR');
+
+    expect(teamAGoalkeepers).toHaveLength(1);
+    expect(teamBGoalkeepers).toHaveLength(1);
+  });
+});
 ```
 
-#### 2. **Integration Tests**
+### **2. Component Testing**
+
 ```typescript
-// Test de componentes
-describe('TeamGenerator', () => {
-  test('should generate teams when players are selected', async () => {
-    render(<TeamGenerator />)
-    
-    // Seleccionar jugadores
-    const playerCards = screen.getAllByTestId('player-card')
-    fireEvent.click(playerCards[0])
-    fireEvent.click(playerCards[1])
-    
-    // Generar equipos
-    const generateButton = screen.getByText('Generar Equipos')
-    fireEvent.click(generateButton)
-    
-    // Verificar que se generaron equipos
-    await waitFor(() => {
-      expect(screen.getByText('Equipo A')).toBeInTheDocument()
-      expect(screen.getByText('Equipo B')).toBeInTheDocument()
-    })
+// __tests__/components/PlayerCard.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import PlayerCard from '@/components/team-generator/PlayerCard'
+
+describe('PlayerCard', () => {
+  const mockPlayer = {
+    id: 1,
+    name: 'Test Player',
+    position: 'DEF',
+    skill_level: 8
+  }
+
+  test('should display player information correctly', () => {
+    render(<PlayerCard player={mockPlayer} isSelected={false} />)
+
+    expect(screen.getByText('Test Player')).toBeInTheDocument()
+    expect(screen.getByText('DEF')).toBeInTheDocument()
+    expect(screen.getByText('8')).toBeInTheDocument()
+  })
+
+  test('should call onSelect when clicked', () => {
+    const onSelect = jest.fn()
+    render(<PlayerCard player={mockPlayer} isSelected={false} onSelect={onSelect} />)
+
+    fireEvent.click(screen.getByRole('button'))
+    expect(onSelect).toHaveBeenCalledWith(mockPlayer.id)
   })
 })
 ```
 
-### Code Quality
+### **3. E2E Testing**
 
-#### 1. **ESLint Configuration**
-```json
-{
-  "extends": [
-    "next/core-web-vitals",
-    "@typescript-eslint/recommended"
-  ],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/explicit-function-return-type": "warn",
-    "react-hooks/exhaustive-deps": "error"
-  }
-}
+```typescript
+// tests/e2e/team-generator.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('should generate teams successfully', async ({ page }) => {
+  await page.goto('/team-generator');
+
+  // Seleccionar jugadores
+  await page.click('[data-testid="player-card-1"]');
+  await page.click('[data-testid="player-card-2"]');
+
+  // Generar equipos
+  await page.click('[data-testid="generate-teams"]');
+
+  // Verificar que se generaron los equipos
+  await expect(page.locator('[data-testid="team-a"]')).toBeVisible();
+  await expect(page.locator('[data-testid="team-b"]')).toBeVisible();
+});
 ```
 
-#### 2. **Prettier Configuration**
+### **4. Code Quality Tools**
+
+#### **ESLint Configuration**
+
+```javascript
+// .eslintrc.js
+module.exports = {
+  extends: ['next/core-web-vitals', '@typescript-eslint/recommended'],
+  rules: {
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'warn',
+    'react-hooks/exhaustive-deps': 'error',
+  },
+};
+```
+
+#### **Prettier Configuration**
+
 ```json
+// .prettierrc
 {
   "semi": true,
   "trailingComma": "es5",
@@ -462,174 +673,182 @@ describe('TeamGenerator', () => {
 }
 ```
 
-## Deployment y DevOps
+---
 
-### Scripts de Automatización
+## 🚀 **Deployment y DevOps**
 
-#### 1. **start-simple.bat**
-```batch
+### **1. Scripts de Automatización**
+
+```bash
+# start-simple.bat
 @echo off
 echo ========================================
 echo   FORMACION PROSOCCER - TEAM GENERATOR
 echo ========================================
 
-REM Limpiar puertos y procesos
+# Limpiar puertos
 taskkill /f /im node.exe >nul 2>&1
 taskkill /f /im python.exe >nul 2>&1
 
-REM Iniciar servicios
-start "Backend" cmd /k "cd backend && uvicorn app.main:app --reload --port 9000"
+# Iniciar backend
+start "Backend" cmd /k "cd backend && python -m uvicorn app.main:app --reload --port 9000"
+
+# Iniciar frontend
 start "Frontend" cmd /k "npm run dev"
 
-echo Servicios iniciados correctamente
+echo Servidores iniciados correctamente
 ```
 
-#### 2. **clean-dev.bat**
-```batch
-@echo off
-echo ========================================
-echo   LIMPIEZA Y REINICIO DEL DESARROLLO
-echo ========================================
+### **2. Docker Configuration**
 
-REM Terminar procesos
-taskkill /f /im node.exe >nul 2>&1
-taskkill /f /im python.exe >nul 2>&1
-
-REM Limpiar puertos
-netstat -ano | findstr :3000 >nul 2>&1 && (
-  for /f "tokens=5" %%a in ('netstat -ano ^| findstr :3000') do taskkill /f /pid %%a >nul 2>&1
-)
-
-REM Reiniciar
-call start-simple.bat
-```
-
-### Docker Support
-
-#### 1. **Dockerfile**
 ```dockerfile
-FROM node:18-alpine AS frontend
+# Dockerfile
+FROM node:18-alpine
+
 WORKDIR /app
+
+# Copiar package files
 COPY package*.json ./
 RUN npm ci --only=production
+
+# Copiar código fuente
 COPY . .
+
+# Build de la aplicación
 RUN npm run build
 
-FROM python:3.9-slim AS backend
-WORKDIR /app
-COPY backend/requirements.txt .
-RUN pip install -r requirements.txt
-COPY backend/ .
+# Exponer puerto
+EXPOSE 3000
 
-EXPOSE 3000 9000
+# Comando de inicio
 CMD ["npm", "start"]
 ```
 
-#### 2. **docker-compose.yml**
-```yaml
-version: '3.8'
-services:
-  frontend:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://backend:9000
-    depends_on:
-      - backend
-      - postgres
+### **3. Environment Variables**
 
-  backend:
-    build: ./backend
-    ports:
-      - "9000:9000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/prosoccer
-    depends_on:
-      - postgres
+```env
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:9000
+NEXT_PUBLIC_APP_NAME=Formación Pro Soccer
 
-  postgres:
-    image: postgres:13
-    environment:
-      - POSTGRES_DB=prosoccer
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+# .env (backend)
+DATABASE_URL=postgresql://user:password@localhost:5432/formacion_prosoccer
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
-
-## Debugging y Troubleshooting
-
-### Logs de Desarrollo
-```typescript
-// Logs detallados para debugging
-console.log('FootballField - Custom positions:', customPositions)
-console.log('FootballField - Posiciones personalizadas ANTES del intercambio:', customPositions)
-console.log('useTeamGenerator - Distribución actualizada:', distribution)
-```
-
-### Errores Comunes y Soluciones
-
-#### 1. **Error de Puerto Ocupado**
-```bash
-# Solución rápida
-taskkill /f /im node.exe
-taskkill /f /im python.exe
-netstat -ano | findstr :3000
-```
-
-#### 2. **Error de Dependencias**
-```bash
-# Limpiar cache
-npm cache clean --force
-rm -rf node_modules package-lock.json
-npm install
-```
-
-#### 3. **Error de Base de Datos**
-```bash
-# Recrear base de datos
-cd backend
-python create_admin.py
-python create_supervisor.py
-python add_real_players.py
-```
-
-## Mejores Prácticas Implementadas
-
-### 1. **Type Safety**
-- TypeScript estricto en todo el proyecto
-- Interfaces completas para todos los componentes
-- Validación de tipos en tiempo de compilación
-
-### 2. **Performance Optimization**
-- React.memo para componentes pesados
-- useCallback y useMemo para optimizaciones
-- Lazy loading de componentes
-- Virtualización para listas grandes
-
-### 3. **Code Organization**
-- Separación clara de responsabilidades
-- Componentes reutilizables
-- Hooks personalizados para lógica compleja
-- Servicios para comunicación con API
-
-### 4. **Error Handling**
-- Error boundaries en React
-- Try-catch en operaciones async
-- Mensajes de error user-friendly
-- Logging detallado para debugging
-
-### 5. **Accessibility**
-- Controles de teclado
-- Textos alternativos
-- Contraste adecuado
-- Navegación por teclado
 
 ---
 
-*Documentación de desarrollo actualizada: Diciembre 2024*
-*Versión: 2.0 - Team Generator Avanzado* 
+## 📊 **Métricas y Monitoreo**
+
+### **1. Performance Monitoring**
+
+```typescript
+// utils/analytics.ts
+export const trackEvent = (
+  eventName: string,
+  properties: Record<string, any>
+) => {
+  // Implementar tracking de eventos
+  console.log('Event:', eventName, properties);
+};
+
+export const trackTeamGeneration = (gameType: string, playerCount: number) => {
+  trackEvent('team_generated', {
+    gameType,
+    playerCount,
+    timestamp: new Date().toISOString(),
+  });
+};
+```
+
+### **2. Error Tracking**
+
+```typescript
+// utils/errorTracking.ts
+export const logError = (error: Error, context: string) => {
+  console.error(`Error in ${context}:`, error);
+
+  // Enviar a servicio de tracking de errores
+  // Sentry.captureException(error, { tags: { context } })
+};
+```
+
+---
+
+## 🔧 **Debugging y Troubleshooting**
+
+### **1. Debug Information**
+
+```typescript
+// components/DebugInfo.tsx
+const DebugInfo = ({ distribution, customPositions }) => {
+  return (
+    <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-4 rounded-lg text-xs">
+      <h4 className="font-bold mb-2">Debug Info</h4>
+      <div>Team A: {distribution?.teamA?.length || 0} players</div>
+      <div>Team B: {distribution?.teamB?.length || 0} players</div>
+      <div>Custom Positions: {Object.keys(customPositions).length}</div>
+    </div>
+  )
+}
+```
+
+### **2. Common Issues**
+
+#### **Problema: Dependencias faltantes**
+
+```bash
+# Solución
+npm install @tanstack/react-query recharts react-icons tailwindcss-animate
+```
+
+#### **Problema: Puertos ocupados**
+
+```bash
+# Solución
+.\kill-ports.bat
+# O manualmente
+taskkill /f /im node.exe
+taskkill /f /im python.exe
+```
+
+#### **Problema: Caché corrupto**
+
+```bash
+# Solución
+npm run clean
+Remove-Item -Recurse -Force .next
+npm cache clean --force
+```
+
+---
+
+## 📚 **Recursos y Referencias**
+
+### **Documentación Oficial**
+
+- [Next.js 14 Documentation](https://nextjs.org/docs)
+- [React 18 Documentation](https://react.dev)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [FastAPI Documentation](https://fastapi.tiangolo.com)
+
+### **Herramientas de Desarrollo**
+
+- **VS Code Extensions**: ESLint, Prettier, TypeScript
+- **Browser DevTools**: React DevTools, Network Tab
+- **Postman**: Testing de APIs
+- **pgAdmin**: Gestión de base de datos
+
+---
+
+## 🎯 **Conclusión**
+
+Esta guía proporciona una base sólida para el desarrollo en **Formación Pro
+Soccer**. El proyecto utiliza las mejores prácticas de desarrollo moderno, con
+un enfoque en performance, mantenibilidad y escalabilidad.
+
+**Estado del Proyecto**: ✅ **Completamente Funcional** **Última
+Actualización**: Julio 2025 **Versión**: 1.0.0

@@ -1,794 +1,692 @@
-# 🔌 API y Servicios - Formación Pro Soccer
+# API Documentation - Formación ProSoccer
 
-## 📋 Descripción
+## Información General
 
-Esta documentación describe la arquitectura de la API, servicios y comunicación entre el frontend y backend de Formación Pro Soccer.
+- **Base URL**: `http://localhost:9000`
+- **Documentación Swagger**: `http://localhost:9000/docs`
+- **Documentación ReDoc**: `http://localhost:9000/redoc`
+- **Versión**: 2.0
 
-## 🏗️ Arquitectura de la API
+## Autenticación
 
-### Estructura del Backend
-```
-backend/
-├── 📁 app/                      # Aplicación principal
-│   ├── main.py                  # Punto de entrada FastAPI
-│   ├── config.py                # Configuración de la app
-│   ├── database.py              # Configuración de base de datos
-│   ├── auth.py                  # Autenticación y autorización
-│   ├── models.py                # Modelos de base de datos
-│   ├── schemas.py               # Esquemas Pydantic
-│   ├── crud.py                  # Operaciones CRUD
-│   └── api/                     # Rutas de la API
-│       ├── v1/                  # Versión 1 de la API
-│       │   ├── auth.py          # Rutas de autenticación
-│       │   ├── teams.py         # Rutas de equipos
-│       │   ├── players.py       # Rutas de jugadores
-│       │   ├── payments.py      # Rutas de pagos
-│       │   └── team_generator.py # Rutas del generador
-│       └── dependencies.py      # Dependencias compartidas
-├── 📁 tests/                    # Tests de la API
-├── 📁 alembic/                  # Migraciones de base de datos
-├── requirements.txt              # Dependencias Python
-└── create_admin.py              # Script de inicialización
+### JWT Token
+
+```http
+Authorization: Bearer <token>
 ```
 
-## 🔐 Autenticación y Autorización
+### Login
 
-### JWT Token System
-```python
-# app/auth.py
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+```http
+POST /auth/login
+Content-Type: application/json
 
-# Configuración
-SECRET_KEY = "tu-clave-secreta-aqui"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Funciones de autenticación
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-def verify_token(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    return username
-```
-
-### Endpoints de Autenticación
-```python
-# app/api/v1/auth.py
-@router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.post("/register")
-async def register(user: UserCreate):
-    return create_user(user)
-
-@router.get("/me")
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
-```
-
-## 🏆 API de Equipos
-
-### Modelos de Datos
-```python
-# app/models.py
-class Team(Base):
-    __tablename__ = "teams"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-    description = Column(String, nullable=True)
-    logo_url = Column(String, nullable=True)
-    colors = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relaciones
-    players = relationship("Player", back_populates="team")
-    payments = relationship("Payment", back_populates="team")
-```
-
-### Esquemas Pydantic
-```python
-# app/schemas.py
-class TeamBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    logo_url: Optional[str] = None
-    colors: Optional[Dict[str, str]] = None
-
-class TeamCreate(TeamBase):
-    pass
-
-class TeamUpdate(TeamBase):
-    pass
-
-class Team(TeamBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-    
-    class Config:
-        from_attributes = True
-```
-
-### Endpoints de Equipos
-```python
-# app/api/v1/teams.py
-@router.get("/", response_model=List[Team])
-async def get_teams(
-    skip: int = 0,
-    limit: int = 100,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener lista de equipos"""
-    teams = get_teams_by_user(current_user.id, skip=skip, limit=limit)
-    return teams
-
-@router.post("/", response_model=Team)
-async def create_team(
-    team: TeamCreate,
-    current_user: User = Depends(get_current_user)
-):
-    """Crear nuevo equipo"""
-    return create_team_for_user(team, current_user.id)
-
-@router.get("/{team_id}", response_model=Team)
-async def get_team(
-    team_id: int,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener equipo específico"""
-    team = get_team_by_id(team_id, current_user.id)
-    if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return team
-
-@router.put("/{team_id}", response_model=Team)
-async def update_team(
-    team_id: int,
-    team: TeamUpdate,
-    current_user: User = Depends(get_current_user)
-):
-    """Actualizar equipo"""
-    updated_team = update_team_by_id(team_id, team, current_user.id)
-    if not updated_team:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return updated_team
-
-@router.delete("/{team_id}")
-async def delete_team(
-    team_id: int,
-    current_user: User = Depends(get_current_user)
-):
-    """Eliminar equipo"""
-    success = delete_team_by_id(team_id, current_user.id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return {"message": "Team deleted successfully"}
-```
-
-## 👥 API de Jugadores
-
-### Modelos de Datos
-```python
-# app/models.py
-class Player(Base):
-    __tablename__ = "players"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
-    phone = Column(String, nullable=True)
-    position = Column(String)
-    jersey_number = Column(Integer)
-    skill = Column(Integer, default=3)
-    photo_url = Column(String, nullable=True)
-    stats = Column(JSON, nullable=True)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relaciones
-    team_id = Column(Integer, ForeignKey("teams.id"))
-    team = relationship("Team", back_populates="players")
-    payments = relationship("Payment", back_populates="player")
-```
-
-### Endpoints de Jugadores
-```python
-# app/api/v1/players.py
-@router.get("/", response_model=List[Player])
-async def get_players(
-    team_id: Optional[int] = None,
-    skip: int = 0,
-    limit: int = 100,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener lista de jugadores"""
-    players = get_players_by_team(team_id, current_user.id, skip=skip, limit=limit)
-    return players
-
-@router.post("/", response_model=Player)
-async def create_player(
-    player: PlayerCreate,
-    current_user: User = Depends(get_current_user)
-):
-    """Crear nuevo jugador"""
-    return create_player_for_team(player, current_user.id)
-
-@router.get("/{player_id}", response_model=Player)
-async def get_player(
-    player_id: int,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener jugador específico"""
-    player = get_player_by_id(player_id, current_user.id)
-    if not player:
-        raise HTTPException(status_code=404, detail="Player not found")
-    return player
-
-@router.put("/{player_id}", response_model=Player)
-async def update_player(
-    player_id: int,
-    player: PlayerUpdate,
-    current_user: User = Depends(get_current_user)
-):
-    """Actualizar jugador"""
-    updated_player = update_player_by_id(player_id, player, current_user.id)
-    if not updated_player:
-        raise HTTPException(status_code=404, detail="Player not found")
-    return updated_player
-
-@router.delete("/{player_id}")
-async def delete_player(
-    player_id: int,
-    current_user: User = Depends(get_current_user)
-):
-    """Eliminar jugador"""
-    success = delete_player_by_id(player_id, current_user.id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Player not found")
-    return {"message": "Player deleted successfully"}
-```
-
-## 🎯 API del Generador de Equipos
-
-### Endpoints del Generador
-```python
-# app/api/v1/team_generator.py
-@router.post("/generate-teams")
-async def generate_teams(
-    request: GenerateTeamsRequest,
-    current_user: User = Depends(get_current_user)
-):
-    """Generar equipos balanceados"""
-    try:
-        # Validar jugadores disponibles
-        available_players = get_players_by_ids(
-            request.player_ids, 
-            current_user.id
-        )
-        
-        if len(available_players) < request.required_players:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Se necesitan al menos {request.required_players} jugadores"
-            )
-        
-        # Generar equipos balanceados
-        teams = generate_balanced_teams(
-            available_players,
-            request.formation,
-            request.game_mode
-        )
-        
-        return {
-            "teams": teams,
-            "formation": request.formation,
-            "game_mode": request.game_mode,
-            "total_players": len(available_players)
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/save-formation")
-async def save_formation(
-    request: SaveFormationRequest,
-    current_user: User = Depends(get_current_user)
-):
-    """Guardar formación generada"""
-    formation = save_team_formation(request, current_user.id)
-    return formation
-
-@router.get("/formations")
-async def get_formations(
-    team_id: Optional[int] = None,
-    skip: int = 0,
-    limit: int = 50,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener formaciones guardadas"""
-    formations = get_saved_formations(team_id, current_user.id, skip=skip, limit=limit)
-    return formations
-```
-
-### Algoritmo de Balanceo
-```python
-# app/services/team_generator.py
-def generate_balanced_teams(players: List[Player], formation: str, game_mode: str):
-    """Generar equipos balanceados basado en habilidades"""
-    
-    # 1. Ordenar jugadores por habilidad
-    sorted_players = sorted(players, key=lambda p: p.skill, reverse=True)
-    
-    # 2. Calcular jugadores por equipo
-    players_per_team = get_players_per_team(game_mode)
-    
-    # 3. Distribuir jugadores equitativamente
-    team_a = []
-    team_b = []
-    
-    for i, player in enumerate(sorted_players):
-        if i % 2 == 0:
-            team_a.append(player)
-        else:
-            team_b.append(player)
-    
-    # 4. Asignar posiciones según formación
-    team_a_with_positions = assign_positions(team_a, formation)
-    team_b_with_positions = assign_positions(team_b, formation)
-    
-    return {
-        "team_a": {
-            "name": "Equipo A",
-            "players": team_a_with_positions,
-            "average_skill": calculate_average_skill(team_a)
-        },
-        "team_b": {
-            "name": "Equipo B", 
-            "players": team_b_with_positions,
-            "average_skill": calculate_average_skill(team_b)
-        }
-    }
-
-def assign_positions(players: List[Player], formation: str):
-    """Asignar posiciones a jugadores según formación"""
-    positions = get_formation_positions(formation)
-    
-    # Ordenar jugadores por posición preferida
-    players_by_position = group_players_by_position(players)
-    
-    assigned_players = []
-    for position in positions:
-        if players_by_position.get(position):
-            player = players_by_position[position].pop(0)
-            assigned_players.append({
-                **player.dict(),
-                "assigned_position": position
-            })
-    
-    return assigned_players
-```
-
-## 💰 API de Pagos
-
-### Modelos de Datos
-```python
-# app/models.py
-class Payment(Base):
-    __tablename__ = "payments"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    amount = Column(Float)
-    description = Column(String)
-    payment_date = Column(DateTime)
-    due_date = Column(DateTime)
-    status = Column(String)  # pending, paid, overdue
-    payment_method = Column(String, nullable=True)
-    reference = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relaciones
-    player_id = Column(Integer, ForeignKey("players.id"))
-    team_id = Column(Integer, ForeignKey("teams.id"))
-    player = relationship("Player", back_populates="payments")
-    team = relationship("Team", back_populates="payments")
-```
-
-### Endpoints de Pagos
-```python
-# app/api/v1/payments.py
-@router.get("/", response_model=List[Payment])
-async def get_payments(
-    team_id: Optional[int] = None,
-    player_id: Optional[int] = None,
-    status: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener lista de pagos"""
-    payments = get_payments_by_filters(
-        team_id, player_id, status, current_user.id, skip=skip, limit=limit
-    )
-    return payments
-
-@router.post("/", response_model=Payment)
-async def create_payment(
-    payment: PaymentCreate,
-    current_user: User = Depends(get_current_user)
-):
-    """Crear nuevo pago"""
-    return create_payment_for_user(payment, current_user.id)
-
-@router.put("/{payment_id}/status")
-async def update_payment_status(
-    payment_id: int,
-    status: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Actualizar estado de pago"""
-    updated_payment = update_payment_status_by_id(payment_id, status, current_user.id)
-    if not updated_payment:
-        raise HTTPException(status_code=404, detail="Payment not found")
-    return updated_payment
-
-@router.get("/reports/summary")
-async def get_payment_summary(
-    team_id: Optional[int] = None,
-    month: Optional[int] = None,
-    year: Optional[int] = None,
-    current_user: User = Depends(get_current_user)
-):
-    """Obtener resumen de pagos"""
-    summary = get_payment_summary_by_filters(
-        team_id, month, year, current_user.id
-    )
-    return summary
-```
-
-## 🔧 Servicios del Frontend
-
-### Configuración de API
-```typescript
-// src/lib/api.ts
-import axios from 'axios'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token de autenticación
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-// Interceptor para manejar errores
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Redirigir a login si token expiró
-      localStorage.removeItem('access_token')
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
-
-export default api
-```
-
-### Servicios de Autenticación
-```typescript
-// src/services/authService.ts
-import api from '@/lib/api'
-
-export interface LoginData {
-  username: string
-  password: string
+{
+  "email": "admin@prosoccer.com",
+  "password": "admin123"
 }
+```
 
-export interface RegisterData {
-  username: string
-  email: string
-  password: string
-  full_name: string
-}
+**Response:**
 
-export const authService = {
-  async login(data: LoginData) {
-    const response = await api.post('/auth/login', data)
-    const { access_token } = response.data
-    localStorage.setItem('access_token', access_token)
-    return response.data
-  },
-
-  async register(data: RegisterData) {
-    const response = await api.post('/auth/register', data)
-    return response.data
-  },
-
-  async getCurrentUser() {
-    const response = await api.get('/auth/me')
-    return response.data
-  },
-
-  async logout() {
-    localStorage.removeItem('access_token')
-  },
-
-  isAuthenticated() {
-    return !!localStorage.getItem('access_token')
+```json
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "email": "admin@prosoccer.com",
+    "role": "admin",
+    "team_id": null
   }
 }
 ```
 
-### Servicios de Equipos
-```typescript
-// src/services/teamService.ts
-import api from '@/lib/api'
+## Endpoints Principales
 
-export interface Team {
-  id: number
-  name: string
-  description?: string
-  logo_url?: string
-  colors?: Record<string, string>
-  created_at: string
-  updated_at: string
-}
+### Jugadores
 
-export interface CreateTeamData {
-  name: string
-  description?: string
-  logo_url?: string
-  colors?: Record<string, string>
-}
+#### Obtener Jugadores
 
-export const teamService = {
-  async getTeams(params?: { skip?: number; limit?: number }) {
-    const response = await api.get('/teams', { params })
-    return response.data
-  },
+```http
+GET /players/
+Authorization: Bearer <token>
+```
 
-  async getTeam(id: number) {
-    const response = await api.get(`/teams/${id}`)
-    return response.data
-  },
+**Query Parameters:**
 
-  async createTeam(data: CreateTeamData) {
-    const response = await api.post('/teams', data)
-    return response.data
-  },
+- `team_id` (optional): Filtrar por equipo
+- `position` (optional): Filtrar por posición
+- `skill_level` (optional): Filtrar por nivel de habilidad
 
-  async updateTeam(id: number, data: Partial<CreateTeamData>) {
-    const response = await api.put(`/teams/${id}`, data)
-    return response.data
-  },
+**Response:**
 
-  async deleteTeam(id: number) {
-    await api.delete(`/teams/${id}`)
+```json
+[
+  {
+    "id": 1,
+    "name": "Danilo Atencio",
+    "email": "danilo@matizfc.com",
+    "skill_level": 8,
+    "position_zone": {
+      "id": 1,
+      "name_es": "Defensa",
+      "abbreviation": "DEF"
+    },
+    "position_specific": {
+      "id": 2,
+      "name_es": "Defensa Central",
+      "abbreviation": "DEF"
+    },
+    "team": {
+      "id": 1,
+      "name": "Matiz FC"
+    },
+    "is_guest": false,
+    "rit": 7,
+    "tir": 8,
+    "pas": 6,
+    "tec": 7,
+    "fis": 8,
+    "men": 6
   }
+]
+```
+
+#### Crear Jugador
+
+```http
+POST /players/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Nuevo Jugador",
+  "email": "nuevo@equipo.com",
+  "skill_level": 5,
+  "position_zone_id": 1,
+  "position_specific_id": 2,
+  "team_id": 1,
+  "rit": 5,
+  "tir": 6,
+  "pas": 5,
+  "tec": 6,
+  "fis": 5,
+  "men": 5
 }
 ```
 
-### Servicios del Generador
-```typescript
-// src/services/teamGeneratorService.ts
-import api from '@/lib/api'
+#### Actualizar Jugador
 
-export interface GenerateTeamsRequest {
-  player_ids: number[]
-  formation: string
-  game_mode: string
-  required_players: number
-}
+```http
+PUT /players/{player_id}
+Authorization: Bearer <token>
+Content-Type: application/json
 
-export interface GeneratedTeam {
-  name: string
-  players: Player[]
-  average_skill: number
-}
-
-export interface GenerateTeamsResponse {
-  teams: {
-    team_a: GeneratedTeam
-    team_b: GeneratedTeam
-  }
-  formation: string
-  game_mode: string
-  total_players: number
-}
-
-export const teamGeneratorService = {
-  async generateTeams(data: GenerateTeamsRequest): Promise<GenerateTeamsResponse> {
-    const response = await api.post('/team-generator/generate-teams', data)
-    return response.data
-  },
-
-  async saveFormation(data: any) {
-    const response = await api.post('/team-generator/save-formation', data)
-    return response.data
-  },
-
-  async getFormations(params?: { team_id?: number; skip?: number; limit?: number }) {
-    const response = await api.get('/team-generator/formations', { params })
-    return response.data
-  }
+{
+  "name": "Jugador Actualizado",
+  "skill_level": 6
 }
 ```
 
-## 📊 Monitoreo y Logging
+#### Eliminar Jugador
 
-### Configuración de Logging
-```python
-# app/config.py
-import logging
-from logging.handlers import RotatingFileHandler
+```http
+DELETE /players/{player_id}
+Authorization: Bearer <token>
+```
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        RotatingFileHandler('app.log', maxBytes=10000000, backupCount=5),
-        logging.StreamHandler()
+### Equipos
+
+#### Obtener Equipos
+
+```http
+GET /teams/
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Matiz FC",
+    "description": "Equipo principal",
+    "players": [
+      {
+        "id": 1,
+        "name": "Danilo Atencio",
+        "skill_level": 8
+      }
     ]
+  }
+]
+```
+
+#### Crear Equipo
+
+```http
+POST /teams/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Nuevo Equipo",
+  "description": "Descripción del equipo"
+}
+```
+
+### Posiciones
+
+#### Obtener Zonas de Posición
+
+```http
+GET /position-zones/
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name_es": "Portero",
+    "name_en": "Goalkeeper",
+    "abbreviation": "POR"
+  },
+  {
+    "id": 2,
+    "name_es": "Defensa",
+    "name_en": "Defense",
+    "abbreviation": "DEF"
+  },
+  {
+    "id": 3,
+    "name_es": "Mediocampo",
+    "name_en": "Midfield",
+    "abbreviation": "MED"
+  },
+  {
+    "id": 4,
+    "name_es": "Delantero",
+    "name_en": "Forward",
+    "abbreviation": "DEL"
+  }
+]
+```
+
+#### Obtener Posiciones Específicas
+
+```http
+GET /position-specifics/
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name_es": "Portero",
+    "name_en": "Goalkeeper",
+    "abbreviation": "POR",
+    "zone_id": 1,
+    "zone": {
+      "id": 1,
+      "name_es": "Portero",
+      "abbreviation": "POR"
+    }
+  },
+  {
+    "id": 2,
+    "name_es": "Defensa Central",
+    "name_en": "Center Back",
+    "abbreviation": "DEF",
+    "zone_id": 2,
+    "zone": {
+      "id": 2,
+      "name_es": "Defensa",
+      "abbreviation": "DEF"
+    }
+  }
+]
+```
+
+### Pagos
+
+#### Obtener Pagos
+
+```http
+GET /payments/
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `player_id` (optional): Filtrar por jugador
+- `month` (optional): Filtrar por mes (YYYY-MM)
+- `status` (optional): Filtrar por estado (paid, pending, overdue)
+
+#### Crear Pago
+
+```http
+POST /payments/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "player_id": 1,
+  "amount": 50000,
+  "month": "2024-12",
+  "status": "paid",
+  "payment_date": "2024-12-15"
+}
+```
+
+### Gastos
+
+#### Obtener Gastos
+
+```http
+GET /expenses/
+Authorization: Bearer <token>
+```
+
+#### Crear Gasto
+
+```http
+POST /expenses/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "description": "Compra de balones",
+  "amount": 150000,
+  "category": "equipment",
+  "date": "2024-12-15"
+}
+```
+
+### Partidos
+
+#### Obtener Partidos
+
+```http
+GET /matches/
+Authorization: Bearer <token>
+```
+
+#### Crear Partido
+
+```http
+POST /matches/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "home_team": "Matiz FC",
+  "away_team": "Equipo Rival",
+  "date": "2024-12-20T15:00:00",
+  "location": "Estadio Municipal",
+  "type": "friendly"
+}
+```
+
+## Nuevos Endpoints - Team Generator
+
+### Generación de Equipos
+
+#### Generar Equipos
+
+```http
+POST /teams/generate/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "players": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "game_type": "5v5",
+  "formation": "1-2-2",
+  "team_id": 1
+}
+```
+
+**Response:**
+
+```json
+{
+  "home_team": {
+    "name": "Equipo A",
+    "starters": [
+      {
+        "id": 1,
+        "name": "Danilo Atencio",
+        "position": "DEF",
+        "skill_level": 8
+      }
+    ],
+    "substitutes": [],
+    "average_skill": 7.5
+  },
+  "away_team": {
+    "name": "Equipo B",
+    "starters": [
+      {
+        "id": 2,
+        "name": "Palito'S",
+        "position": "DEF",
+        "skill_level": 7
+      }
+    ],
+    "substitutes": [],
+    "average_skill": 7.0
+  },
+  "balance_score": 0.5,
+  "game_type": "5v5",
+  "formation": "1-2-2",
+  "generated_at": "2024-12-15T10:30:00"
+}
+```
+
+#### Obtener Configuraciones Guardadas
+
+```http
+GET /teams/saved-configurations/
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Formación 5v5 - Matiz FC",
+    "game_type": "5v5",
+    "formation": "1-2-2",
+    "players": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "created_at": "2024-12-15T10:30:00"
+  }
+]
+```
+
+#### Guardar Configuración
+
+```http
+POST /teams/save-configuration/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Mi Formación Favorita",
+  "game_type": "5v5",
+  "formation": "1-2-2",
+  "players": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+}
+```
+
+### Jugadores Manuales
+
+#### Crear Jugador Manual
+
+```http
+POST /players/manual/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Jugador Invitado",
+  "skill_level": 5,
+  "position_zone_id": 2,
+  "position_specific_id": 3,
+  "rit": 5,
+  "tir": 6,
+  "pas": 5,
+  "tec": 6,
+  "fis": 5,
+  "men": 5,
+  "is_guest": true
+}
+```
+
+## Códigos de Error
+
+### Errores Comunes
+
+#### 400 - Bad Request
+
+```json
+{
+  "detail": "Datos de entrada inválidos",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email inválido"
+    }
+  ]
+}
+```
+
+#### 401 - Unauthorized
+
+```json
+{
+  "detail": "Token de autenticación inválido o expirado"
+}
+```
+
+#### 403 - Forbidden
+
+```json
+{
+  "detail": "No tienes permisos para realizar esta acción"
+}
+```
+
+#### 404 - Not Found
+
+```json
+{
+  "detail": "Recurso no encontrado"
+}
+```
+
+#### 422 - Validation Error
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "skill_level"],
+      "msg": "El nivel de habilidad debe estar entre 1 y 5",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
+#### 500 - Internal Server Error
+
+```json
+{
+  "detail": "Error interno del servidor"
+}
+```
+
+## Rate Limiting
+
+- **Límite por IP**: 100 requests por minuto
+- **Límite por usuario**: 1000 requests por hora
+- **Headers de respuesta**:
+  - `X-RateLimit-Limit`: Límite actual
+  - `X-RateLimit-Remaining`: Requests restantes
+  - `X-RateLimit-Reset`: Tiempo de reset
+
+## Webhooks (Futuro)
+
+### Eventos Disponibles
+
+- `player.created`
+- `player.updated`
+- `player.deleted`
+- `payment.completed`
+- `match.scheduled`
+
+### Configuración de Webhook
+
+```http
+POST /webhooks/
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "url": "https://tu-servidor.com/webhook",
+  "events": ["player.created", "payment.completed"],
+  "secret": "tu-clave-secreta"
+}
+```
+
+## Ejemplos de Uso
+
+### JavaScript/TypeScript
+
+```typescript
+// Cliente API
+class ProSoccerAPI {
+  private baseURL = 'http://localhost:9000';
+  private token: string;
+
+  constructor(token: string) {
+    this.token = token;
+  }
+
+  async getPlayers(teamId?: number): Promise<Player[]> {
+    const url = teamId
+      ? `${this.baseURL}/players/?team_id=${teamId}`
+      : `${this.baseURL}/players/`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async generateTeams(
+    players: number[],
+    config: TeamConfig
+  ): Promise<TeamDistribution> {
+    const response = await fetch(`${this.baseURL}/teams/generate/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ players, ...config }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+}
+
+// Uso
+const api = new ProSoccerAPI('tu-token');
+const players = await api.getPlayers(1);
+const teams = await api.generateTeams([1, 2, 3, 4, 5], {
+  game_type: '5v5',
+  formation: '1-2-2',
+});
+```
+
+### Python
+
+```python
+import requests
+
+class ProSoccerClient:
+    def __init__(self, base_url: str, token: str):
+        self.base_url = base_url
+        self.headers = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+
+    def get_players(self, team_id: int = None):
+        params = {'team_id': team_id} if team_id else {}
+        response = requests.get(
+            f'{self.base_url}/players/',
+            headers=self.headers,
+            params=params
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def generate_teams(self, players: list, game_type: str, formation: str):
+        data = {
+            'players': players,
+            'game_type': game_type,
+            'formation': formation
+        }
+        response = requests.post(
+            f'{self.base_url}/teams/generate/',
+            headers=self.headers,
+            json=data
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Uso
+client = ProSoccerClient('http://localhost:9000', 'tu-token')
+players = client.get_players(team_id=1)
+teams = client.generate_teams(
+    players=[1, 2, 3, 4, 5],
+    game_type='5v5',
+    formation='1-2-2'
 )
-
-logger = logging.getLogger(__name__)
 ```
 
-### Middleware de Logging
-```python
-# app/middleware.py
-from fastapi import Request
-import time
-import logging
+## Testing de la API
 
-logger = logging.getLogger(__name__)
+### Usando curl
 
-async def log_requests(request: Request, call_next):
-    start_time = time.time()
-    
-    # Log request
-    logger.info(f"Request: {request.method} {request.url}")
-    
-    response = await call_next(request)
-    
-    # Log response
-    process_time = time.time() - start_time
-    logger.info(f"Response: {response.status_code} - {process_time:.2f}s")
-    
-    return response
+```bash
+# Login
+curl -X POST "http://localhost:9000/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@prosoccer.com", "password": "admin123"}'
+
+# Obtener jugadores
+curl -X GET "http://localhost:9000/players/" \
+  -H "Authorization: Bearer <token>"
+
+# Generar equipos
+curl -X POST "http://localhost:9000/teams/generate/" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"players": [1,2,3,4,5], "game_type": "5v5", "formation": "1-2-2"}'
 ```
 
-## 🧪 Testing de la API
+### Usando Postman
 
-### Tests Unitarios
-```python
-# tests/test_teams.py
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
-
-def test_create_team():
-    team_data = {
-        "name": "Test Team",
-        "description": "Test Description"
-    }
-    response = client.post("/api/v1/teams/", json=team_data)
-    assert response.status_code == 200
-    assert response.json()["name"] == "Test Team"
-
-def test_get_teams():
-    response = client.get("/api/v1/teams/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
-```
-
-### Tests de Integración
-```python
-# tests/test_team_generator.py
-def test_generate_teams():
-    request_data = {
-        "player_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "formation": "1-2-2-2",
-        "game_mode": "futbolito",
-        "required_players": 7
-    }
-    response = client.post("/api/v1/team-generator/generate-teams", json=request_data)
-    assert response.status_code == 200
-    data = response.json()
-    assert "teams" in data
-    assert "team_a" in data["teams"]
-    assert "team_b" in data["teams"]
-```
-
-## 🚀 Deployment
-
-### Configuración de Producción
-```python
-# app/config.py
-class Settings(BaseSettings):
-    # Base de datos
-    DATABASE_URL: str = "postgresql://user:pass@localhost/formacion_pro"
-    
-    # JWT
-    SECRET_KEY: str = "tu-clave-secreta-aqui"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    # CORS
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
-    
-    # Logging
-    LOG_LEVEL: str = "INFO"
-    
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
-```
-
-### Docker Configuration
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
+1. **Collection**: Importar la colección de Postman
+2. **Environment**: Configurar variables de entorno
+3. **Tests**: Ejecutar tests automatizados
 
 ---
 
-**API y Servicios** - El motor de Formación Pro Soccer ⚽ 
+_Documentación de API actualizada: Julio 2025_ _Versión: 1.0.0 - Team Generator
+Avanzado_
