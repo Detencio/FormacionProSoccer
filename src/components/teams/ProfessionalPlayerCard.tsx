@@ -138,19 +138,28 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
         {/* Contenido superpuesto */}
         <div className='relative h-full p-4 flex flex-col'>
-          {/* Número total de habilidades - Estilo FIFA */}
-          <div className='absolute top-12 left-8'>
-            <span className='text-black font-bold text-3xl'>{totalRating}</span>
+          {/* Total Skill Number & Position (Top Left) */}
+          <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'}`}>
+            <div className='text-black font-bold text-3xl'>
+              {totalRating}
+            </div>
+            <div className='text-black text-sm text-center font-bold'>
+              {position}
+            </div>
           </div>
 
-          {/* Posición del jugador - Estilo FIFA */}
-          <div className='absolute top-18 left-8'>
-            <span className='text-black font-bold text-sm text-center'>{position}</span>
-          </div>
-
-          {/* Número de camiseta - POSICIÓN A AJUSTAR */}
-          <div className='absolute top-12 right-4'>
-            <span className='text-white/80 text-xs'>#{player.jersey_number || 'N/A'}</span>
+          {/* Skill Level Star (Top Right) */}
+          <div className={`absolute ${compact ? 'top-12 right-8' : 'top-16 right-10'}`}>
+            <div className='relative'>
+              <svg className='w-10 h-10 text-black' fill='currentColor' viewBox='0 0 24 24'>
+                <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
+              </svg>
+              <div className='absolute inset-0 flex items-center justify-center'>
+                <span className='text-white font-bold text-base'>
+                  {player.skill_level || 1}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Nombre del jugador arriba de las estadísticas - Estilo FIFA */}
@@ -310,19 +319,28 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
       {/* Contenido superpuesto */}
       <div className='relative h-full p-6 flex flex-col'>
-        {/* Número total de habilidades - Estilo FIFA */}
-        <div className='absolute top-16 left-10'>
-          <span className='text-black font-bold text-4xl'>{totalRating}</span>
+        {/* Total Skill Number & Position (Top Left) */}
+        <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'}`}>
+          <div className='text-black font-bold text-3xl'>
+            {totalRating}
+          </div>
+          <div className='text-black text-sm text-center font-bold'>
+            {position}
+          </div>
         </div>
 
-        {/* Posición del jugador - Estilo FIFA */}
-        <div className='absolute top-24 left-10'>
-          <span className='text-black font-bold text-base text-center'>{position}</span>
-        </div>
-
-        {/* Número de camiseta - POSICIÓN A AJUSTAR */}
-        <div className='absolute top-16 right-6'>
-          <span className='text-white/80 text-sm'>#{player.jersey_number || 'N/A'}</span>
+        {/* Skill Level Star (Top Right) */}
+        <div className={`absolute ${compact ? 'top-12 right-8' : 'top-16 right-10'}`}>
+          <div className='relative'>
+            <svg className='w-10 h-10 text-black' fill='currentColor' viewBox='0 0 24 24'>
+              <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
+            </svg>
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <span className='text-white font-bold text-base'>
+                {player.skill_level || 1}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Nombre del jugador arriba de las estadísticas - Estilo FIFA */}

@@ -218,27 +218,27 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden w-full max-w-4xl mx-4 max-h-[85vh] overflow-y-auto">
         {/* Header con gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">
-            {player ? 'Editar Jugador en el Sistema' : 'Registrar Jugador en el Sistema'}
+        <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-6 text-center">
+          <h1 className="text-2xl font-bold mb-1">
+            {player ? 'Editar Jugador' : 'Registrar Jugador'}
           </h1>
-          <p className="text-blue-100 text-lg">
-            {player ? 'Modifica la información del jugador' : 'Crea una cuenta de usuario para un jugador y asígnalo a un equipo'}
+          <p className="text-blue-100 text-sm">
+            {player ? 'Modifica la información del jugador' : 'Crea una cuenta de usuario para un jugador'}
           </p>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Información Personal */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Información Personal</h3>
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Información Personal</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nombre Completo *
                 </label>
                 <input
@@ -247,13 +247,13 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="Ej: Juan Pérez"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email *
                 </label>
                 <input
@@ -262,13 +262,13 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="juan.perez@equipo.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   País *
                 </label>
                 <select
@@ -276,7 +276,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   value={formData.country}
                   onChange={handleCountryChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
                   <option value="">Selecciona un país</option>
                   {countries.map(country => (
@@ -288,7 +288,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Teléfono
                 </label>
                 <input
@@ -296,33 +296,32 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="+56 912345678"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de Nacimiento *
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha de Nacimiento
                 </label>
                 <input
                   type="date"
                   name="date_of_birth"
                   value={formData.date_of_birth}
                   onChange={handleChange}
-                  required
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
                 {formData.date_of_birth && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     Edad: {calculateAge(formData.date_of_birth)} años
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Número de Camiseta
                 </label>
                 <input
@@ -332,13 +331,13 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   onChange={handleChange}
                   min="1"
                   max="99"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="10"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Altura (cm)
                 </label>
                 <input
@@ -348,13 +347,13 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   onChange={handleChange}
                   min="150"
                   max="220"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="175"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Peso (kg)
                 </label>
                 <input
@@ -364,7 +363,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   onChange={handleChange}
                   min="50"
                   max="120"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="70"
                 />
               </div>
@@ -373,11 +372,11 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
 
           {/* Información de Posición */}
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Información de Posición</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Información de Posición</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Zona de Posición *
                 </label>
                 <select
@@ -385,7 +384,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   value={formData.position_zone_id}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
                   {POSITION_ZONES.map(position => (
                     <option key={position.id} value={position.id}>
@@ -396,14 +395,14 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Posición Específica
                 </label>
                 <select
                   name="position_specific_id"
                   value={formData.position_specific_id || ''}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
                   <option value="">Sin especificar</option>
                   {availableSpecifics.map(position => (
@@ -420,46 +419,52 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
           </div>
 
           {/* Nivel de Habilidad General */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Nivel de Habilidad General</h3>
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Nivel de Habilidad General</h3>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nivel de Habilidad *
-              </label>
-              <div className="flex items-center space-x-2">
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Nivel de Habilidad
+                </label>
+                <span className="text-sm font-bold text-gray-600">
+                  {formData.skill_level}/5
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1 mb-2">
                 {[1, 2, 3, 4, 5].map(level => (
                   <button
                     key={level}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, skill_level: level }))}
-                    className="text-2xl transition-colors duration-200 hover:scale-110"
+                    className={`text-2xl transition-all duration-200 hover:scale-110 ${
+                      formData.skill_level >= level ? 'text-yellow-500' : 'text-gray-300'
+                    }`}
                   >
                     {formData.skill_level >= level ? '⭐' : '☆'}
                   </button>
                 ))}
-                <span className="text-sm text-gray-600 ml-2">
-                  {formData.skill_level}/5
-                </span>
               </div>
-              <p className="text-sm text-gray-500 mt-1">
-                {formData.skill_level === 1 && 'Principiante'}
-                {formData.skill_level === 2 && 'Básico'}
-                {formData.skill_level === 3 && 'Intermedio'}
-                {formData.skill_level === 4 && 'Avanzado'}
-                {formData.skill_level === 5 && 'Experto'}
-              </p>
+              
+              <div className="text-xs text-gray-600">
+                {formData.skill_level === 1 && 'Principiante - Habilidades básicas'}
+                {formData.skill_level === 2 && 'Básico - Conocimientos fundamentales'}
+                {formData.skill_level === 3 && 'Intermedio - Buen nivel técnico'}
+                {formData.skill_level === 4 && 'Avanzado - Alto rendimiento'}
+                {formData.skill_level === 5 && 'Experto - Nivel profesional'}
+              </div>
             </div>
           </div>
 
           {/* Habilidades Específicas */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Habilidades Específicas</h3>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Habilidades Específicas</h3>
+            <p className="text-sm text-gray-600 mb-2">
               Ajusta las estadísticas específicas del jugador (1-100)
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 { key: 'rit', label: 'Ritmo', color: 'from-blue-500 to-blue-600', icon: '⚡' },
                 { key: 'tir', label: 'Tiro', color: 'from-green-500 to-green-600', icon: '🎯' },
@@ -468,31 +473,31 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                 { key: 'defense', label: 'Defensa', color: 'from-red-500 to-red-600', icon: '🛡️' },
                 { key: 'fis', label: 'Físico', color: 'from-orange-500 to-orange-600', icon: '💪' }
               ].map((skill) => (
-                <div key={skill.key} className="space-y-3">
+                <div key={skill.key} className="bg-gray-50 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                       <span>{skill.icon}</span>
                       <span>{skill.label}</span>
                     </label>
-                    <span className={`text-sm font-bold ${getStatColor(formData[skill.key as keyof typeof formData] as number)}`}>
+                    <span className={`text-sm font-bold px-2 py-1 rounded ${getStatColor(formData[skill.key as keyof typeof formData] as number)} bg-white`}>
                       {formData[skill.key as keyof typeof formData]}
                     </span>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <input
                       type="range"
                       min="1"
                       max="100"
                       value={formData[skill.key as keyof typeof formData] as number}
                       onChange={(e) => handleSkillChange(skill.key, parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                       style={{
                         background: `linear-gradient(to right, ${getBarColor(formData[skill.key as keyof typeof formData] as number)} 0%, ${getBarColor(formData[skill.key as keyof typeof formData] as number)} ${formData[skill.key as keyof typeof formData]}%, #e5e7eb ${formData[skill.key as keyof typeof formData]}%, #e5e7eb 100%)`
                       }}
                     />
                     
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-gray-400">
                       <span>1</span>
                       <span>25</span>
                       <span>50</span>
@@ -506,18 +511,18 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
           </div>
 
           {/* Asignación de Equipo */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Asignación de Equipo</h3>
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Asignación de Equipo</h3>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Equipo *
               </label>
               <select
                 name="team_id"
                 value={teamId}
                 disabled
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm"
               >
                 {teams.map(team => (
                   <option key={team.id} value={team.id}>
@@ -525,57 +530,67 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   </option>
                 ))}
               </select>
-              <p className="text-sm text-gray-500 mt-1">
-                El jugador será asignado al equipo seleccionado
-              </p>
             </div>
           </div>
 
           {/* Información Adicional */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Información Adicional</h3>
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Información Adicional</h3>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-800 mb-2">🎉 Funcionalidades Especiales</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• <strong>Notificaciones de cumpleaños:</strong> El sistema enviará saludos automáticos</li>
-                <li>• <strong>Estadísticas por posición:</strong> Seguimiento de rendimiento por zona</li>
-                <li>• <strong>Historial de cambios:</strong> Registro de modificaciones del jugador</li>
-                <li>• <strong>Filtros avanzados:</strong> Búsqueda por posición específica y zona</li>
-                <li>• <strong>Habilidades específicas:</strong> Control detallado de estadísticas del jugador</li>
-              </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Campos Opcionales</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Fecha de nacimiento (calcula edad automáticamente)</li>
+                      <li>• Altura y peso (para estadísticas físicas)</li>
+                      <li>• Posición específica (recomendado para 11v11)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-green-800">
+                    <p className="font-medium mb-1">Habilidades Automáticas</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Se calculan según el nivel general</li>
+                      <li>• Puedes ajustarlas manualmente</li>
+                      <li>• Se reflejan en las tarjetas de jugador</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Botones de acción */}
-          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span>Cancelar</span>
+              Cancelar
             </button>
-            
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-green-600 rounded-lg hover:from-blue-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-              <span>{player ? 'Actualizar Jugador' : 'Registrar Jugador'}</span>
+              {loading ? 'Guardando...' : (player ? 'Actualizar Jugador' : 'Crear Jugador')}
             </button>
           </div>
         </form>
