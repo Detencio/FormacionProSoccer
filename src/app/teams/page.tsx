@@ -11,11 +11,9 @@ import PlayerListView from '@/components/teams/PlayerListView'
 import { teamService, Team, Player } from '@/services/teamService'
 
 export default function TeamsPage() {
-  const { user, token, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, token } = useAuthStore()
   const router = useRouter()
   const [teams, setTeams] = useState<Team[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [showAuthWarning, setShowAuthWarning] = useState(false)
   
   // Estados para modales
@@ -35,23 +33,17 @@ export default function TeamsPage() {
   useEffect(() => {
     const loadTeams = async () => {
       if (!isAuthenticated) {
-        setLoading(false)
         return
       }
 
       try {
-        setLoading(true)
-        setError(null)
-        console.log('TeamsPage - Cargando equipos desde el backend...')
+        // console.log('TeamsPage - Cargando equipos desde el backend...')
         const teamsData = await teamService.getTeams()
-        console.log('TeamsPage - Equipos cargados:', teamsData)
+        // console.log('TeamsPage - Equipos cargados:', teamsData)
         setTeams(teamsData)
       } catch (error) {
-        console.error('Error cargando equipos:', error)
-        setError('Error al cargar equipos desde el servidor')
+        // console.error('Error cargando equipos:', error)
         setTeams([])
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -86,9 +78,9 @@ export default function TeamsPage() {
         // Recargar equipos desde el backend
         const updatedTeams = await teamService.getTeams();
         setTeams(updatedTeams);
-        console.log('✅ Equipo eliminado exitosamente');
+        // console.log('✅ Equipo eliminado exitosamente');
       } catch (error) {
-        console.error('Error al eliminar equipo:', error);
+        // console.error('Error al eliminar equipo:', error);
         alert('Error al eliminar equipo. Por favor, inténtalo de nuevo.');
       }
     }
@@ -98,7 +90,7 @@ export default function TeamsPage() {
     try {
       if (editingTeam) {
         // Actualizar equipo existente
-        console.log('Actualizando equipo:', editingTeam.id, formData);
+        // console.log('Actualizando equipo:', editingTeam.id, formData);
         await teamService.updateTeam(editingTeam.id, {
           name: formData.name,
           city: formData.city,
@@ -107,10 +99,10 @@ export default function TeamsPage() {
           description: formData.description,
           logo_url: formData.logo_url
         });
-        console.log('✅ Equipo actualizado exitosamente');
+        // console.log('✅ Equipo actualizado exitosamente');
       } else {
         // Crear nuevo equipo
-        console.log('Creando nuevo equipo:', formData);
+        // console.log('Creando nuevo equipo:', formData);
         await teamService.createTeam({
           name: formData.name,
           city: formData.city,
@@ -119,7 +111,7 @@ export default function TeamsPage() {
           description: formData.description,
           logo_url: formData.logo_url
         });
-        console.log('✅ Equipo creado exitosamente');
+        // console.log('✅ Equipo creado exitosamente');
       }
       
       // Recargar equipos desde el backend
@@ -130,17 +122,10 @@ export default function TeamsPage() {
       setEditingTeam(null);
       
     } catch (error) {
-      console.error('Error al guardar equipo:', error);
+      // console.error('Error al guardar equipo:', error);
       alert('Error al guardar equipo. Por favor, inténtalo de nuevo.');
     }
   };
-
-  // Funciones para jugadores
-  const handleAddPlayer = (teamId: number) => {
-    setSelectedTeamId(teamId)
-    setEditingPlayer(null)
-    setShowPlayerModal(true)
-  }
 
   const handleEditPlayer = (player: any, teamId: number) => {
     setSelectedTeamId(teamId)
@@ -148,7 +133,7 @@ export default function TeamsPage() {
     setShowPlayerModal(true)
   }
 
-  const handleDeletePlayer = async (playerId: number, teamId: number) => {
+  const handleDeletePlayer = async (playerId: number) => {
     if (!confirm('¿Estás seguro de que quieres eliminar este jugador?')) return;
     
     try {
@@ -156,9 +141,9 @@ export default function TeamsPage() {
       // Recargar equipos desde el backend
       const updatedTeams = await teamService.getTeams();
       setTeams(updatedTeams);
-      console.log('✅ Jugador eliminado exitosamente');
+      // console.log('✅ Jugador eliminado exitosamente');
     } catch (error) {
-      console.error('Error al eliminar jugador:', error);
+      // console.error('Error al eliminar jugador:', error);
       alert('Error al eliminar jugador. Por favor, inténtalo de nuevo.');
     }
   };
@@ -169,7 +154,7 @@ export default function TeamsPage() {
     try {
       if (editingPlayer) {
         // Actualizar jugador existente
-        console.log('Actualizando jugador:', editingPlayer.id, formData);
+        // console.log('Actualizando jugador:', editingPlayer.id, formData);
         await teamService.updatePlayer(editingPlayer.id, {
           name: formData.name,
           email: formData.email,
@@ -184,10 +169,10 @@ export default function TeamsPage() {
           weight: parseInt(formData.weight) || undefined,
           is_active: true
         });
-        console.log('✅ Jugador actualizado exitosamente');
+        // console.log('✅ Jugador actualizado exitosamente');
       } else {
         // Crear nuevo jugador
-        console.log('Creando nuevo jugador:', formData);
+        // console.log('Creando nuevo jugador:', formData);
         await teamService.createPlayer({
           user_id: 1, // ID temporal, se asignará automáticamente
           team_id: selectedTeamId,
@@ -204,7 +189,7 @@ export default function TeamsPage() {
           weight: parseInt(formData.weight) || undefined,
           is_active: true
         });
-        console.log('✅ Jugador creado exitosamente');
+        // console.log('✅ Jugador creado exitosamente');
       }
       
       // Recargar equipos desde el backend
@@ -216,15 +201,10 @@ export default function TeamsPage() {
       setSelectedTeamId(null);
       
     } catch (error) {
-      console.error('Error al guardar jugador:', error);
+      // console.error('Error al guardar jugador:', error);
       alert('Error al guardar jugador. Por favor, inténtalo de nuevo.');
     }
   };
-
-  // Función para mostrar/ocultar detalles
-  const toggleDetails = (teamId: number) => {
-    setShowDetails(showDetails === teamId ? null : teamId)
-  }
 
   // Funciones para filtrado y vista
   const handleFilterChange = (teamId: number | null) => {
@@ -238,10 +218,6 @@ export default function TeamsPage() {
       // Si se deselecciona (todos los equipos), cambiar a vista de lista
       setViewMode('list')
     }
-  }
-
-  const toggleViewMode = () => {
-    setViewMode(viewMode === 'cards' ? 'list' : 'cards')
   }
 
   const toggleShowAllPlayers = () => {
@@ -265,7 +241,16 @@ export default function TeamsPage() {
         (team.players || []).map((player: any) => ({
           ...player,
           teamName: team.name,
-          teamId: team.id
+          teamId: team.id,
+          team: {
+            id: team.id,
+            name: team.name,
+            logo_url: team.logo_url,
+            city: team.city,
+            country: team.country,
+            founded: team.founded,
+            description: team.description
+          }
         }))
       )
       
@@ -274,9 +259,9 @@ export default function TeamsPage() {
         index === self.findIndex(p => p.id === player.id)
       )
       
-      console.log('getFilteredPlayers - allPlayers:', allPlayers.length)
-      console.log('getFilteredPlayers - uniquePlayers:', uniquePlayers.length)
-      console.log('getFilteredPlayers - player IDs:', uniquePlayers.map(p => p.id))
+      // console.log('getFilteredPlayers - allPlayers:', allPlayers.length)
+      // console.log('getFilteredPlayers - uniquePlayers:', uniquePlayers.length)
+      // console.log('getFilteredPlayers - player IDs:', uniquePlayers.map(p => p.id))
       
       return uniquePlayers
     }
@@ -489,7 +474,7 @@ export default function TeamsPage() {
                     key={player.id}
                     player={player}
                     onEdit={() => handleEditPlayer(player, player.team_id || selectedFilterTeam)}
-                    onDelete={() => handleDeletePlayer(player.id, player.team_id || selectedFilterTeam)}
+                    onDelete={() => handleDeletePlayer(player.id)}
                   />
                 ))}
               </div>
@@ -497,7 +482,7 @@ export default function TeamsPage() {
               <PlayerListView
                 players={filteredPlayers}
                 onEdit={(player) => handleEditPlayer(player, player.team_id || selectedFilterTeam || 0)}
-                onDelete={(playerId) => handleDeletePlayer(playerId, selectedFilterTeam || 0)}
+                onDelete={(playerId) => handleDeletePlayer(playerId)}
               />
             )}
           </div>
@@ -570,11 +555,32 @@ export default function TeamsPage() {
                         <tr key={team.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                                <span className="text-white font-bold text-sm">
-                                  {team.name.charAt(0)}
-                                </span>
-                              </div>
+                              {team.logo_url ? (
+                                <div className="w-10 h-10 rounded-lg overflow-hidden mr-3 border border-gray-200">
+                                  <img 
+                                    src={team.logo_url} 
+                                    alt={`Logo de ${team.name}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // Si el logo no carga, mostrar la letra inicial
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                  {/* Fallback con letra inicial */}
+                                  <div className="hidden w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                    <span className="text-white font-bold text-sm">
+                                      {team.name.charAt(0)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                  <span className="text-white font-bold text-sm">
+                                    {team.name.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
                               <div>
                                 <div className="text-sm font-medium text-gray-900">{team.name}</div>
                                 <div className="text-sm text-gray-500">Fundado: {team.founded}</div>
@@ -708,13 +714,24 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
     if (team) {
       setFormData({
         name: team.name,
-                      country: 'CL',
+        country: team.country || 'CL',
         city: team.city,
         commune: team.commune,
         founded: team.founded,
         logo_url: team.logo_url
       })
       setLogoPreview(team.logo_url || '')
+      
+      // Cargar ciudades y comunas para el equipo existente
+      if (team.country) {
+        const cities = getCitiesByCountry(team.country)
+        setAvailableCities(cities)
+        
+        if (team.city) {
+          const communes = getCommunesByCity(team.country, team.city)
+          setAvailableCommunes(communes)
+        }
+      }
     } else {
       setFormData({
         name: '',
@@ -725,6 +742,8 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
         logo_url: ''
       })
       setLogoPreview('')
+      setAvailableCities([])
+      setAvailableCommunes([])
     }
   }, [team])
 

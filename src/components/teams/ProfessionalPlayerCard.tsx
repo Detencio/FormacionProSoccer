@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Player } from '@/services/teamService';
+import { countries } from '@/lib/countries';
 
 interface ProfessionalPlayerCardProps {
   player: Player;
@@ -67,7 +68,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
   // Calcular promedio total de habilidades
   const totalRating = Math.round(
     (stats.rit + stats.tir + stats.pas + stats.reg + stats.defense + stats.fis) / 6
-  );
+  ) || 0;
 
   // Estado para habilidades editables
   const [currentStats, setCurrentStats] = React.useState(stats);
@@ -77,6 +78,53 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
     const newStats = getPlayerStats();
     setCurrentStats(newStats);
   }, [getPlayerStats]);
+
+  // Función para obtener la URL de la bandera
+  const getFlagUrl = (countryCode: string) => {
+    const url = `/flags/${countryCode.toLowerCase()}.png`;
+    // console.log('Flag URL:', url, 'Country Code:', countryCode);
+    return url;
+  };
+
+  // Función para obtener el nombre del país
+  const getCountryName = (countryCode: string) => {
+    const country = countries.find((c: any) => c.code === countryCode);
+    console.log('Player nationality:', player.nationality, 'Country code:', countryCode, 'Found country:', country);
+    return country ? country.name : countryCode;
+  };
+
+  // Función para obtener la URL del logo del equipo
+  const getTeamLogoUrl = (teamId: number | undefined) => {
+    if (!teamId) {
+      console.log('getTeamLogoUrl: No teamId provided, returning undefined.');
+      return undefined;
+    }
+    
+    // Si el jugador tiene información del equipo con logo_url, usarla
+    if (player.team?.logo_url) {
+      console.log('getTeamLogoUrl: Using team logo_url:', player.team.logo_url, 'for teamId:', teamId);
+      return player.team.logo_url;
+    }
+    
+    // Fallback a archivo estático
+    const url = `/team-logos/team-${teamId}.png`;
+    console.log('getTeamLogoUrl: Using fallback URL:', url, 'for teamId:', teamId);
+    return url;
+  };
+
+  // Función para obtener el nombre del equipo
+  const getTeamName = (teamId: number | undefined) => {
+    if (!teamId) return 'Sin equipo';
+    
+    // Si el jugador tiene información del equipo, usar el nombre real
+    if (player.team?.name) {
+      console.log('getTeamName: Using team name:', player.team.name, 'for teamId:', teamId);
+      return player.team.name;
+    }
+    
+    console.log('getTeamName: Using fallback name for teamId:', teamId);
+    return `Equipo ${teamId}`;
+  };
 
   if (compact) {
     return (
@@ -113,31 +161,102 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
           </div>
 
           {/* Estadísticas en fila horizontal - ULTRA COMPACTAS */}
-          <div className='absolute bottom-6 left-2 right-2'>
-            <div className='grid grid-cols-6 gap-0 w-full'>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>RIT</div>
-                <div className='text-black font-bold text-sm'>{currentStats.rit}</div>
+          <div className='absolute bottom-14 left-2 right-2'>
+            <div className='flex justify-center items-center w-full'>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>RIT</div>
+                <div className='text-black font-bold text-base'>{currentStats.rit}</div>
               </div>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>TIR</div>
-                <div className='text-black font-bold text-sm'>{currentStats.tir}</div>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>TIR</div>
+                <div className='text-black font-bold text-base'>{currentStats.tir}</div>
               </div>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>PAS</div>
-                <div className='text-black font-bold text-sm'>{currentStats.pas}</div>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>PAS</div>
+                <div className='text-black font-bold text-base'>{currentStats.pas}</div>
               </div>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>REG</div>
-                <div className='text-black font-bold text-sm'>{currentStats.reg}</div>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>REG</div>
+                <div className='text-black font-bold text-base'>{currentStats.reg}</div>
               </div>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>DEF</div>
-                <div className='text-black font-bold text-sm'>{currentStats.defense}</div>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>DEF</div>
+                <div className='text-black font-bold text-base'>{currentStats.defense}</div>
               </div>
-              <div className='text-center'>
-                <div className='text-black text-xs font-medium'>FIS</div>
-                <div className='text-black font-bold text-sm'>{currentStats.fis}</div>
+              <div className='text-center' style={{ width: '12%' }}>
+                <div className='text-black text-sm font-medium mb-0'>FIS</div>
+                <div className='text-black font-bold text-base'>{currentStats.fis}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Información inferior: Bandera, Número, Logo */}
+          <div className='absolute bottom-4 left-2 right-2'>
+            <div className='flex justify-center items-center w-full space-x-4'>
+              {/* Bandera del país */}
+              <div className='w-6 h-4'>
+                <img 
+                  src={getFlagUrl('CL')} 
+                  alt={`Bandera de ${getCountryName('CL')}`}
+                  className='w-full h-full object-cover rounded-sm'
+                  onError={(e) => {
+                    console.log('Error loading flag:', e);
+                    // Si la bandera no existe, mostrar una imagen por defecto
+                    (e.target as HTMLImageElement).src = '/flags/cl.png';
+                  }}
+                />
+              </div>
+              
+              {/* Número de camiseta con icono */}
+              <div className='flex items-center justify-center'>
+                <div className='relative'>
+                  {/* Icono de camiseta personalizado */}
+                  <img 
+                    src='/icons/jersey-icon.png' 
+                    alt='Camiseta'
+                    className='w-6 h-6 object-contain'
+                    onError={(e) => {
+                      // Si no existe el icono personalizado, usar estrella como fallback
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  {/* Fallback con estrella */}
+                  <svg 
+                    className='w-6 h-6 text-black hidden' 
+                    fill='currentColor' 
+                    viewBox='0 0 24 24'
+                  >
+                    <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
+                  </svg>
+                  {/* Número encima del icono */}
+                  <div className='absolute inset-0 flex items-center justify-center'>
+                    <span className='text-white font-bold text-xs'>
+                      {player.jersey_number || '10'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Logo del equipo */}
+              <div className='w-6 h-6'>
+                {getTeamLogoUrl(player.team_id) ? (
+                  <img 
+                    src={getTeamLogoUrl(player.team_id)} 
+                    alt={`Logo de ${getTeamName(player.team_id)}`}
+                    className='w-full h-full object-cover rounded-full'
+                    onError={(e) => {
+                      console.log('Error loading team logo:', e, 'for URL:', (e.target as HTMLImageElement).src, 'teamId:', player.team_id);
+                      // Si el logo no existe, mostrar un placeholder
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                {/* Placeholder que se muestra si no hay logo */}
+                <div className={`w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center ${getTeamLogoUrl(player.team_id) ? 'hidden' : ''}`}>
+                  <span className='text-xs text-gray-600'>⚽</span>
+                </div>
               </div>
             </div>
           </div>
@@ -213,32 +332,103 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
           </h2>
         </div>
 
-        {/* Estadísticas en fila horizontal - ULTRA COMPACTAS */}
-        <div className='absolute bottom-8 left-4 right-4'>
-          <div className='grid grid-cols-6 gap-0 w-full'>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>RIT</div>
-              <div className='text-black font-bold text-lg'>{currentStats.rit}</div>
+        {/* Estadísticas del jugador - Estilo FIFA */}
+        <div className='absolute bottom-14 left-4 right-4'>
+          <div className='flex justify-center items-center w-full space-x-2'>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>RIT</div>
+              <div className='text-black font-bold text-base'>{player.rit}</div>
             </div>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>TIR</div>
-              <div className='text-black font-bold text-lg'>{currentStats.tir}</div>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>TIR</div>
+              <div className='text-black font-bold text-base'>{player.tir}</div>
             </div>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>PAS</div>
-              <div className='text-black font-bold text-lg'>{currentStats.pas}</div>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>PAS</div>
+              <div className='text-black font-bold text-base'>{player.pas}</div>
             </div>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>REG</div>
-              <div className='text-black font-bold text-lg'>{currentStats.reg}</div>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>REG</div>
+              <div className='text-black font-bold text-base'>{player.reg}</div>
             </div>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>DEF</div>
-              <div className='text-black font-bold text-lg'>{currentStats.defense}</div>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>DEF</div>
+              <div className='text-black font-bold text-base'>{player.defense}</div>
             </div>
-            <div className='text-center'>
-              <div className='text-black text-xs font-medium mb-1'>FIS</div>
-              <div className='text-black font-bold text-lg'>{currentStats.fis}</div>
+            <div style={{ width: '12%' }} className='text-center'>
+              <div className='text-black text-sm mb-0'>FIS</div>
+              <div className='text-black font-bold text-base'>{player.fis}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Información inferior: Bandera, Número, Logo */}
+        <div className='absolute bottom-6 left-4 right-4'>
+          <div className='flex justify-center items-center w-full space-x-4'>
+            {/* Bandera del país */}
+            <div className='w-8 h-5'>
+              <img 
+                src={getFlagUrl('CL')} 
+                alt={`Bandera de ${getCountryName('CL')}`}
+                className='w-full h-full object-cover rounded-sm'
+                onError={(e) => {
+                  console.log('Error loading flag:', e);
+                  // Si la bandera no existe, mostrar una imagen por defecto
+                  (e.target as HTMLImageElement).src = '/flags/cl.png';
+                }}
+              />
+            </div>
+            
+            {/* Número de camiseta con icono */}
+            <div className='flex items-center justify-center'>
+              <div className='relative'>
+                {/* Icono de camiseta personalizado */}
+                <img 
+                  src='/icons/jersey-icon.png' 
+                  alt='Camiseta'
+                  className='w-8 h-8 object-contain'
+                  onError={(e) => {
+                    // Si no existe el icono personalizado, usar estrella como fallback
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                {/* Fallback con estrella */}
+                <svg 
+                  className='w-8 h-8 text-black hidden' 
+                  fill='currentColor' 
+                  viewBox='0 0 24 24'
+                >
+                  <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
+                </svg>
+                {/* Número encima del icono */}
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <span className='text-white font-bold text-sm'>
+                    {player.jersey_number || '10'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Logo del equipo */}
+            <div className='w-8 h-8'>
+              {getTeamLogoUrl(player.team_id) ? (
+                <img 
+                  src={getTeamLogoUrl(player.team_id)} 
+                  alt={`Logo de ${getTeamName(player.team_id)}`}
+                  className='w-full h-full object-cover rounded-full'
+                  onError={(e) => {
+                    console.log('Error loading team logo (full):', e, 'for URL:', (e.target as HTMLImageElement).src, 'teamId:', player.team_id);
+                    // Si el logo no existe, mostrar un placeholder
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              {/* Placeholder que se muestra si no hay logo */}
+              <div className={`w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center ${getTeamLogoUrl(player.team_id) ? 'hidden' : ''}`}>
+                <span className='text-sm text-gray-600'>⚽</span>
+              </div>
             </div>
           </div>
         </div>

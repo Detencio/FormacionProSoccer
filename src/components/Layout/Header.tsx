@@ -41,6 +41,7 @@ export default function Header() {
               width={48}
               height={48}
               className='object-cover rounded-lg'
+              style={{ width: 'auto', height: 'auto' }}
               priority
             />
           </div>
