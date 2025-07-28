@@ -57,6 +57,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
     height: '',
     weight: '',
     skill_level: 5,
+    photo_url: '',
     // Nuevas habilidades específicas
     rit: 70,
     tir: 70,
@@ -67,6 +68,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
   });
   const [teams, setTeams] = useState<any[]>([]);
   const [availableSpecifics, setAvailableSpecifics] = useState<any[]>([]);
+  const [photoPreview, setPhotoPreview] = useState<string>('');
 
   // Cargar equipos desde el backend
   useEffect(() => {
@@ -106,6 +108,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         height: player.height ? player.height.toString() : '',
         weight: player.weight ? player.weight.toString() : '',
         skill_level: player.skill_level || 5,
+        photo_url: player.photo_url || '',
         // Cargar habilidades específicas si existen, sino usar valores por defecto
         rit: player.rit || 70,
         tir: player.tir || 70,
@@ -114,6 +117,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         defense: player.defense || 70,
         fis: player.fis || 70
       });
+      setPhotoPreview(player.photo_url || '');
     } else {
       console.log('PlayerModal: Creando nuevo jugador');
       setFormData({
@@ -128,6 +132,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         height: '',
         weight: '',
         skill_level: 5,
+        photo_url: '',
         // Valores por defecto para habilidades
         rit: 70,
         tir: 70,
@@ -136,6 +141,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         defense: 70,
         fis: 70
       });
+      setPhotoPreview('');
     }
   }, [player, isOpen]);
 
@@ -193,10 +199,20 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
 
   // Función para manejar cambios en habilidades específicas
   const handleSkillChange = (skillName: string, value: number) => {
-    setFormData(prev => ({
-      ...prev,
-      [skillName]: Math.max(1, Math.min(100, value))
-    }));
+    setFormData(prev => ({ ...prev, [skillName]: value }));
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setPhotoPreview(result);
+        setFormData(prev => ({ ...prev, photo_url: result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Obtener color de estadística
@@ -366,6 +382,37 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="70"
                 />
+              </div>
+
+              {/* Campo de foto del jugador */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Foto del Jugador
+                </label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Formatos: JPG, PNG. Máximo 2MB
+                    </p>
+                  </div>
+                  {photoPreview && (
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200">
+                        <img
+                          src={photoPreview}
+                          alt="Vista previa"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

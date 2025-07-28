@@ -138,8 +138,24 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
         {/* Contenido superpuesto */}
         <div className='relative h-full p-4 flex flex-col'>
+          {/* Foto del jugador (Top Left) */}
+          {player.photo_url && (
+            <div className='absolute top-2 left-2 z-10'>
+              <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg'>
+                <img
+                  src={player.photo_url}
+                  alt={player.name}
+                  className='w-full h-full object-cover'
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Total Skill Number & Position (Top Left) */}
-          <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'}`}>
+          <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'} ${player.photo_url ? 'left-16' : ''}`}>
             <div className='text-black font-bold text-3xl'>
               {totalRating}
             </div>
@@ -319,8 +335,24 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
       {/* Contenido superpuesto */}
       <div className='relative h-full p-6 flex flex-col'>
+        {/* Foto del jugador (Top Left) */}
+        {player.photo_url && (
+          <div className='absolute top-2 left-2 z-10'>
+            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg'>
+              <img
+                src={player.photo_url}
+                alt={player.name}
+                className='w-full h-full object-cover'
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Total Skill Number & Position (Top Left) */}
-        <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'}`}>
+        <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'} ${player.photo_url ? 'left-16' : ''}`}>
           <div className='text-black font-bold text-3xl'>
             {totalRating}
           </div>

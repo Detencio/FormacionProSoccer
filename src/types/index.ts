@@ -130,6 +130,7 @@ export interface Player {
   height?: number; // en centímetros
   weight?: number; // en kilogramos
   skill_level: number; // 1-10
+  photo_url?: string; // URL de la foto del jugador
   is_active: boolean;
   is_guest?: boolean; // Indica si es un jugador invitado manual
   created_at: string;
