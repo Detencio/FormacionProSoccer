@@ -60,6 +60,7 @@ export interface Player {
   height?: number;
   weight?: number;
   skill_level: number;
+  photo_url?: string; // URL de la foto del jugador
   // Habilidades específicas
   rit?: number;
   tir?: number;
@@ -99,6 +100,7 @@ export interface CreatePlayerRequest {
   height?: number;
   weight?: number;
   skill_level: number;
+  photo_url?: string; // URL de la foto del jugador
   // Habilidades específicas
   rit?: number;
   tir?: number;
@@ -130,6 +132,7 @@ export interface UpdatePlayerRequest {
   height?: number;
   weight?: number;
   skill_level?: number;
+  photo_url?: string; // URL de la foto del jugador
   // Habilidades específicas
   rit?: number;
   tir?: number;
