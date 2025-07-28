@@ -64,17 +64,25 @@ from jose import JWTError, jwt
 security = HTTPBearer()
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
+    print(f"🔍 DEBUG - get_current_user llamado con token: {credentials.credentials[:20]}...")
     token = credentials.credentials
     try:
         payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
         email: str = payload.get("sub")
+        print(f"🔍 DEBUG - Token decodificado, email: {email}")
         if email is None:
+            print("❌ ERROR - Token no contiene email")
             raise HTTPException(status_code=401, detail="Token inválido")
-    except JWTError:
+    except JWTError as e:
+        print(f"❌ ERROR - Error decodificando token: {e}")
         raise HTTPException(status_code=401, detail="Token inválido")
+    
     user = crud.get_user_by_email(db, email)
     if user is None:
+        print(f"❌ ERROR - Usuario {email} no encontrado en BD")
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
+    
+    print(f"✅ DEBUG - Usuario autenticado: {user.email}, is_admin: {user.is_admin}")
     return user
 
 @app.get("/me", response_model=schemas.UserOut)

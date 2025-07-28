@@ -99,6 +99,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
   useEffect(() => {
     if (player) {
       console.log('PlayerModal: Cargando jugador:', player);
+      console.log('🔍 DEBUG - Foto del jugador:', player.photo_url);
       setFormData({
         name: player.name || '',
         email: player.email || '',
@@ -122,6 +123,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         fis: player.fis || 70
       });
       setPhotoPreview(player.photo_url || '');
+      console.log('🔍 DEBUG - photoPreview establecido:', player.photo_url || '');
     } else {
       setFormData({
         name: '',
