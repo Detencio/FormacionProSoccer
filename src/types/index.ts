@@ -185,27 +185,139 @@ export interface TeamMember {
 // Match Types
 export interface Match {
   id: string;
-  homeTeamId: string;
-  awayTeamId: string;
+  type: 'internal_friendly' | 'external_friendly' | 'championship';
+  title: string;
   date: Date;
-  location: string;
-  status: 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
-  homeScore?: number;
-  awayScore?: number;
-  notes?: string;
+  venue: Venue;
+  status: 'scheduled' | 'in_progress' | 'finished' | 'cancelled';
+  
+  // Equipos
+  homeTeam?: Team;
+  awayTeam?: Team;
+  generatedTeams?: {
+    teamA: Team;
+    teamB: Team;
+  };
+  
+  // Puntuación
+  score?: {
+    home: number;
+    away: number;
+  };
+  
+  // Asistencia
+  attendance: PlayerAttendance[];
+  
+  // Eventos del partido
+  events: MatchEvent[];
+  
+  // Metadatos
+  createdBy: string;
   createdAt: Date;
   updatedAt: Date;
-  homeTeam: Team;
-  awayTeam: Team;
 }
 
-export interface MatchPlayer {
+export interface PlayerAttendance {
+  playerId: string;
+  player: Player;
+  status: 'confirmed' | 'declined' | 'pending' | 'maybe';
+  confirmedAt?: Date;
+  notes?: string;
+}
+
+export interface MatchEvent {
   id: string;
-  matchId: string;
-  userId: string;
-  status: 'confirmed' | 'pending' | 'declined';
-  position?: string;
-  user: User;
+  type: 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'substitution' | 'injury';
+  minute: number;
+  playerId: string;
+  player: Player;
+  team: 'home' | 'away';
+  description?: string;
+  timestamp: Date;
+}
+
+export interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  capacity: number;
+  surface: 'grass' | 'artificial' | 'indoor';
+  facilities: string[];
+}
+
+export interface Championship {
+  id: string;
+  name: string;
+  season: string;
+  startDate: Date;
+  endDate: Date;
+  status: 'upcoming' | 'active' | 'finished';
+  teams: Team[];
+  fixtures: Match[];
+  standings: ChampionshipStanding[];
+  rules: ChampionshipRules;
+}
+
+export interface ChampionshipStanding {
+  teamId: string;
+  team: Team;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  position: number;
+}
+
+export interface ChampionshipRules {
+  pointsForWin: number;
+  pointsForDraw: number;
+  pointsForLoss: number;
+  maxPlayersPerTeam: number;
+  minPlayersPerTeam: number;
+  substitutionLimit: number;
+}
+
+export interface ExternalTeam {
+  id: string;
+  name: string;
+  contact: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  level: 'beginner' | 'intermediate' | 'advanced' | 'professional';
+  logo?: string;
+  description?: string;
+}
+
+// ===== NOTIFICACIONES =====
+export interface Notification {
+  id: string;
+  type: 'match_invitation' | 'attendance_reminder' | 'match_update' | 'championship_announcement';
+  title: string;
+  message: string;
+  recipientId: string;
+  matchId?: string;
+  read: boolean;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+// ===== CONFIGURACIÓN DE PARTIDOS =====
+export interface MatchSettings {
+  id: string;
+  matchType: Match['type'];
+  duration: number; // minutos
+  playersPerTeam: number;
+  allowSubstitutions: boolean;
+  substitutionLimit: number;
+  requireAttendance: boolean;
+  autoGenerateTeams: boolean;
+  championshipId?: string;
+  externalTeamId?: string;
 }
 
 // Payment Types

@@ -186,3 +186,263 @@ class PlayerRegistration(BaseModel):
     weight: Optional[int] = None
     skill_level: int = 5
     team_id: int
+
+# ===== SISTEMA DE PARTIDOS =====
+
+class VenueBase(BaseModel):
+    name: str
+    address: Optional[str] = None
+    capacity: Optional[int] = None
+    surface: str = 'grass'  # 'grass', 'artificial', 'indoor'
+    facilities: Optional[str] = None
+
+class VenueCreate(VenueBase):
+    pass
+
+class VenueUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    capacity: Optional[int] = None
+    surface: Optional[str] = None
+    facilities: Optional[str] = None
+
+class VenueOut(VenueBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class MatchBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    date: datetime
+    venue_id: Optional[int] = None
+    match_type: str  # 'internal_friendly', 'external_friendly', 'championship'
+    home_team_id: Optional[int] = None
+    away_team_id: Optional[int] = None
+    generated_team_a_id: Optional[int] = None
+    generated_team_b_id: Optional[int] = None
+    status: str = 'scheduled'  # 'scheduled', 'in_progress', 'finished', 'cancelled'
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+
+class MatchCreate(MatchBase):
+    created_by: int
+
+class MatchUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    date: Optional[datetime] = None
+    venue_id: Optional[int] = None
+    match_type: Optional[str] = None
+    home_team_id: Optional[int] = None
+    away_team_id: Optional[int] = None
+    generated_team_a_id: Optional[int] = None
+    generated_team_b_id: Optional[int] = None
+    status: Optional[str] = None
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+
+class MatchOut(MatchBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    venue: Optional[VenueOut] = None
+    home_team: Optional[TeamOut] = None
+    away_team: Optional[TeamOut] = None
+    generated_team_a: Optional[TeamOut] = None
+    generated_team_b: Optional[TeamOut] = None
+    creator: UserOut
+
+    class Config:
+        from_attributes = True
+
+class PlayerAttendanceBase(BaseModel):
+    match_id: int
+    player_id: int
+    status: str = 'pending'  # 'confirmed', 'declined', 'pending', 'maybe'
+    notes: Optional[str] = None
+
+class PlayerAttendanceCreate(PlayerAttendanceBase):
+    pass
+
+class PlayerAttendanceUpdate(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+class PlayerAttendanceOut(PlayerAttendanceBase):
+    id: int
+    confirmed_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    player: PlayerOut
+    match: MatchOut
+
+    class Config:
+        from_attributes = True
+
+class MatchEventBase(BaseModel):
+    match_id: int
+    player_id: int
+    event_type: str  # 'goal', 'assist', 'yellow_card', 'red_card', 'substitution', 'injury'
+    minute: int
+    team_side: str  # 'home', 'away'
+    description: Optional[str] = None
+
+class MatchEventCreate(MatchEventBase):
+    pass
+
+class MatchEventUpdate(BaseModel):
+    event_type: Optional[str] = None
+    minute: Optional[int] = None
+    team_side: Optional[str] = None
+    description: Optional[str] = None
+
+class MatchEventOut(MatchEventBase):
+    id: int
+    timestamp: datetime
+    player: PlayerOut
+    match: MatchOut
+
+    class Config:
+        from_attributes = True
+
+class ChampionshipBase(BaseModel):
+    name: str
+    season: str
+    start_date: datetime
+    end_date: datetime
+    status: str = 'upcoming'  # 'upcoming', 'active', 'finished'
+    points_for_win: int = 3
+    points_for_draw: int = 1
+    points_for_loss: int = 0
+    max_players_per_team: int = 11
+    min_players_per_team: int = 7
+    substitution_limit: int = 3
+
+class ChampionshipCreate(ChampionshipBase):
+    pass
+
+class ChampionshipUpdate(BaseModel):
+    name: Optional[str] = None
+    season: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    status: Optional[str] = None
+    points_for_win: Optional[int] = None
+    points_for_draw: Optional[int] = None
+    points_for_loss: Optional[int] = None
+    max_players_per_team: Optional[int] = None
+    min_players_per_team: Optional[int] = None
+    substitution_limit: Optional[int] = None
+
+class ChampionshipOut(ChampionshipBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class ChampionshipTeamBase(BaseModel):
+    championship_id: int
+    team_id: int
+    played: int = 0
+    won: int = 0
+    drawn: int = 0
+    lost: int = 0
+    goals_for: int = 0
+    goals_against: int = 0
+    points: int = 0
+    position: Optional[int] = None
+
+class ChampionshipTeamCreate(ChampionshipTeamBase):
+    pass
+
+class ChampionshipTeamUpdate(BaseModel):
+    played: Optional[int] = None
+    won: Optional[int] = None
+    drawn: Optional[int] = None
+    lost: Optional[int] = None
+    goals_for: Optional[int] = None
+    goals_against: Optional[int] = None
+    points: Optional[int] = None
+    position: Optional[int] = None
+
+class ChampionshipTeamOut(ChampionshipTeamBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    championship: ChampionshipOut
+    team: TeamOut
+
+    class Config:
+        from_attributes = True
+
+class ExternalTeamBase(BaseModel):
+    name: str
+    logo_url: Optional[str] = None
+    description: Optional[str] = None
+    level: str = 'intermediate'  # 'beginner', 'intermediate', 'advanced', 'professional'
+    contact_name: str
+    contact_email: EmailStr
+    contact_phone: Optional[str] = None
+
+class ExternalTeamCreate(ExternalTeamBase):
+    pass
+
+class ExternalTeamUpdate(BaseModel):
+    name: Optional[str] = None
+    logo_url: Optional[str] = None
+    description: Optional[str] = None
+    level: Optional[str] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[EmailStr] = None
+    contact_phone: Optional[str] = None
+
+class ExternalTeamOut(ExternalTeamBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class NotificationBase(BaseModel):
+    type: str  # 'match_invitation', 'attendance_reminder', 'match_update', 'championship_announcement'
+    title: str
+    message: str
+    recipient_id: int
+    match_id: Optional[int] = None
+    read: bool = False
+    expires_at: Optional[datetime] = None
+
+class NotificationCreate(NotificationBase):
+    pass
+
+class NotificationUpdate(BaseModel):
+    read: Optional[bool] = None
+    expires_at: Optional[datetime] = None
+
+class NotificationOut(NotificationBase):
+    id: int
+    created_at: datetime
+    recipient: UserOut
+    match: Optional[MatchOut] = None
+
+    class Config:
+        from_attributes = True
+
+# ===== SCHEMAS PARA INTEGRACIÓN CON TEAM GENERATOR =====
+
+class MatchWithAttendance(MatchOut):
+    attendance: List[PlayerAttendanceOut] = []
+
+class MatchWithEvents(MatchOut):
+    events: List[MatchEventOut] = []
+
+class MatchWithFullDetails(MatchOut):
+    attendance: List[PlayerAttendanceOut] = []
+    events: List[MatchEventOut] = []

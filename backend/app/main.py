@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from . import models, schemas, crud, auth, database
 from .database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -465,3 +466,242 @@ def register_player(player_data: schemas.PlayerRegistration, db: Session = Depen
     player = crud.create_player(db, player_create)
     
     return player
+
+# ===== ENDPOINTS DE PARTIDOS =====
+
+@app.post("/matches/", response_model=schemas.MatchOut)
+def create_match(match: schemas.MatchCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Crear un nuevo partido"""
+    return crud.create_match(db=db, match=match)
+
+@app.get("/matches/", response_model=List[schemas.MatchOut])
+def get_matches(
+    skip: int = 0, 
+    limit: int = 100, 
+    match_type: str = None,
+    status: str = None,
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Obtener lista de partidos con filtros opcionales"""
+    return crud.get_matches(db=db, skip=skip, limit=limit, match_type=match_type, status=status)
+
+@app.get("/matches/{match_id}", response_model=schemas.MatchOut)
+def get_match(match_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Obtener un partido específico"""
+    match = crud.get_match(db=db, match_id=match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    return match
+
+@app.put("/matches/{match_id}", response_model=schemas.MatchOut)
+def update_match(match_id: int, match: schemas.MatchUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Actualizar un partido"""
+    db_match = crud.update_match(db=db, match_id=match_id, match=match)
+    if db_match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    return db_match
+
+@app.delete("/matches/{match_id}")
+def delete_match(match_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Eliminar un partido"""
+    db_match = crud.delete_match(db=db, match_id=match_id)
+    if db_match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    return {"message": "Partido eliminado exitosamente"}
+
+# ===== ENDPOINTS DE ASISTENCIA =====
+
+@app.post("/matches/{match_id}/attendance/", response_model=schemas.PlayerAttendanceOut)
+def create_player_attendance(
+    match_id: int, 
+    attendance: schemas.PlayerAttendanceCreate, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Registrar asistencia de un jugador a un partido"""
+    # Verificar que el partido existe
+    match = crud.get_match(db=db, match_id=match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    
+    # Verificar que el jugador existe
+    player = crud.get_player(db=db, player_id=attendance.player_id)
+    if player is None:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    
+    return crud.create_player_attendance(db=db, attendance=attendance)
+
+@app.get("/matches/{match_id}/attendance/", response_model=List[schemas.PlayerAttendanceOut])
+def get_match_attendance(match_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Obtener lista de asistencia de un partido"""
+    return crud.get_player_attendance(db=db, match_id=match_id)
+
+@app.put("/attendance/{attendance_id}", response_model=schemas.PlayerAttendanceOut)
+def update_player_attendance(
+    attendance_id: int, 
+    attendance: schemas.PlayerAttendanceUpdate, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Actualizar estado de asistencia de un jugador"""
+    db_attendance = crud.update_player_attendance(db=db, attendance_id=attendance_id, attendance=attendance)
+    if db_attendance is None:
+        raise HTTPException(status_code=404, detail="Asistencia no encontrada")
+    return db_attendance
+
+@app.get("/matches/{match_id}/confirmed-players/", response_model=List[schemas.PlayerOut])
+def get_confirmed_players(match_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Obtener jugadores confirmados para un partido"""
+    confirmed_attendance = crud.get_confirmed_players_for_match(db=db, match_id=match_id)
+    return [att.player for att in confirmed_attendance]
+
+# ===== ENDPOINTS DE EVENTOS DE PARTIDO =====
+
+@app.post("/matches/{match_id}/events/", response_model=schemas.MatchEventOut)
+def create_match_event(
+    match_id: int, 
+    event: schemas.MatchEventCreate, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Registrar un evento en un partido"""
+    # Verificar que el partido existe
+    match = crud.get_match(db=db, match_id=match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    
+    return crud.create_match_event(db=db, event=event)
+
+@app.get("/matches/{match_id}/events/", response_model=List[schemas.MatchEventOut])
+def get_match_events(match_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Obtener eventos de un partido"""
+    return crud.get_match_events(db=db, match_id=match_id)
+
+# ===== ENDPOINTS DE CANCHAS =====
+
+@app.post("/venues/", response_model=schemas.VenueOut)
+def create_venue(venue: schemas.VenueCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Crear una nueva cancha"""
+    return crud.create_venue(db=db, venue=venue)
+
+@app.get("/venues/", response_model=List[schemas.VenueOut])
+def get_venues(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Obtener lista de canchas"""
+    return crud.get_venues(db=db, skip=skip, limit=limit)
+
+@app.get("/venues/{venue_id}", response_model=schemas.VenueOut)
+def get_venue(venue_id: int, db: Session = Depends(get_db)):
+    """Obtener una cancha específica"""
+    venue = crud.get_venue(db=db, venue_id=venue_id)
+    if venue is None:
+        raise HTTPException(status_code=404, detail="Cancha no encontrada")
+    return venue
+
+# ===== ENDPOINTS DE CAMPEONATOS =====
+
+@app.post("/championships/", response_model=schemas.ChampionshipOut)
+def create_championship(championship: schemas.ChampionshipCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Crear un nuevo campeonato"""
+    return crud.create_championship(db=db, championship=championship)
+
+@app.get("/championships/", response_model=List[schemas.ChampionshipOut])
+def get_championships(skip: int = 0, limit: int = 100, status: str = None, db: Session = Depends(get_db)):
+    """Obtener lista de campeonatos"""
+    return crud.get_championships(db=db, skip=skip, limit=limit, status=status)
+
+@app.get("/championships/{championship_id}", response_model=schemas.ChampionshipOut)
+def get_championship(championship_id: int, db: Session = Depends(get_db)):
+    """Obtener un campeonato específico"""
+    championship = crud.get_championship(db=db, championship_id=championship_id)
+    if championship is None:
+        raise HTTPException(status_code=404, detail="Campeonato no encontrado")
+    return championship
+
+@app.get("/championships/{championship_id}/standings/", response_model=List[schemas.ChampionshipTeamOut])
+def get_championship_standings(championship_id: int, db: Session = Depends(get_db)):
+    """Obtener tabla de posiciones de un campeonato"""
+    return crud.get_championship_standings(db=db, championship_id=championship_id)
+
+# ===== ENDPOINTS DE EQUIPOS EXTERNOS =====
+
+@app.post("/external-teams/", response_model=schemas.ExternalTeamOut)
+def create_external_team(external_team: schemas.ExternalTeamCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Crear un nuevo equipo externo"""
+    return crud.create_external_team(db=db, external_team=external_team)
+
+@app.get("/external-teams/", response_model=List[schemas.ExternalTeamOut])
+def get_external_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Obtener lista de equipos externos"""
+    return crud.get_external_teams(db=db, skip=skip, limit=limit)
+
+@app.get("/external-teams/{external_team_id}", response_model=schemas.ExternalTeamOut)
+def get_external_team(external_team_id: int, db: Session = Depends(get_db)):
+    """Obtener un equipo externo específico"""
+    external_team = crud.get_external_team(db=db, external_team_id=external_team_id)
+    if external_team is None:
+        raise HTTPException(status_code=404, detail="Equipo externo no encontrado")
+    return external_team
+
+# ===== ENDPOINTS DE NOTIFICACIONES =====
+
+@app.post("/notifications/", response_model=schemas.NotificationOut)
+def create_notification(notification: schemas.NotificationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Crear una nueva notificación"""
+    return crud.create_notification(db=db, notification=notification)
+
+@app.get("/notifications/", response_model=List[schemas.NotificationOut])
+def get_user_notifications(
+    unread_only: bool = False, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Obtener notificaciones del usuario actual"""
+    return crud.get_user_notifications(db=db, user_id=current_user.id, unread_only=unread_only)
+
+@app.put("/notifications/{notification_id}/read", response_model=schemas.NotificationOut)
+def mark_notification_as_read(notification_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Marcar una notificación como leída"""
+    notification = crud.mark_notification_as_read(db=db, notification_id=notification_id)
+    if notification is None:
+        raise HTTPException(status_code=404, detail="Notificación no encontrada")
+    return notification
+
+# ===== ENDPOINTS DE INTEGRACIÓN CON TEAM GENERATOR =====
+
+@app.get("/matches/{match_id}/available-players/", response_model=List[schemas.PlayerOut])
+def get_available_players_for_match(
+    match_id: int, 
+    team_id: int = None, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Obtener jugadores disponibles para un partido (confirmados)"""
+    return crud.get_available_players_for_match(db=db, match_id=match_id, team_id=team_id)
+
+@app.post("/matches/{match_id}/generate-teams/", response_model=schemas.MatchOut)
+def generate_teams_for_match(
+    match_id: int,
+    team_a_players: List[int],
+    team_b_players: List[int],
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Generar equipos para un partido usando el Team Generator"""
+    # Verificar que el partido existe
+    match = crud.get_match(db=db, match_id=match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    
+    # Crear equipos con los jugadores especificados
+    match_data = {
+        "title": match.title,
+        "description": match.description,
+        "date": match.date,
+        "venue_id": match.venue_id,
+        "match_type": match.match_type,
+        "status": match.status,
+        "created_by": match.created_by
+    }
+    
+    return crud.create_match_with_teams(db=db, match_data=match_data, team_a_players=team_a_players, team_b_players=team_b_players)

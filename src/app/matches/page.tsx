@@ -1,188 +1,311 @@
 'use client'
 
-import { useState } from 'react'
-import MainLayout from '@/components/Layout/MainLayout'
-import { FaFutbol, FaCalendar, FaClock, FaMapMarkerAlt, FaPlus, FaTrophy } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { useAuthStore } from '@/store/authStore'
+import { Match, MatchSettings, Championship, ExternalTeam } from '@/types'
+import MatchCalendar from '@/components/matches/MatchCalendar'
+import MatchList from '@/components/matches/MatchList'
+import CreateMatchModal from '@/components/matches/CreateMatchModal'
+import MatchStats from '@/components/matches/MatchStats'
+import ChampionshipManager from '@/components/matches/ChampionshipManager'
+import ExternalTeamsManager from '@/components/matches/ExternalTeamsManager'
+import MatchSidebar from '@/components/matches/MatchSidebar'
+import Sidebar from '@/components/Layout/Sidebar'
+import { matchService } from '@/services/matchService'
 
 export default function MatchesPage() {
-  const [matches] = useState([
-    {
-      id: 1,
-      homeTeam: 'Matiz FC',
-      awayTeam: 'Los Tigres',
-      date: '2024-01-15',
-      time: '15:00',
-      venue: 'Cancha Municipal',
-      status: 'programado',
-      score: null
-    },
-    {
-      id: 2,
-      homeTeam: 'Los Leones',
-      awayTeam: 'Matiz FC',
-      date: '2024-01-22',
-      time: '16:30',
-      venue: 'Estadio Deportivo',
-      status: 'jugado',
-      score: '2-3'
-    },
-    {
-      id: 3,
-      homeTeam: 'Matiz FC',
-      awayTeam: 'Los Águilas',
-      date: '2024-01-29',
-      time: '14:00',
-      venue: 'Cancha Municipal',
-      status: 'programado',
-      score: null
-    }
-  ])
+  const { user } = useAuthStore()
+  const [activeTab, setActiveTab] = useState<'calendar' | 'list' | 'championships' | 'external-teams'>('calendar')
+  const [matches, setMatches] = useState<Match[]>([])
+  const [championships, setChampionships] = useState<Championship[]>([])
+  const [externalTeams, setExternalTeams] = useState<ExternalTeam[]>([])
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'programado':
-        return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-      case 'jugado':
-        return 'bg-gradient-to-r from-green-500 to-green-600 text-white'
-      case 'cancelado':
-        return 'bg-gradient-to-r from-red-500 to-red-600 text-white'
-      default:
-        return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        console.log('🔄 Cargando datos del módulo de partidos...')
+        
+        // Cargar partidos (sin autenticación por ahora)
+        try {
+          const matchesData = await matchService.getMatches()
+          setMatches(matchesData)
+          console.log('✅ Partidos cargados:', matchesData.length)
+        } catch (error) {
+          console.log('⚠️ No se pudieron cargar partidos (requiere auth):', error)
+          // Usar datos de ejemplo si no hay autenticación
+          setMatches([
+            {
+              id: '1',
+              type: 'external_friendly',
+              title: 'Matiz FC vs Los Tigres',
+              date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              venue: { 
+                id: '1', 
+                name: 'Cancha Municipal',
+                address: 'Av. Principal 123',
+                capacity: 200,
+                surface: 'grass',
+                facilities: ['Vestuarios', 'Estacionamiento']
+              },
+              status: 'scheduled',
+              attendance: [],
+              events: [],
+              createdBy: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            },
+            {
+              id: '2',
+              type: 'internal_friendly',
+              title: 'Entrenamiento Interno',
+              date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+              venue: { 
+                id: '2', 
+                name: 'Estadio Deportivo',
+                address: 'Calle Deportiva 456',
+                capacity: 500,
+                surface: 'artificial',
+                facilities: ['Vestuarios', 'Estacionamiento', 'Cafetería']
+              },
+              status: 'scheduled',
+              attendance: [],
+              events: [],
+              createdBy: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            },
+            {
+              id: '3',
+              type: 'championship',
+              title: 'Liga Local - Jornada 1',
+              date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+              venue: { 
+                id: '3', 
+                name: 'Complejo Deportivo',
+                address: 'Boulevard Deportivo 789',
+                capacity: 1000,
+                surface: 'grass',
+                facilities: ['Vestuarios', 'Estacionamiento', 'Cafetería', 'Gimnasio']
+              },
+              status: 'scheduled',
+              attendance: [],
+              events: [],
+              createdBy: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          ])
+        }
+        
+        // Cargar campeonatos
+        try {
+          const championshipsData = await matchService.getChampionships()
+          setChampionships(championshipsData)
+          console.log('✅ Campeonatos cargados:', championshipsData.length)
+        } catch (error) {
+          console.log('⚠️ No se pudieron cargar campeonatos:', error)
+          setChampionships([])
+        }
+        
+        // Cargar equipos externos
+        try {
+          const teamsData = await matchService.getExternalTeams()
+          setExternalTeams(teamsData)
+          console.log('✅ Equipos externos cargados:', teamsData.length)
+        } catch (error) {
+          console.log('⚠️ No se pudieron cargar equipos externos:', error)
+          setExternalTeams([])
+        }
+        
+      } catch (error) {
+        console.error('❌ Error cargando datos:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
+
+  const handleCreateMatch = async (matchData: Partial<Match>) => {
+    try {
+      console.log('Creando partido:', matchData)
+      
+      // Crear un nuevo partido con ID único
+      const newMatch: Match = {
+        id: Date.now().toString(), // ID temporal
+        type: matchData.type || 'internal_friendly',
+        title: matchData.title || 'Nuevo Partido',
+        date: matchData.date || new Date(),
+        venue: matchData.venue || {
+          id: '1',
+          name: 'Cancha Municipal',
+          address: 'Av. Principal 123',
+          capacity: 200,
+          surface: 'grass',
+          facilities: ['Vestuarios', 'Estacionamiento']
+        },
+        status: 'scheduled',
+        attendance: [],
+        events: [],
+        createdBy: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      
+      // Agregar el nuevo partido a la lista
+      setMatches(prevMatches => [newMatch, ...prevMatches])
+      
+      console.log('✅ Partido creado exitosamente:', newMatch)
+      setShowCreateModal(false)
+      
+      // Abrir automáticamente el menú lateral para el nuevo partido
+      setSelectedMatch(newMatch)
+    } catch (error) {
+      console.error('❌ Error creando partido:', error)
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'programado':
-        return 'Programado'
-      case 'jugado':
-        return 'Jugado'
-      case 'cancelado':
-        return 'Cancelado'
-      default:
-        return 'Desconocido'
-    }
+  const handleMatchSelect = (match: Match) => {
+    setSelectedMatch(match)
+  }
+
+  const handleCloseSidebar = () => {
+    setSelectedMatch(null)
+  }
+
+  const handleUpdateMatch = (updatedMatch: Match) => {
+    setMatches(prevMatches => 
+      prevMatches.map(match => 
+        match.id === updatedMatch.id ? updatedMatch : match
+      )
+    )
+    setSelectedMatch(updatedMatch)
+  }
+
+  const tabs = [
+    { id: 'calendar', label: 'Calendario', icon: '📅' },
+    { id: 'list', label: 'Lista de Partidos', icon: '⚽' },
+    { id: 'championships', label: 'Campeonatos', icon: '🏆' },
+    { id: 'external-teams', label: 'Equipos Externos', icon: '🤝' }
+  ]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-green-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Cargando módulo de partidos...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-8">
-        {/* Header con diseño FIFA 26 */}
-        <div className="bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 rounded-3xl shadow-2xl border border-green-500/30 p-8 relative overflow-hidden">
-          {/* Efecto de luz de fondo */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl"></div>
-          
-          <div className="relative z-10">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-6">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
-                  <FaFutbol className="text-white text-3xl" />
-                </div>
-                <div>
-                  <h1 className="text-5xl font-bold text-white mb-2">Partidos</h1>
-                  <p className="text-xl text-green-100 font-medium">Gestión de encuentros deportivos</p>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-green-900 flex">
+      {/* ProSoccer Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="flex-1">
+        {/* Header */}
+        <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white">Gestión de Partidos</h1>
+                <p className="text-gray-300 mt-1">Organiza y gestiona todos los partidos del club</p>
               </div>
-              <button className="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 border border-blue-400/30 flex items-center space-x-3">
-                <FaPlus className="text-lg" />
-                <span>Nuevo Partido</span>
+              
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                + Crear Partido
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Estadísticas con diseño FIFA 26 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-2xl border border-blue-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">Programados</h3>
-                <FaCalendar className="text-blue-300 text-2xl" />
-              </div>
-              <div className="text-4xl font-bold text-white mb-2">2</div>
-              <p className="text-blue-100 text-sm">Próximos encuentros</p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-3xl shadow-2xl border border-green-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">Jugados</h3>
-                <FaTrophy className="text-green-300 text-2xl" />
-              </div>
-              <div className="text-4xl font-bold text-white mb-2">1</div>
-              <p className="text-green-100 text-sm">Encuentros completados</p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl shadow-2xl border border-purple-500/30 p-6 relative overflow-hidden group hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">Victorias</h3>
-                <FaFutbol className="text-purple-300 text-2xl" />
-              </div>
-              <div className="text-4xl font-bold text-white mb-2">1</div>
-              <p className="text-purple-100 text-sm">Triunfos obtenidos</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Lista de partidos con diseño FIFA 26 */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl border border-gray-600/30 p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/10"></div>
-          <div className="relative z-10">
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
-              <FaFutbol className="mr-3 text-green-400" />
-              Próximos Partidos
-            </h2>
-            <div className="space-y-6">
-              {matches.map((match) => (
-                <div key={match.id} className="bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl border border-gray-600/50 hover:border-green-500/50 transition-all duration-300 group hover:shadow-xl p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-8">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-white mb-1">{match.homeTeam}</div>
-                        <div className="text-sm text-gray-300">Local</div>
-                      </div>
-                      <div className="text-4xl font-bold text-green-400">VS</div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-white mb-1">{match.awayTeam}</div>
-                        <div className="text-sm text-gray-300">Visitante</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <FaCalendar className="text-blue-400" />
-                        <span className="text-sm text-gray-300">{match.date}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <FaClock className="text-yellow-400" />
-                        <span className="font-semibold text-white">{match.time}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <FaMapMarkerAlt className="text-red-400" />
-                        <span className="text-sm text-gray-300">{match.venue}</span>
-                      </div>
-                      {match.score && (
-                        <div className="text-2xl font-bold text-green-400 bg-gradient-to-r from-green-500/20 to-green-600/20 px-4 py-2 rounded-xl">
-                          {match.score}
-                        </div>
-                      )}
-                      <span className={`px-4 py-2 rounded-full text-xs font-bold ${getStatusColor(match.status)}`}>
-                        {getStatusText(match.status)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+            {/* Tabs */}
+            <div className="flex space-x-1 mt-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? 'bg-white/20 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span className="text-lg">{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Content */}
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'calendar' && (
+          <div className="space-y-6">
+            <MatchCalendar matches={matches} onMatchSelect={handleMatchSelect} />
+            <MatchStats matches={matches} />
+          </div>
+        )}
+
+        {activeTab === 'list' && (
+          <MatchList 
+            matches={matches} 
+            onMatchUpdate={(updatedMatch: Match) => {
+              // TODO: Actualizar partido
+              console.log('Actualizando partido:', updatedMatch)
+            }}
+            onMatchSelect={handleMatchSelect}
+          />
+        )}
+
+        {activeTab === 'championships' && (
+          <ChampionshipManager 
+            championships={championships}
+            onChampionshipUpdate={(updatedChampionship: Championship) => {
+              // TODO: Actualizar campeonato
+              console.log('Actualizando campeonato:', updatedChampionship)
+            }}
+          />
+        )}
+
+        {activeTab === 'external-teams' && (
+          <ExternalTeamsManager 
+            teams={externalTeams}
+            onTeamUpdate={(updatedTeam: ExternalTeam) => {
+              // TODO: Actualizar equipo externo
+              console.log('Actualizando equipo externo:', updatedTeam)
+            }}
+          />
+        )}
+        </div>
+
+        {/* Create Match Modal */}
+        {showCreateModal && (
+          <CreateMatchModal
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={handleCreateMatch}
+            championships={championships}
+            externalTeams={externalTeams}
+          />
+        )}
+
+        {/* Menú lateral */}
+        <MatchSidebar 
+          selectedMatch={selectedMatch}
+          onClose={handleCloseSidebar}
+          onUpdateMatch={handleUpdateMatch}
+        />
       </div>
-    </MainLayout>
+    </div>
   )
 } 
