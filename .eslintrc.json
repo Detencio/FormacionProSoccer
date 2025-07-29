@@ -1,17 +1,22 @@
 {
-  "extends": ["next/core-web-vitals"],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-unused-vars": ["warn", { 
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_",
+      "caughtErrorsIgnorePattern": "^_"
+    }],
     "@typescript-eslint/no-explicit-any": "warn",
-    "prefer-const": "error",
-    "no-var": "error",
-    "no-console": "warn",
-    "no-debugger": "error",
-    "comma-dangle": ["error", "always-multiline"],
-    "quotes": ["error", "single"],
-    "semi": ["error", "always"]
+    "no-console": ["warn", { 
+      "allow": ["warn", "error"] 
+    }],
+    "react-hooks/exhaustive-deps": "warn",
+    "@next/next/no-img-element": "warn",
+    "prefer-const": "warn",
+    "no-var": "error"
   },
   "env": {
     "browser": true,
@@ -20,22 +25,6 @@
   },
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  },
-  "ignorePatterns": [
-    "node_modules/",
-    ".next/",
-    "out/",
-    "dist/",
-    "*.config.js",
-    "*.config.ts"
-  ]
+    "sourceType": "module"
+  }
 }

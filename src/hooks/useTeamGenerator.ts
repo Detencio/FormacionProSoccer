@@ -125,7 +125,7 @@ export const useTeamGenerator = () => {
     try {
       // Buscar el suplente
       let substituteTeam: 'home' | 'away' | null = null
-      let substituteRole: 'substitute' = 'substitute'
+      const substituteRole: 'substitute' = 'substitute'
       
       if (distribution.homeTeam.substitutes.some(p => p.id === substituteId)) {
         substituteTeam = 'home'
@@ -135,7 +135,7 @@ export const useTeamGenerator = () => {
 
       // Buscar el titular
       let starterTeam: 'home' | 'away' | null = null
-      let starterRole: 'starter' = 'starter'
+      const starterRole: 'starter' = 'starter'
       
       if (distribution.homeTeam.starters.some(p => p.id === starterId)) {
         starterTeam = 'home'

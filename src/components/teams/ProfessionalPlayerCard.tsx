@@ -27,14 +27,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
       defense: player.defense || 70,
       fis: player.fis || 70,
     };
-  }, [
-    player.rit,
-    player.tir,
-    player.pas,
-    player.reg,
-    player.defense,
-    player.fis,
-  ]);
+  }, [player.rit, player.tir, player.pas, player.reg, player.defense, player.fis]);
 
   const stats = getPlayerStats();
   const position = player.position_zone?.abbreviation || 'N/A';
@@ -57,33 +50,28 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
   // Función para obtener la URL de la bandera
   const getFlagUrl = (countryCode: string) => {
     const url = `/flags/${countryCode.toLowerCase()}.png`;
-    // console.log('Flag URL:', url, 'Country Code:', countryCode);
     return url;
   };
 
   // Función para obtener el nombre del país
   const getCountryName = (countryCode: string) => {
     const country = countries.find((c: any) => c.code === countryCode);
-    console.log('Player nationality:', player.nationality, 'Country code:', countryCode, 'Found country:', country);
     return country ? country.name : countryCode;
   };
 
   // Función para obtener la URL del logo del equipo
   const getTeamLogoUrl = (teamId: number | undefined) => {
     if (!teamId) {
-      console.log('getTeamLogoUrl: No teamId provided, returning undefined.');
       return undefined;
       }
 
     // Si el jugador tiene información del equipo con logo_url, usarla
     if (player.team?.logo_url) {
-      console.log('getTeamLogoUrl: Using team logo_url:', player.team.logo_url, 'for teamId:', teamId);
       return player.team.logo_url;
     }
     
     // Fallback a archivo estático
     const url = `/team-logos/team-${teamId}.png`;
-    console.log('getTeamLogoUrl: Using fallback URL:', url, 'for teamId:', teamId);
     return url;
   };
 
@@ -93,11 +81,9 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
     
     // Si el jugador tiene información del equipo, usar el nombre real
     if (player.team?.name) {
-      console.log('getTeamName: Using team name:', player.team.name, 'for teamId:', teamId);
       return player.team.name;
     }
     
-    console.log('getTeamName: Using fallback name for teamId:', teamId);
     return `Equipo ${teamId}`;
   };
 
@@ -127,7 +113,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   alt={`Foto de ${player.name}`}
                   className='w-full h-full object-contain'
                   onError={(e) => {
-                    console.log('Error loading player photo:', e);
                     // Si la foto no carga, no mostrar nada
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -216,7 +201,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   alt={`Bandera de ${getCountryName('CL')}`}
                   className='w-full h-full object-cover rounded-sm'
                   onError={(e) => {
-                    console.log('Error loading flag:', e);
                     // Si la bandera no existe, mostrar una imagen por defecto
                     (e.target as HTMLImageElement).src = '/flags/cl.png';
                   }}
@@ -262,7 +246,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                     alt={`Logo de ${getTeamName(player.team_id)}`}
                     className='w-full h-full object-cover rounded-full'
                     onError={(e) => {
-                      console.log('Error loading team logo:', e, 'for URL:', (e.target as HTMLImageElement).src, 'teamId:', player.team_id);
                       // Si el logo no existe, mostrar un placeholder
                       (e.target as HTMLImageElement).style.display = 'none';
                       (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -340,7 +323,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                 alt={`Foto de ${player.name}`}
                 className='w-full h-full object-contain'
                 onError={(e) => {
-                  console.log('Error loading player photo:', e);
                   // Si la foto no carga, no mostrar nada
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -429,7 +411,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                 alt={`Bandera de ${getCountryName('CL')}`}
                 className='w-full h-full object-cover rounded-sm'
                 onError={(e) => {
-                  console.log('Error loading flag:', e);
                   // Si la bandera no existe, mostrar una imagen por defecto
                   (e.target as HTMLImageElement).src = '/flags/cl.png';
                 }}
@@ -475,7 +456,6 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   alt={`Logo de ${getTeamName(player.team_id)}`}
                   className='w-full h-full object-cover rounded-full'
                   onError={(e) => {
-                    console.log('Error loading team logo (full):', e, 'for URL:', (e.target as HTMLImageElement).src, 'teamId:', player.team_id);
                     // Si el logo no existe, mostrar un placeholder
                     (e.target as HTMLImageElement).style.display = 'none';
                     (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');

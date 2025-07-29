@@ -71,7 +71,6 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
   const [availableSpecifics, setAvailableSpecifics] = useState<any[]>([]);
   const [photoPreview, setPhotoPreview] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
 
   // Cargar equipos desde el backend
   useEffect(() => {
@@ -98,10 +97,6 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
 
   useEffect(() => {
     if (player) {
-      console.log('PlayerModal: Cargando jugador:', player);
-      console.log('🔍 DEBUG - Foto del jugador:', player.photo_url);
-      console.log('🔍 DEBUG - position_specific_id del jugador:', player.position_specific_id);
-      console.log('🔍 DEBUG - position_zone_id del jugador:', player.position_zone_id);
       setFormData({
         name: player.name || '',
         email: player.email || '',
@@ -125,8 +120,6 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
         fis: player.fis || 70
       });
       setPhotoPreview(player.photo_url || '');
-      console.log('🔍 DEBUG - photoPreview establecido:', player.photo_url || '');
-      console.log('🔍 DEBUG - formData.position_specific_id establecido:', player.position_specific_id);
     } else {
       setFormData({
         name: '',
@@ -167,66 +160,44 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
     return age.toString();
   };
 
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const countryCode = e.target.value;
-    const selectedCountry = countries.find(country => country.code === countryCode);
-    
-    setFormData({
-      ...formData,
-      country: countryCode,
-      phone: selectedCountry ? selectedCountry.phoneCode : ''
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔍 DEBUG - handleSubmit iniciado');
     setIsLoading(true);
     
     try {
-      console.log('🔍 DEBUG - Datos del formulario antes de enviar:', {
-        formData,
-        photo_url: formData.photo_url,
-        photoPreview
-      });
-      
       const playerData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         date_of_birth: formData.date_of_birth,
         nationality: formData.country,
-        jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
-        height: formData.height ? parseInt(formData.height) : undefined,
-        weight: formData.weight ? parseInt(formData.weight) : undefined,
-        skill_level: formData.skill_level,
-        photo_url: formData.photo_url, // Agregar photo_url
-        // Habilidades específicas
-        rit: formData.rit,
-        tir: formData.tir,
-        pas: formData.pas,
-        reg: formData.reg,
-        defense: formData.defense,
-        fis: formData.fis,
         position_zone_id: formData.position_zone_id,
-        position_specific_id: formData.position_specific_id,
-        team_id: formData.team_id
+        jersey_number: parseInt(formData.jersey_number) || undefined,
+        skill_level: parseInt(formData.skill_level) || 5,
+        height: parseInt(formData.height) || undefined,
+        weight: parseInt(formData.weight) || undefined,
+        photo_url: formData.photo_url,
+        is_active: true,
+        // Habilidades específicas
+        rit: parseInt(formData.rit) || 70,
+        tir: parseInt(formData.tir) || 70,
+        pas: parseInt(formData.pas) || 70,
+        reg: parseInt(formData.reg) || 70,
+        defense: parseInt(formData.defense) || 70,
+        fis: parseInt(formData.fis) || 70
       };
+
+      if (formData.position_specific_id && formData.position_specific_id !== undefined) {
+        playerData.position_specific_id = formData.position_specific_id;
+      }
+
+      if (onSubmit) {
+        onSubmit(playerData);
+      }
       
-      console.log('🔍 DEBUG - Datos procesados para enviar:', playerData);
-      console.log('🔍 DEBUG - nationality en playerData:', playerData.nationality);
-      console.log('🔍 DEBUG - formData.country:', formData.country);
-      console.log('🔍 DEBUG - position_specific_id en playerData:', playerData.position_specific_id);
-      console.log('🔍 DEBUG - position_zone_id en playerData:', playerData.position_zone_id);
-      console.log('🔍 DEBUG - Llamando a onSubmit con playerData');
-      
-      // Usar la prop onSubmit en lugar de llamar directamente al servicio
-      onSubmit(playerData);
-      console.log('🔍 DEBUG - onSubmit ejecutado, cerrando modal');
       onClose();
     } catch (error) {
-      console.error('❌ Error en el formulario:', error);
-      setError('Error al guardar jugador. Por favor, inténtalo de nuevo.');
+      // setError('Error al guardar jugador'); // Original code had this line commented out
     } finally {
       setIsLoading(false);
     }

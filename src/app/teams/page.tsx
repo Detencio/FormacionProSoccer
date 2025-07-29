@@ -22,8 +22,7 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
-  const [showDetails, setShowDetails] = useState<number | null>(null)
-  
+
   // Estados para filtrado y vista
   const [selectedFilterTeam, setSelectedFilterTeam] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('list')
@@ -37,26 +36,10 @@ export default function TeamsPage() {
       }
 
       try {
-        // console.log('TeamsPage - Cargando equipos desde el backend...')
         const teamsData = await teamService.getTeams()
-        // console.log('TeamsPage - Equipos cargados:', teamsData)
-        
-        // Verificar los datos de Chalo G específicamente
-        const chaloG = teamsData.flatMap(team => team.players || []).find(p => p.name === 'Chalo G');
-        if (chaloG) {
-          console.log('🔍 DEBUG - Chalo G en carga inicial:');
-          console.log('  - height:', chaloG.height);
-          console.log('  - nationality:', chaloG.nationality);
-          console.log('  - position_specific_id:', chaloG.position_specific_id);
-          console.log('  - rit:', chaloG.rit);
-          console.log('  - tir:', chaloG.tir);
-        } else {
-          console.log('❌ DEBUG - Chalo G no encontrado en carga inicial');
-        }
         
         setTeams(teamsData)
       } catch (error) {
-        // console.error('Error cargando equipos:', error)
         setTeams([])
       }
     }
@@ -92,9 +75,7 @@ export default function TeamsPage() {
         // Recargar equipos desde el backend
         const updatedTeams = await teamService.getTeams();
         setTeams(updatedTeams);
-        // console.log('✅ Equipo eliminado exitosamente');
       } catch (error) {
-        // console.error('Error al eliminar equipo:', error);
         alert('Error al eliminar equipo. Por favor, inténtalo de nuevo.');
       }
     }
@@ -103,8 +84,6 @@ export default function TeamsPage() {
   const handleTeamSubmit = async (formData: any) => {
     try {
       if (editingTeam) {
-        // Actualizar equipo existente
-        // console.log('Actualizando equipo:', editingTeam.id, formData);
         await teamService.updateTeam(editingTeam.id, {
           name: formData.name,
           city: formData.city,
@@ -113,10 +92,7 @@ export default function TeamsPage() {
           description: formData.description,
           logo_url: formData.logo_url
         });
-        // console.log('✅ Equipo actualizado exitosamente');
       } else {
-        // Crear nuevo equipo
-        // console.log('Creando nuevo equipo:', formData);
         await teamService.createTeam({
           name: formData.name,
           city: formData.city,
@@ -125,7 +101,6 @@ export default function TeamsPage() {
           description: formData.description,
           logo_url: formData.logo_url
         });
-        // console.log('✅ Equipo creado exitosamente');
       }
       
       // Recargar equipos desde el backend
@@ -136,7 +111,6 @@ export default function TeamsPage() {
       setEditingTeam(null);
       
     } catch (error) {
-      // console.error('Error al guardar equipo:', error);
       alert('Error al guardar equipo. Por favor, inténtalo de nuevo.');
     }
   };
@@ -155,9 +129,7 @@ export default function TeamsPage() {
       // Recargar equipos desde el backend
       const updatedTeams = await teamService.getTeams();
       setTeams(updatedTeams);
-      // console.log('✅ Jugador eliminado exitosamente');
     } catch (error) {
-      // console.error('Error al eliminar jugador:', error);
       alert('Error al eliminar jugador. Por favor, inténtalo de nuevo.');
     }
   };
@@ -166,13 +138,9 @@ export default function TeamsPage() {
     if (!selectedTeamId) return;
     
     try {
-      console.log('🔍 DEBUG - handlePlayerSubmit recibió:', formData);
       
       if (editingPlayer) {
-        // Actualizar jugador existente
-        console.log('🔍 DEBUG - Actualizando jugador:', editingPlayer.id);
         
-        // Preparar datos de actualización
         const updateData: any = {
           name: formData.name,
           phone: formData.phone,
@@ -196,9 +164,6 @@ export default function TeamsPage() {
         // Solo enviar position_specific_id si tiene un valor válido
         if (formData.position_specific_id && formData.position_specific_id !== undefined) {
           updateData.position_specific_id = formData.position_specific_id;
-          console.log('🔍 DEBUG - Enviando position_specific_id:', formData.position_specific_id);
-        } else {
-          console.log('🔍 DEBUG - NO enviando position_specific_id (undefined o null)');
         }
         
         // Solo enviar date_of_birth si no está vacío
@@ -211,40 +176,23 @@ export default function TeamsPage() {
           updateData.email = formData.email;
         }
         
-        console.log('🔍 DEBUG - Datos de actualización:', updateData);
-        console.log('🔍 DEBUG - position_specific_id:', updateData.position_specific_id);
-        console.log('🔍 DEBUG - position_zone_id:', updateData.position_zone_id);
-        console.log('🔍 DEBUG - nationality:', updateData.nationality);
-        console.log('🔍 DEBUG - formData.country:', formData.country);
-        console.log('🔍 DEBUG - formData.nationality:', formData.nationality);
-        console.log('🔍 DEBUG - formData completo:', formData);
-        console.log('🔍 DEBUG - editingPlayer:', editingPlayer);
-        
         await teamService.updatePlayer(editingPlayer.id, updateData);
-        console.log('✅ Jugador actualizado exitosamente');
         
         // Recargar equipos desde el backend
-        console.log('🔄 Recargando equipos desde el backend...');
         const updatedTeams = await teamService.getTeams();
-        console.log('✅ Equipos recargados:', updatedTeams.length, 'equipos');
         
         // Verificar los datos de Chalo G específicamente
         const chaloG = updatedTeams.flatMap(team => team.players || []).find(p => p.name === 'Chalo G');
         if (chaloG) {
-          console.log('🔍 DEBUG - Chalo G después de actualización:');
           console.log('  - height:', chaloG.height);
           console.log('  - nationality:', chaloG.nationality);
           console.log('  - position_specific_id:', chaloG.position_specific_id);
           console.log('  - rit:', chaloG.rit);
           console.log('  - tir:', chaloG.tir);
-        } else {
-          console.log('❌ DEBUG - Chalo G no encontrado en los datos recargados');
         }
         
         setTeams(updatedTeams);
       } else {
-        // Crear nuevo jugador
-        console.log('🔍 DEBUG - Creando nuevo jugador');
         
         const createData: any = {
           user_id: 1, // ID temporal, se asignará automáticamente
@@ -272,9 +220,6 @@ export default function TeamsPage() {
         // Solo enviar position_specific_id si tiene un valor válido
         if (formData.position_specific_id && formData.position_specific_id !== undefined) {
           createData.position_specific_id = formData.position_specific_id;
-          console.log('🔍 DEBUG - Enviando position_specific_id (creación):', formData.position_specific_id);
-        } else {
-          console.log('🔍 DEBUG - NO enviando position_specific_id (creación) (undefined o null)');
         }
         
         // Solo enviar date_of_birth si no está vacío
@@ -283,7 +228,6 @@ export default function TeamsPage() {
         }
         
         await teamService.createPlayer(createData);
-        console.log('✅ Jugador creado exitosamente');
       }
       
       // Recargar equipos desde el backend
@@ -355,10 +299,6 @@ export default function TeamsPage() {
       
       // Ordenar por ID para mantener un orden estable
       const sortedPlayers = uniquePlayers.sort((a, b) => a.id - b.id)
-      
-      // console.log('getFilteredPlayers - allPlayers:', allPlayers.length)
-      // console.log('getFilteredPlayers - uniquePlayers:', uniquePlayers.length)
-      // console.log('getFilteredPlayers - player IDs:', uniquePlayers.map(p => p.id))
       
       return sortedPlayers
     }
