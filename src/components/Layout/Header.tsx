@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useState, useEffect, useRef } from 'react';
 import PaymentNotifications from '@/components/PaymentNotifications';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 
 export default function Header() {
   const { user, clearUser } = useAuthStore();
@@ -49,7 +50,7 @@ export default function Header() {
             <h1 className='text-2xl font-bold text-white bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent'>
               ProSoccer
             </h1>
-            <p className='text-sm text-gray-300 font-medium'>Soccer Management</p>
+            <p className='text-sm text-gray-300 font-medium'>Gestión deportiva y Generador de equipos</p>
           </div>
         </div>
 
@@ -59,13 +60,13 @@ export default function Header() {
           <PaymentNotifications />
 
           {/* Perfil del usuario */}
-          <div className='relative' ref={menuRef}>
+          <div className='relative z-[999999]' ref={menuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className='flex items-center space-x-4 p-3 rounded-xl bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-gray-600/50 backdrop-blur-sm'
             >
-              <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-blue-400/30'>
-                <span className='text-lg font-bold text-white'>
+              <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-blue-400/30'>
+                <span className='text-base font-bold text-white'>
                   {user.email?.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -90,14 +91,16 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Menú desplegable con diseño FIFA 26 */}
-            {showUserMenu && (
-              <div className='absolute right-0 mt-3 w-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-600/50 py-3 z-50 backdrop-blur-sm'>
-                <div className='px-4 py-4 border-b border-gray-600/50'>
+            {/* Menú desplegable mejorado */}
+            {showUserMenu && typeof window !== 'undefined' && createPortal(
+              <div className='fixed right-4 top-20 w-60 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-600/50 py-3 z-[999999] backdrop-blur-sm'>
+                {/* Header del menú */}
+                <div className='px-4 py-3 border-b border-gray-600/50'>
                   <p className='text-sm font-semibold text-white'>{user.email}</p>
                   <p className='text-xs text-gray-300 capitalize font-medium'>{user.role}</p>
                 </div>
 
+                {/* Opciones del menú */}
                 <div className='py-2'>
                   <button className='w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-green-600/20 transition-all duration-300 flex items-center space-x-3 rounded-lg mx-2'>
                     <svg
@@ -140,6 +143,7 @@ export default function Header() {
                   </button>
                 </div>
 
+                {/* Cerrar sesión */}
                 <div className='border-t border-gray-600/50 pt-2'>
                   <button
                     onClick={clearUser}
@@ -156,7 +160,8 @@ export default function Header() {
                     <span>Cerrar Sesión</span>
                   </button>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         </div>

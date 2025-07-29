@@ -12,12 +12,12 @@ export default function Footer() {
             <div className="flex items-center">
               <FaFutbol size={20} className="text-brand-600 mr-2" />
               <span className="font-bold text-lg text-brand-600">
-                Formación ProSoccer
+                ProSoccer
               </span>
             </div>
             <p className="text-sm max-w-xs">
-              La plataforma digital integral para el fútbol amateur. 
-              Organiza partidos, gestiona equipos y fortalece la camaradería deportiva.
+              Gestión deportiva y Generador de equipos. 
+              Plataforma digital integral para la organización de equipos de fútbol.
             </p>
           </div>
 
@@ -68,7 +68,7 @@ export default function Footer() {
         <div className="border-t border-gray-200 pt-8 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm">
-              © 2024 Formación ProSoccer. Todos los derechos reservados.
+              © 2025 ProSoccer. Todos los derechos reservados.
             </p>
             
             <div className="flex space-x-4">

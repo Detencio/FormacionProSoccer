@@ -38,26 +38,32 @@ class AuthService {
   // Login
   async login(data: LoginData): Promise<AuthResponse> {
     try {
+      console.log('🔍 DEBUG - Intentando login con:', data)
       // Login real con el backend
       const response = await api.post('/auth/login', data)
+      console.log('🔍 DEBUG - Respuesta del backend:', response.data)
       
       // Convertir la respuesta del backend al formato esperado por el frontend
       const backendResponse = response.data
+      const userData = {
+        id: backendResponse.user?.id || '1',
+        firstName: backendResponse.user?.full_name?.split(' ')[0] || 'Administrador',
+        lastName: backendResponse.user?.full_name?.split(' ').slice(1).join(' ') || 'Sistema',
+        email: backendResponse.user?.email || data.email,
+        phone: backendResponse.user?.phone || '',
+        role: backendResponse.user?.role || 'admin',
+        createdAt: new Date(backendResponse.user?.created_at) || new Date(),
+        updatedAt: new Date(backendResponse.user?.updated_at) || new Date()
+      }
+      console.log('🔍 DEBUG - Datos de usuario procesados:', userData)
+      
       return {
-        user: {
-          id: backendResponse.user?.id || '1',
-          firstName: backendResponse.user?.full_name?.split(' ')[0] || 'Administrador',
-          lastName: backendResponse.user?.full_name?.split(' ').slice(1).join(' ') || 'Sistema',
-          email: backendResponse.user?.email || data.email,
-          phone: backendResponse.user?.phone || '',
-          role: backendResponse.user?.role || 'admin',
-          createdAt: new Date(backendResponse.user?.created_at) || new Date(),
-          updatedAt: new Date(backendResponse.user?.updated_at) || new Date()
-        },
+        user: userData,
         token: backendResponse.access_token,
         refreshToken: backendResponse.refresh_token || 'fake-refresh-token'
       }
     } catch (error: any) {
+      console.error('❌ ERROR - Error en login:', error)
       throw this.handleError(error)
     }
   }

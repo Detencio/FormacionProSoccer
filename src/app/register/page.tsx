@@ -71,7 +71,7 @@ export default function RegisterPage() {
                 </div>
               </div>
               <h1 className="text-4xl font-bold text-white mb-2">
-                Formación ProSoccer
+                ProSoccer
               </h1>
               <p className="text-gray-300 text-lg font-medium">
                 Crea tu cuenta y únete a la comunidad

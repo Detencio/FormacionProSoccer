@@ -55,7 +55,7 @@ def login_with_email(login_data: schemas.UserLogin, db: Session = Depends(get_db
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     access_token = auth.create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
+    return {"access_token": access_token, "token_type": "bearer", "user": schemas.UserOut.from_orm(user)}
 
 from fastapi import Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer

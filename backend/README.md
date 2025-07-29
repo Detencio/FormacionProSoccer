@@ -1,4 +1,4 @@
-# Backend FastAPI para Formación ProSoccer
+# Backend FastAPI para ProSoccer
 
 ## Instalación
 ```bash

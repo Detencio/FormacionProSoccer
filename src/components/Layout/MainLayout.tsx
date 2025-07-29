@@ -19,7 +19,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
         {/* Efecto de luz superior */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-600/20 via-transparent to-transparent pointer-events-none"></div>
         
-        <Header />
+        <div className="relative z-10">
+          <Header />
+        </div>
         <main className="flex-1 overflow-auto relative z-0">
           {/* Contenedor principal con diseño FIFA 26 */}
           <div className="min-h-full p-6 relative z-0">

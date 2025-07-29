@@ -5,7 +5,7 @@ export default function TestComponent() {
     <div className="p-8 text-center">
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-blue-600">
-          ¡Formación ProSoccer está funcionando!
+          ¡ProSoccer está funcionando!
         </h2>
         <p className="text-gray-600">
           El proyecto se ha inicializado correctamente con Next.js 14 y Tailwind CSS.
