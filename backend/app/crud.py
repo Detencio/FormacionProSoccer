@@ -65,6 +65,20 @@ def get_position_specific_by_abbreviation(db: Session, abbreviation: str):
         models.PositionSpecific.is_active == True
     ).first()
 
+def get_position_specific_by_id(db: Session, specific_id: int):
+    """Get position specific by ID"""
+    return db.query(models.PositionSpecific).filter(
+        models.PositionSpecific.id == specific_id,
+        models.PositionSpecific.is_active == True
+    ).first()
+
+def get_position_zone_by_id(db: Session, zone_id: int):
+    """Get position zone by ID"""
+    return db.query(models.PositionZone).filter(
+        models.PositionZone.id == zone_id,
+        models.PositionZone.is_active == True
+    ).first()
+
 # Team functions
 def create_team(db: Session, team: schemas.TeamCreate):
     db_team = models.Team(**team.dict())
@@ -139,10 +153,18 @@ def update_player(db: Session, player_id: int, player: schemas.PlayerUpdate):
     db_player = get_player(db, player_id)
     if db_player:
         update_data = player.dict(exclude_unset=True)
+        print(f"🔍 DEBUG - CRUD update_player: player_id={player_id}")
+        print(f"🔍 DEBUG - CRUD update_data: {update_data}")
+        print(f"🔍 DEBUG - CRUD nationality en update_data: {update_data.get('nationality')}")
+        
         for field, value in update_data.items():
+            print(f"🔍 DEBUG - CRUD actualizando campo {field}: {value}")
             setattr(db_player, field, value)
+        
+        print(f"🔍 DEBUG - CRUD nationality después de actualizar: {db_player.nationality}")
         db.commit()
         db.refresh(db_player)
+        print(f"🔍 DEBUG - CRUD nationality después de refresh: {db_player.nationality}")
     return db_player
 
 def delete_player(db: Session, player_id: int):

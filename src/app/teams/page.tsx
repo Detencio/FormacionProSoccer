@@ -40,6 +40,20 @@ export default function TeamsPage() {
         // console.log('TeamsPage - Cargando equipos desde el backend...')
         const teamsData = await teamService.getTeams()
         // console.log('TeamsPage - Equipos cargados:', teamsData)
+        
+        // Verificar los datos de Chalo G específicamente
+        const chaloG = teamsData.flatMap(team => team.players || []).find(p => p.name === 'Chalo G');
+        if (chaloG) {
+          console.log('🔍 DEBUG - Chalo G en carga inicial:');
+          console.log('  - height:', chaloG.height);
+          console.log('  - nationality:', chaloG.nationality);
+          console.log('  - position_specific_id:', chaloG.position_specific_id);
+          console.log('  - rit:', chaloG.rit);
+          console.log('  - tir:', chaloG.tir);
+        } else {
+          console.log('❌ DEBUG - Chalo G no encontrado en carga inicial');
+        }
+        
         setTeams(teamsData)
       } catch (error) {
         // console.error('Error cargando equipos:', error)
@@ -157,42 +171,118 @@ export default function TeamsPage() {
       if (editingPlayer) {
         // Actualizar jugador existente
         console.log('🔍 DEBUG - Actualizando jugador:', editingPlayer.id);
-        await teamService.updatePlayer(editingPlayer.id, {
+        
+        // Preparar datos de actualización
+        const updateData: any = {
           name: formData.name,
-          email: formData.email,
           phone: formData.phone,
-          date_of_birth: formData.date_of_birth,
-          nationality: formData.country,
+          nationality: formData.nationality,
           position_zone_id: formData.position_zone_id,
-          position_specific_id: formData.position_specific_id,
           jersey_number: parseInt(formData.jersey_number) || undefined,
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
-          photo_url: formData.photo_url, // Agregar photo_url
-          is_active: true
-        });
+          photo_url: formData.photo_url,
+          is_active: true,
+          // Habilidades específicas
+          rit: parseInt(formData.rit) || 70,
+          tir: parseInt(formData.tir) || 70,
+          pas: parseInt(formData.pas) || 70,
+          reg: parseInt(formData.reg) || 70,
+          defense: parseInt(formData.defense) || 70,
+          fis: parseInt(formData.fis) || 70
+        };
+        
+        // Solo enviar position_specific_id si tiene un valor válido
+        if (formData.position_specific_id && formData.position_specific_id !== undefined) {
+          updateData.position_specific_id = formData.position_specific_id;
+          console.log('🔍 DEBUG - Enviando position_specific_id:', formData.position_specific_id);
+        } else {
+          console.log('🔍 DEBUG - NO enviando position_specific_id (undefined o null)');
+        }
+        
+        // Solo enviar date_of_birth si no está vacío
+        if (formData.date_of_birth && formData.date_of_birth.trim() !== '') {
+          updateData.date_of_birth = formData.date_of_birth;
+        }
+        
+        // Solo enviar email si ha cambiado
+        if (formData.email !== editingPlayer.email) {
+          updateData.email = formData.email;
+        }
+        
+        console.log('🔍 DEBUG - Datos de actualización:', updateData);
+        console.log('🔍 DEBUG - position_specific_id:', updateData.position_specific_id);
+        console.log('🔍 DEBUG - position_zone_id:', updateData.position_zone_id);
+        console.log('🔍 DEBUG - nationality:', updateData.nationality);
+        console.log('🔍 DEBUG - formData.country:', formData.country);
+        console.log('🔍 DEBUG - formData.nationality:', formData.nationality);
+        console.log('🔍 DEBUG - formData completo:', formData);
+        console.log('🔍 DEBUG - editingPlayer:', editingPlayer);
+        
+        await teamService.updatePlayer(editingPlayer.id, updateData);
         console.log('✅ Jugador actualizado exitosamente');
+        
+        // Recargar equipos desde el backend
+        console.log('🔄 Recargando equipos desde el backend...');
+        const updatedTeams = await teamService.getTeams();
+        console.log('✅ Equipos recargados:', updatedTeams.length, 'equipos');
+        
+        // Verificar los datos de Chalo G específicamente
+        const chaloG = updatedTeams.flatMap(team => team.players || []).find(p => p.name === 'Chalo G');
+        if (chaloG) {
+          console.log('🔍 DEBUG - Chalo G después de actualización:');
+          console.log('  - height:', chaloG.height);
+          console.log('  - nationality:', chaloG.nationality);
+          console.log('  - position_specific_id:', chaloG.position_specific_id);
+          console.log('  - rit:', chaloG.rit);
+          console.log('  - tir:', chaloG.tir);
+        } else {
+          console.log('❌ DEBUG - Chalo G no encontrado en los datos recargados');
+        }
+        
+        setTeams(updatedTeams);
       } else {
         // Crear nuevo jugador
         console.log('🔍 DEBUG - Creando nuevo jugador');
-        await teamService.createPlayer({
+        
+        const createData: any = {
           user_id: 1, // ID temporal, se asignará automáticamente
           team_id: selectedTeamId,
           position_zone_id: formData.position_zone_id,
-          position_specific_id: formData.position_specific_id,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          date_of_birth: formData.date_of_birth,
           nationality: formData.country,
           jersey_number: parseInt(formData.jersey_number) || undefined,
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
-          photo_url: formData.photo_url, // Agregar photo_url
-          is_active: true
-        });
+          photo_url: formData.photo_url,
+          is_active: true,
+          // Habilidades específicas
+          rit: parseInt(formData.rit) || 70,
+          tir: parseInt(formData.tir) || 70,
+          pas: parseInt(formData.pas) || 70,
+          reg: parseInt(formData.reg) || 70,
+          defense: parseInt(formData.defense) || 70,
+          fis: parseInt(formData.fis) || 70
+        };
+        
+        // Solo enviar position_specific_id si tiene un valor válido
+        if (formData.position_specific_id && formData.position_specific_id !== undefined) {
+          createData.position_specific_id = formData.position_specific_id;
+          console.log('🔍 DEBUG - Enviando position_specific_id (creación):', formData.position_specific_id);
+        } else {
+          console.log('🔍 DEBUG - NO enviando position_specific_id (creación) (undefined o null)');
+        }
+        
+        // Solo enviar date_of_birth si no está vacío
+        if (formData.date_of_birth && formData.date_of_birth.trim() !== '') {
+          createData.date_of_birth = formData.date_of_birth;
+        }
+        
+        await teamService.createPlayer(createData);
         console.log('✅ Jugador creado exitosamente');
       }
       
@@ -263,11 +353,14 @@ export default function TeamsPage() {
         index === self.findIndex(p => p.id === player.id)
       )
       
+      // Ordenar por ID para mantener un orden estable
+      const sortedPlayers = uniquePlayers.sort((a, b) => a.id - b.id)
+      
       // console.log('getFilteredPlayers - allPlayers:', allPlayers.length)
       // console.log('getFilteredPlayers - uniquePlayers:', uniquePlayers.length)
       // console.log('getFilteredPlayers - player IDs:', uniquePlayers.map(p => p.id))
       
-      return uniquePlayers
+      return sortedPlayers
     }
     return []
   }

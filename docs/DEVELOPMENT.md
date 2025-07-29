@@ -362,7 +362,7 @@ const PlayerCard = memo(({ player, isSelected, onSelect, onDeselect }) => {
   const handleClick = useCallback(() => {
     isSelected ? onDeselect(player.id) : onSelect(player.id)
   }, [player.id, isSelected, onSelect, onDeselect])
-
+  
   return (
     <div className={`player-card ${isSelected ? 'selected' : ''}`}>
       {/* Contenido optimizado */}

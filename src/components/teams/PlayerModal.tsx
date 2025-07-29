@@ -14,34 +14,34 @@ interface PlayerModalProps {
 }
 
 const POSITION_ZONES = [
-  { id: 4, name: 'Portero', abbreviation: 'POR' },
-  { id: 1, name: 'Defensa', abbreviation: 'DEF' },
-  { id: 2, name: 'Centrocampista', abbreviation: 'MED' },
-  { id: 3, name: 'Delantero', abbreviation: 'DEL' }
+  { id: 1, name: 'Portero', abbreviation: 'POR' },
+  { id: 2, name: 'Defensa', abbreviation: 'DEF' },
+  { id: 3, name: 'Centrocampista', abbreviation: 'MED' },
+  { id: 4, name: 'Delantero', abbreviation: 'DEL' }
 ];
 
 const POSITION_SPECIFICS = {
-  1: [ // DEF
-    { id: 1, name: 'Lateral Derecho', abbreviation: 'LD' },
-    { id: 2, name: 'Lateral Izquierdo', abbreviation: 'LI' },
-    { id: 3, name: 'Defensa Central', abbreviation: 'DFC' },
-    { id: 4, name: 'Carrilero Izquierdo', abbreviation: 'CAI' },
-    { id: 5, name: 'Carrilero Derecho', abbreviation: 'CAD' }
+  2: [ // DEF - zone_id: 2
+    { id: 26, name: 'Lateral Derecho', abbreviation: 'LD' },
+    { id: 27, name: 'Lateral Izquierdo', abbreviation: 'LI' },
+    { id: 28, name: 'Defensa Central', abbreviation: 'DFC' },
+    { id: 29, name: 'Carrilero Izquierdo', abbreviation: 'CAI' },
+    { id: 30, name: 'Carrilero Derecho', abbreviation: 'CAD' }
   ],
-  2: [ // MED
-    { id: 6, name: 'Mediocentro Defensivo', abbreviation: 'MCD' },
-    { id: 7, name: 'Mediocentro', abbreviation: 'MC' },
-    { id: 8, name: 'Mediocentro Ofensivo', abbreviation: 'MCO' },
-    { id: 9, name: 'Volante por la Derecha', abbreviation: 'MD' },
-    { id: 10, name: 'Volante por la Izquierda', abbreviation: 'MI' }
+  3: [ // MED - zone_id: 3
+    { id: 31, name: 'Med. Defensivo', abbreviation: 'MCD' },
+    { id: 32, name: 'Mediocentro', abbreviation: 'MC' },
+    { id: 33, name: 'Med. Ofensivo', abbreviation: 'MCO' },
+    { id: 34, name: 'Volante Derecho', abbreviation: 'MD' },
+    { id: 35, name: 'Volante Izquierdo', abbreviation: 'MI' }
   ],
-  3: [ // DEL
-    { id: 11, name: 'Extremo Derecho', abbreviation: 'ED' },
-    { id: 12, name: 'Extremo Izquierdo', abbreviation: 'EI' },
-    { id: 13, name: 'Delantero Centro', abbreviation: 'DC' },
-    { id: 14, name: 'Segundo Delantero', abbreviation: 'SD' }
+  4: [ // DEL - zone_id: 4
+    { id: 36, name: 'Extremo Derecho', abbreviation: 'ED' },
+    { id: 37, name: 'Extremo Izquierdo', abbreviation: 'EI' },
+    { id: 38, name: 'Delantero Centro', abbreviation: 'DC' },
+    { id: 39, name: '2do Delantero', abbreviation: 'SD' }
   ],
-  4: [] // POR - sin posiciones específicas
+  1: [] // POR - zone_id: 1, sin posiciones específicas
 };
 
 export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId, loading = false }: PlayerModalProps) {
@@ -100,10 +100,12 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
     if (player) {
       console.log('PlayerModal: Cargando jugador:', player);
       console.log('🔍 DEBUG - Foto del jugador:', player.photo_url);
+      console.log('🔍 DEBUG - position_specific_id del jugador:', player.position_specific_id);
+      console.log('🔍 DEBUG - position_zone_id del jugador:', player.position_zone_id);
       setFormData({
         name: player.name || '',
         email: player.email || '',
-        country: player.nationality || '',
+        country: player.nationality && player.nationality !== 'None' ? player.nationality : '',
         phone: player.phone || '',
         date_of_birth: player.date_of_birth || '',
         position_zone_id: player.position_zone_id || 1,
@@ -124,6 +126,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
       });
       setPhotoPreview(player.photo_url || '');
       console.log('🔍 DEBUG - photoPreview establecido:', player.photo_url || '');
+      console.log('🔍 DEBUG - formData.position_specific_id establecido:', player.position_specific_id);
     } else {
       setFormData({
         name: '',
@@ -211,6 +214,10 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
       };
       
       console.log('🔍 DEBUG - Datos procesados para enviar:', playerData);
+      console.log('🔍 DEBUG - nationality en playerData:', playerData.nationality);
+      console.log('🔍 DEBUG - formData.country:', formData.country);
+      console.log('🔍 DEBUG - position_specific_id en playerData:', playerData.position_specific_id);
+      console.log('🔍 DEBUG - position_zone_id en playerData:', playerData.position_zone_id);
       console.log('🔍 DEBUG - Llamando a onSubmit con playerData');
       
       // Usar la prop onSubmit en lugar de llamar directamente al servicio
@@ -326,7 +333,7 @@ export default function PlayerModal({ isOpen, onClose, onSubmit, player, teamId,
                 <select
                   name="country"
                   value={formData.country}
-                  onChange={handleCountryChange}
+                  onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >

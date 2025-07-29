@@ -17,40 +17,16 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
   onDelete,
   compact = false,
 }) => {
-  // Generar estadísticas aleatorias basadas en skill_level
-  const generateStats = (skillLevel: number) => {
-    const validSkillLevel = Math.max(1, Math.min(5, skillLevel || 1));
-    const baseValue = validSkillLevel * 15 + Math.floor(Math.random() * 10);
-    return {
-      rit: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-      tir: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-      pas: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-      reg: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-      defense: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-      fis: Math.min(100, baseValue + Math.floor(Math.random() * 10)),
-    };
-  };
-
-  // Usar estadísticas del backend o generar por defecto
+  // Usar estadísticas del backend o valores por defecto
   const getPlayerStats = React.useCallback(() => {
-    if (
-      player.rit !== undefined &&
-      player.tir !== undefined &&
-      player.pas !== undefined &&
-      player.reg !== undefined &&
-      player.defense !== undefined &&
-      player.fis !== undefined
-    ) {
-      return {
-        rit: player.rit,
-        tir: player.tir,
-        pas: player.pas,
-        reg: player.reg,
-        defense: player.defense,
-        fis: player.fis,
-      };
-    }
-    return generateStats(player.skill_level);
+    return {
+      rit: player.rit || 70,
+      tir: player.tir || 70,
+      pas: player.pas || 70,
+      reg: player.reg || 70,
+      defense: player.defense || 70,
+      fis: player.fis || 70,
+    };
   }, [
     player.rit,
     player.tir,
@@ -58,18 +34,17 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
     player.reg,
     player.defense,
     player.fis,
-    player.skill_level,
   ]);
 
   const stats = getPlayerStats();
-  const position =
-    player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A';
+  const position = player.position_zone?.abbreviation || 'N/A';
+  const specificPosition = player.position_specific?.abbreviation;
 
   // Calcular promedio total de habilidades
   const totalRating = Math.round(
     (stats.rit + stats.tir + stats.pas + stats.reg + stats.defense + stats.fis) / 6
   ) || 0;
-
+  
   // Estado para habilidades editables
   const [currentStats, setCurrentStats] = React.useState(stats);
 
@@ -98,8 +73,8 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
     if (!teamId) {
       console.log('getTeamLogoUrl: No teamId provided, returning undefined.');
       return undefined;
-    }
-    
+      }
+
     // Si el jugador tiene información del equipo con logo_url, usarla
     if (player.team?.logo_url) {
       console.log('getTeamLogoUrl: Using team logo_url:', player.team.logo_url, 'for teamId:', teamId);
@@ -138,34 +113,50 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
         {/* Contenido superpuesto */}
         <div className='relative h-full p-4 flex flex-col'>
-          {/* Foto del jugador (Top Left) */}
-          {player.photo_url && (
-            <div className='absolute top-2 left-2 z-10'>
-              <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg'>
-                <img
-                  src={player.photo_url}
-                  alt={player.name}
-                  className='w-full h-full object-cover'
+          {/* POSICIÓN DE LA FOTO - Aquí irá la foto del jugador */}
+          {/* La foto debe ir exactamente como el recuadro azul dibujado */}
+          {/* Desde la línea morada (arriba del nombre) hacia arriba */}
+          {/* Márgenes ajustados para estar por debajo del rating y estrella */}
+          <div className='absolute top-16 left-18 right-18 bottom-28'>
+            {/* Imagen del jugador con contenedor completamente transparente */}
+            {player.photo_url ? (
+              <div className='w-full h-full relative'>
+                {/* Imagen del jugador nítida sin ningún contenedor visible */}
+                <img 
+                  src={player.photo_url} 
+                  alt={`Foto de ${player.name}`}
+                  className='w-full h-full object-contain'
                   onError={(e) => {
+                    console.log('Error loading player photo:', e);
+                    // Si la foto no carga, no mostrar nada
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
               </div>
-            </div>
-          )}
+            ) : (
+              // Contenedor completamente invisible cuando no hay foto
+              <div className='w-full h-full'></div>
+            )}
+          </div>
 
           {/* Total Skill Number & Position (Top Left) */}
-          <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'} ${player.photo_url ? 'left-16' : ''}`}>
+          <div className='absolute top-12 left-8'>
             <div className='text-black font-bold text-3xl'>
               {totalRating}
             </div>
             <div className='text-black text-sm text-center font-bold'>
               {position}
             </div>
+            {/* Posición específica debajo de la posición principal */}
+            {specificPosition && (
+              <div className='text-black text-xs text-center font-bold mt-1'>
+                {specificPosition}
+              </div>
+            )}
           </div>
 
           {/* Skill Level Star (Top Right) */}
-          <div className={`absolute ${compact ? 'top-12 right-8' : 'top-16 right-10'}`}>
+          <div className='absolute top-12 right-8'>
             <div className='relative'>
               <svg className='w-10 h-10 text-black' fill='currentColor' viewBox='0 0 24 24'>
                 <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
@@ -195,7 +186,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
               <div className='text-center' style={{ width: '12%' }}>
                 <div className='text-black text-sm font-medium mb-0'>TIR</div>
                 <div className='text-black font-bold text-base'>{currentStats.tir}</div>
-              </div>
+                </div>
               <div className='text-center' style={{ width: '12%' }}>
                 <div className='text-black text-sm font-medium mb-0'>PAS</div>
                 <div className='text-black font-bold text-base'>{currentStats.pas}</div>
@@ -203,7 +194,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
               <div className='text-center' style={{ width: '12%' }}>
                 <div className='text-black text-sm font-medium mb-0'>REG</div>
                 <div className='text-black font-bold text-base'>{currentStats.reg}</div>
-              </div>
+            </div>
               <div className='text-center' style={{ width: '12%' }}>
                 <div className='text-black text-sm font-medium mb-0'>DEF</div>
                 <div className='text-black font-bold text-base'>{currentStats.defense}</div>
@@ -259,10 +250,10 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                     <span className='text-white font-bold text-xs'>
                       {player.jersey_number || '10'}
                     </span>
-                  </div>
-                </div>
-              </div>
-              
+            </div>
+          </div>
+        </div>
+
               {/* Logo del equipo */}
               <div className='w-6 h-6'>
                 {getTeamLogoUrl(player.team_id) ? (
@@ -281,8 +272,8 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                 {/* Placeholder que se muestra si no hay logo */}
                 <div className={`w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center ${getTeamLogoUrl(player.team_id) ? 'hidden' : ''}`}>
                   <span className='text-xs text-gray-600'>⚽</span>
-                </div>
-              </div>
+            </div>
+            </div>
             </div>
           </div>
 
@@ -335,52 +326,68 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
 
       {/* Contenido superpuesto */}
       <div className='relative h-full p-6 flex flex-col'>
-        {/* Foto del jugador (Top Left) */}
-        {player.photo_url && (
-          <div className='absolute top-2 left-2 z-10'>
-            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg'>
-              <img
-                src={player.photo_url}
-                alt={player.name}
-                className='w-full h-full object-cover'
+        {/* POSICIÓN DE LA FOTO - Aquí irá la foto del jugador */}
+        {/* La foto debe ir exactamente como el recuadro azul dibujado */}
+        {/* Desde la línea morada (arriba del nombre) hacia arriba */}
+        {/* Márgenes ajustados para estar por debajo del rating y estrella */}
+        <div className='absolute top-20 left-20 right-20 bottom-32'>
+          {/* Imagen del jugador con contenedor completamente transparente */}
+          {player.photo_url ? (
+            <div className='w-full h-full relative'>
+              {/* Imagen del jugador nítida sin ningún contenedor visible */}
+              <img 
+                src={player.photo_url} 
+                alt={`Foto de ${player.name}`}
+                className='w-full h-full object-contain'
                 onError={(e) => {
+                  console.log('Error loading player photo:', e);
+                  // Si la foto no carga, no mostrar nada
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             </div>
-          </div>
-        )}
+          ) : (
+            // Contenedor completamente invisible cuando no hay foto
+            <div className='w-full h-full'></div>
+                )}
+              </div>
 
         {/* Total Skill Number & Position (Top Left) */}
-        <div className={`absolute ${compact ? 'top-12 left-8' : 'top-16 left-10'} ${player.photo_url ? 'left-16' : ''}`}>
-          <div className='text-black font-bold text-3xl'>
+        <div className='absolute top-16 left-10'>
+          <div className='text-black font-bold text-4xl'>
             {totalRating}
           </div>
           <div className='text-black text-sm text-center font-bold'>
             {position}
           </div>
+          {/* Posición específica debajo de la posición principal */}
+          {specificPosition && (
+            <div className='text-black text-xs text-center font-bold mt-1'>
+              {specificPosition}
+            </div>
+          )}
         </div>
 
         {/* Skill Level Star (Top Right) */}
-        <div className={`absolute ${compact ? 'top-12 right-8' : 'top-16 right-10'}`}>
+        <div className='absolute top-16 right-10'>
           <div className='relative'>
-            <svg className='w-10 h-10 text-black' fill='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-12 h-12 text-black' fill='currentColor' viewBox='0 0 24 24'>
               <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
-            </svg>
+                  </svg>
             <div className='absolute inset-0 flex items-center justify-center'>
-              <span className='text-white font-bold text-base'>
+              <span className='text-white font-bold text-lg'>
                 {player.skill_level || 1}
               </span>
             </div>
           </div>
         </div>
-
+        
         {/* Nombre del jugador arriba de las estadísticas - Estilo FIFA */}
         <div className='absolute bottom-24 left-6 right-6'>
           <h2 className='text-black font-bold text-2xl text-center truncate tracking-wide'>
             {player.name}
           </h2>
-        </div>
+              </div>
 
         {/* Estadísticas del jugador - Estilo FIFA */}
         <div className='absolute bottom-14 left-4 right-4'>
@@ -410,7 +417,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
               <div className='text-black font-bold text-base'>{player.fis}</div>
             </div>
           </div>
-        </div>
+              </div>
 
         {/* Información inferior: Bandera, Número, Logo */}
         <div className='absolute bottom-6 left-4 right-4'>
@@ -456,7 +463,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   <span className='text-white font-bold text-sm'>
                     {player.jersey_number || '10'}
                   </span>
-                </div>
+          </div>
               </div>
             </div>
             
@@ -478,7 +485,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
               {/* Placeholder que se muestra si no hay logo */}
               <div className={`w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center ${getTeamLogoUrl(player.team_id) ? 'hidden' : ''}`}>
                 <span className='text-sm text-gray-600'>⚽</span>
-              </div>
+                  </div>
             </div>
           </div>
         </div>

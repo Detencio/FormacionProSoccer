@@ -123,7 +123,7 @@ const FootballField: React.FC<FootballFieldProps> = ({
     } else {
       // Fútbol 11: Todas las posiciones
       const basePositions = {
-        '4-4-2': [
+      '4-4-2': [
           { x: 50, y: isTeamA ? 85 : 15, role: 'POR', zone: 'goalkeeper' as const },
           { x: 20, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
           { x: 40, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
@@ -135,8 +135,8 @@ const FootballField: React.FC<FootballFieldProps> = ({
           { x: 80, y: isTeamA ? 50 : 50, role: 'MED', zone: 'midfield' as const },
           { x: 35, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const },
           { x: 65, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const }
-        ],
-        '4-3-3': [
+      ],
+      '4-3-3': [
           { x: 50, y: isTeamA ? 85 : 15, role: 'POR', zone: 'goalkeeper' as const },
           { x: 20, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
           { x: 40, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
@@ -148,8 +148,8 @@ const FootballField: React.FC<FootballFieldProps> = ({
           { x: 25, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const },
           { x: 50, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const },
           { x: 75, y: isTeamA ? 30 : 70, role: 'DEL', zone: 'attack' as const }
-        ],
-        '3-5-2': [
+      ],
+      '3-5-2': [
           { x: 50, y: isTeamA ? 85 : 15, role: 'POR', zone: 'goalkeeper' as const },
           { x: 35, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
           { x: 50, y: isTeamA ? 70 : 30, role: 'DEF', zone: 'defense' as const },
@@ -439,7 +439,7 @@ const FootballField: React.FC<FootballFieldProps> = ({
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">
             {assignPlayersToPositions.assignedPositions.length} jugadores
@@ -455,13 +455,13 @@ const FootballField: React.FC<FootballFieldProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        {/* Imagen de la cancha como fondo */}
-        <div 
+          {/* Imagen de la cancha como fondo */}
+          <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-          style={{
-            backgroundImage: `url('/soccer-field.png')`,
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
+            style={{
+              backgroundImage: `url('/soccer-field.png')`,
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
             width: '110%',
             left: '-5%'
           }}
@@ -490,30 +490,30 @@ const FootballField: React.FC<FootballFieldProps> = ({
           // Usar posición personalizada si existe, sino usar la posición asignada
           const customPosition = customPositions[player.id]
           const finalPosition = customPosition || position
-          
-          return (
-            <div
-              key={`starter-${player.id}`}
+
+            return (
+              <div
+                key={`starter-${player.id}`}
               className={`absolute w-16 h-16 ${teamColor} rounded-full border-3 border-white shadow-lg cursor-move transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform z-10 pointer-events-auto ${
                 draggedPlayer?.id === player.id ? 'opacity-50' : ''
               }`}
-              style={{
+                style={{
                 left: `${finalPosition.x}%`,
                 top: `${finalPosition.y}%`
-              }}
+                }}
               onMouseDown={(e) => handleMouseDown(e, player)}
               onClick={() => handleSwapPlayer(player.id)}
               title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone?.abbreviation} (Arrastra para mover, clic para intercambiar)`}
-            >
-              <div className="w-full h-full flex flex-col items-center justify-center text-white text-xs font-bold">
-                <div className="text-[10px] leading-none font-semibold">{player.name.split(' ')[0]}</div>
-                <div className="text-[8px] leading-none opacity-90">
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center text-white text-xs font-bold">
+                  <div className="text-[10px] leading-none font-semibold">{player.name.split(' ')[0]}</div>
+                  <div className="text-[8px] leading-none opacity-90">
                   {player.position_specific?.abbreviation || player.position_zone?.abbreviation}
                 </div>
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
 
         {/* Jugador siendo arrastrado */}
         {draggedPlayer && dragPosition && (
@@ -532,49 +532,49 @@ const FootballField: React.FC<FootballFieldProps> = ({
             </div>
           </div>
         )}
-      </div>
+        </div>
 
-      {/* Lista de Suplentes */}
-      {team.substitutes.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">Suplentes ({team.substitutes.length})</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {team.substitutes.map((player) => (
-              <div
-                key={`substitute-${player.id}`}
-                className={`p-2 ${teamColor} rounded-lg text-white text-xs cursor-pointer hover:opacity-80 transition-opacity`}
+        {/* Lista de Suplentes */}
+        {team.substitutes.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Suplentes ({team.substitutes.length})</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {team.substitutes.map((player) => (
+                <div
+                  key={`substitute-${player.id}`}
+                  className={`p-2 ${teamColor} rounded-lg text-white text-xs cursor-pointer hover:opacity-80 transition-opacity`}
                 onClick={() => handleSwapPlayer(player.id)}
                 title={`${player.name} - ${player.position_specific?.abbreviation || player.position_zone?.abbreviation} (Click para intercambiar)`}
-              >
-                <div className="font-semibold truncate">{player.name}</div>
-                <div className="text-[10px] opacity-90">
+                >
+                  <div className="font-semibold truncate">{player.name}</div>
+                  <div className="text-[10px] opacity-90">
                   {player.position_specific?.abbreviation || player.position_zone?.abbreviation}
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Estadísticas del Equipo */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="grid grid-cols-3 gap-4 text-center text-sm">
-          <div>
-            <div className="font-semibold text-gray-900">{team.starters.length}</div>
-            <div className="text-gray-600">Titulares</div>
-          </div>
-          <div>
-            <div className="font-semibold text-gray-900">{team.substitutes.length}</div>
-            <div className="text-gray-600">Suplentes</div>
-          </div>
-          <div>
-            <div className="font-semibold text-gray-900">
-              {Math.round(
-                [...team.starters, ...team.substitutes].reduce((acc, p) => acc + p.skill_level, 0) / 
-                (team.starters.length + team.substitutes.length)
-              )}
+                </div>
+              ))}
             </div>
-            <div className="text-gray-600">Promedio</div>
+          </div>
+        )}
+
+        {/* Estadísticas del Equipo */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 text-center text-sm">
+            <div>
+              <div className="font-semibold text-gray-900">{team.starters.length}</div>
+              <div className="text-gray-600">Titulares</div>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">{team.substitutes.length}</div>
+              <div className="text-gray-600">Suplentes</div>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">
+                {Math.round(
+                  [...team.starters, ...team.substitutes].reduce((acc, p) => acc + p.skill_level, 0) / 
+                  (team.starters.length + team.substitutes.length)
+                )}
+              </div>
+              <div className="text-gray-600">Promedio</div>
           </div>
         </div>
       </div>

@@ -249,7 +249,29 @@ def get_player(player_id: int, db: Session = Depends(get_db), current_user: mode
 def update_player(player_id: int, player: schemas.PlayerUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     print(f"🔍 DEBUG - Endpoint PUT /players/{player_id} llamado")
     print(f"🔍 DEBUG - Usuario autenticado: {current_user.email if current_user else 'None'}")
-    print(f"🔍 DEBUG - Datos recibidos en backend: player_id={player_id}, player_data={player.dict()}")
+    print(f"🔍 DEBUG - Datos recibidos en backend: player_id={player_id}")
+    print(f"🔍 DEBUG - Player data completo: {player.dict()}")
+    print(f"🔍 DEBUG - Campos específicos recibidos:")
+    print(f"  - name: {player.name}")
+    print(f"  - email: {player.email}")
+    print(f"  - phone: {player.phone}")
+    print(f"  - date_of_birth: {player.date_of_birth}")
+    print(f"  - nationality: {player.nationality}")
+    print(f"  - position_zone_id: {player.position_zone_id}")
+    print(f"  - position_specific_id: {player.position_specific_id}")
+    print(f"  - jersey_number: {player.jersey_number}")
+    print(f"  - skill_level: {player.skill_level}")
+    print(f"  - height: {player.height}")
+    print(f"  - weight: {player.weight}")
+    print(f"  - photo_url: {player.photo_url}")
+    print(f"  - is_active: {player.is_active}")
+    print(f"  - Habilidades específicas:")
+    print(f"    * rit: {player.rit}")
+    print(f"    * tir: {player.tir}")
+    print(f"    * pas: {player.pas}")
+    print(f"    * reg: {player.reg}")
+    print(f"    * defense: {player.defense}")
+    print(f"    * fis: {player.fis}")
     
     if not current_user.is_admin:
         print(f"❌ ERROR - Usuario {current_user.email} no es admin")
@@ -257,13 +279,80 @@ def update_player(player_id: int, player: schemas.PlayerUpdate, db: Session = De
     
     print(f"✅ DEBUG - Usuario {current_user.email} es admin, procediendo con actualización")
     
-    db_player = crud.update_player(db, player_id, player)
+    # Verificar si el jugador existe
+    db_player = crud.get_player(db, player_id)
     if not db_player:
         print(f"❌ ERROR - Jugador {player_id} no encontrado")
         raise HTTPException(status_code=404, detail="Jugador no encontrado")
     
-    print(f"✅ DEBUG - Jugador {player_id} actualizado exitosamente")
-    return db_player
+    print(f"✅ DEBUG - Jugador {player_id} encontrado: {db_player.name}")
+    print(f"✅ DEBUG - Email actual del jugador: {db_player.email}")
+    
+    # Verificar si el email ya existe en otro jugador
+    if player.email and player.email != db_player.email:
+        existing_player = db.query(models.Player).filter(
+            models.Player.email == player.email,
+            models.Player.id != player_id
+        ).first()
+        if existing_player:
+            print(f"❌ ERROR - Email {player.email} ya existe en jugador {existing_player.id}")
+            raise HTTPException(status_code=422, detail=f"El email {player.email} ya está registrado por otro jugador")
+    
+    try:
+        print(f"✅ DEBUG - Procediendo con actualización en CRUD")
+        print(f"✅ DEBUG - Datos a actualizar: {player.dict()}")
+        
+        # Validar que position_specific_id existe si se está enviando
+        if player.position_specific_id is not None:
+            specific_position = crud.get_position_specific_by_id(db, player.position_specific_id)
+            if not specific_position:
+                print(f"❌ ERROR - Position specific ID {player.position_specific_id} no existe")
+                # Obtener todos los IDs disponibles para debug
+                all_specifics = db.query(models.PositionSpecific).filter(models.PositionSpecific.is_active == True).all()
+                available_ids = [s.id for s in all_specifics]
+                print(f"🔍 DEBUG - IDs disponibles en position_specifics: {available_ids}")
+                raise HTTPException(status_code=422, detail=f"La posición específica con ID {player.position_specific_id} no existe. IDs disponibles: {available_ids}")
+            print(f"✅ DEBUG - Position specific validada: {specific_position.abbreviation}")
+        
+        # Validar que position_zone_id existe
+        if player.position_zone_id is not None:
+            zone_position = crud.get_position_zone_by_id(db, player.position_zone_id)
+            if not zone_position:
+                print(f"❌ ERROR - Position zone ID {player.position_zone_id} no existe")
+                # Obtener todos los IDs disponibles para debug
+                all_zones = db.query(models.PositionZone).filter(models.PositionZone.is_active == True).all()
+                available_zone_ids = [z.id for z in all_zones]
+                print(f"🔍 DEBUG - IDs disponibles en position_zones: {available_zone_ids}")
+                raise HTTPException(status_code=422, detail=f"La zona de posición con ID {player.position_zone_id} no existe. IDs disponibles: {available_zone_ids}")
+            print(f"✅ DEBUG - Position zone validada: {zone_position.abbreviation}")
+        
+        print(f"✅ DEBUG - Llamando a crud.update_player con player_id={player_id}")
+        db_player = crud.update_player(db, player_id, player)
+        print(f"✅ DEBUG - Jugador {player_id} actualizado exitosamente")
+        return db_player
+    except HTTPException:
+        # Re-lanzar HTTPExceptions sin modificar
+        raise
+    except Exception as e:
+        print(f"❌ ERROR - Excepción al actualizar jugador: {e}")
+        print(f"❌ ERROR - Tipo de excepción: {type(e)}")
+        import traceback
+        print(f"❌ ERROR - Traceback completo:")
+        traceback.print_exc()
+        
+        # Determinar el tipo de error y dar un mensaje más específico
+        error_message = str(e)
+        if "ForeignKeyViolation" in error_message:
+            if "position_specific_id" in error_message:
+                raise HTTPException(status_code=422, detail=f"La posición específica con ID {player.position_specific_id} no existe en la base de datos")
+            elif "position_zone_id" in error_message:
+                raise HTTPException(status_code=422, detail=f"La zona de posición con ID {player.position_zone_id} no existe en la base de datos")
+            else:
+                raise HTTPException(status_code=422, detail=f"Error de clave foránea: {error_message}")
+        elif "UniqueViolation" in error_message:
+            raise HTTPException(status_code=422, detail=f"El email {player.email} ya está registrado por otro jugador")
+        else:
+            raise HTTPException(status_code=422, detail=f"Error al actualizar jugador: {error_message}")
 
 @app.delete("/players/{player_id}")
 def delete_player(player_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

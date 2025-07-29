@@ -253,6 +253,23 @@ class TeamService {
         photo_url: playerData.photo_url
       });
       
+      // Log detallado de cada campo
+      console.log('🔍 DEBUG - Campos específicos:', {
+        name: playerData.name,
+        email: playerData.email,
+        phone: playerData.phone,
+        date_of_birth: playerData.date_of_birth,
+        nationality: playerData.nationality,
+        position_zone_id: playerData.position_zone_id,
+        position_specific_id: playerData.position_specific_id,
+        jersey_number: playerData.jersey_number,
+        skill_level: playerData.skill_level,
+        height: playerData.height,
+        weight: playerData.weight,
+        photo_url: playerData.photo_url,
+        is_active: playerData.is_active
+      });
+      
       const response = await api.put(`/players/${playerId}`, playerData);
       return response.data;
     } catch (error: any) {
@@ -260,8 +277,16 @@ class TeamService {
       console.error('🔍 DEBUG - Detalles del error:', {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        url: error.config?.url,
+        method: error.config?.method
       });
+      
+      // Log del error completo si está disponible
+      if (error.response?.data) {
+        console.error('🔍 DEBUG - Error response data:', JSON.stringify(error.response.data, null, 2));
+      }
+      
       throw new Error('Error al actualizar jugador');
     }
   }
