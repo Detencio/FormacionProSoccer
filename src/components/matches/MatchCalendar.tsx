@@ -47,7 +47,7 @@ export default function MatchCalendar({ matches, onMatchSelect }: MatchCalendarP
 
     const days = eachDayOfInterval({ start: startDate, end: endDate })
 
-    return (
+  return (
       <div className="grid grid-cols-7 gap-1">
         {/* Días de la semana */}
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
@@ -63,8 +63,8 @@ export default function MatchCalendar({ matches, onMatchSelect }: MatchCalendarP
           const isToday = isSameDay(day, new Date())
 
           return (
-            <div
-              key={index}
+          <div
+            key={index}
               className={`min-h-[120px] p-2 border border-white/10 ${
                 isCurrentMonth ? 'bg-white/5' : 'bg-white/2'
               } ${isToday ? 'ring-2 ring-blue-500' : ''}`}

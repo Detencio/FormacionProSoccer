@@ -105,26 +105,72 @@ export default function MatchesPage() {
               createdAt: new Date(),
               updatedAt: new Date()
             },
-            {
-              id: '2',
-              type: 'internal_friendly',
-              title: 'Entrenamiento Interno',
-              date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-              venue: { 
-                id: '2', 
-                name: 'Estadio Deportivo',
-                address: 'Calle Deportiva 456',
-                capacity: 500,
-                surface: 'artificial',
-                facilities: ['Vestuarios', 'Estacionamiento', 'Cafetería']
-              },
-              status: 'scheduled',
-              attendance: [],
-              events: [],
-              createdBy: 'admin',
-              createdAt: new Date(),
-              updatedAt: new Date()
-            },
+                         {
+               id: '2',
+               type: 'internal_friendly',
+               title: 'Entrenamiento Interno',
+               date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+               venue: { 
+                 id: '2', 
+                 name: 'Estadio Deportivo',
+                 address: 'Calle Deportiva 456',
+                 capacity: 500,
+                 surface: 'artificial',
+                 facilities: ['Vestuarios', 'Estacionamiento', 'Cafetería']
+               },
+               status: 'scheduled',
+               attendance: [
+                 {
+                   playerId: '3',
+                   player: {
+                     id: 3,
+                     user_id: 3,
+                     name: 'Carlos Rodríguez',
+                     email: 'carlos@matizfc.com',
+                     skill_level: 6,
+                     position_zone_id: 3,
+                     position_zone: { 
+                       id: 3, 
+                       name_es: 'Delantero', 
+                       name_en: 'Forward',
+                       abbreviation: 'DEL',
+                       is_active: true,
+                       created_at: new Date().toISOString()
+                     },
+                     is_active: true,
+                     created_at: new Date().toISOString()
+                   },
+                   status: 'pending'
+                 },
+                 {
+                   playerId: '4',
+                   player: {
+                     id: 4,
+                     user_id: 4,
+                     name: 'Miguel Torres',
+                     email: 'miguel@matizfc.com',
+                     skill_level: 7,
+                     position_zone_id: 2,
+                     position_zone: { 
+                       id: 2, 
+                       name_es: 'Mediocampo', 
+                       name_en: 'Midfield',
+                       abbreviation: 'MED',
+                       is_active: true,
+                       created_at: new Date().toISOString()
+                     },
+                     is_active: true,
+                     created_at: new Date().toISOString()
+                   },
+                   status: 'confirmed',
+                   confirmedAt: new Date()
+                 }
+               ],
+               events: [],
+               createdBy: 'admin',
+               createdAt: new Date(),
+               updatedAt: new Date()
+             },
             {
               id: '3',
               type: 'championship',
