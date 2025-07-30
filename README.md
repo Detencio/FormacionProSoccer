@@ -46,11 +46,16 @@
 - Reportes de presupuesto
 - Control financiero del club
 
-### ⚽ **Gestión de Partidos**
+### ⚽ **Gestión de Partidos** ⭐ _MEJORADO_
 
-- Programación de partidos
-- Resultados y estadísticas
-- Calendario integrado
+- **Calendario avanzado** con vista mensual y semanal
+- **Sistema de email** con recordatorios automáticos
+- **Gráficos interactivos** con estadísticas detalladas
+- **Gestión de asistencia** con confirmaciones visuales
+- **Notificaciones inteligentes** para partidos próximos
+- **Sidebar de detalles** con múltiples pestañas
+- **Creación avanzada** de partidos con validación
+- **Lista de partidos** con filtros y búsqueda
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -74,6 +79,22 @@
 - **Docker** - Containerización
 - **PowerShell/Batch** - Scripts de automatización
 - **Git** - Control de versiones
+
+## 📚 Documentación
+
+### 📋 Módulos Principales
+- **[⚽ Módulo de Partidos](./docs/MATCHES_MODULE.md)** - Gestión completa de eventos deportivos
+- **[🗺️ Roadmap de Partidos](./docs/MATCHES_ROADMAP.md)** - Plan de desarrollo y funcionalidades futuras
+- **[📧 Email Best Practices](./docs/EMAIL_BEST_PRACTICES.md)** - Mejores prácticas para comunicaciones
+- **[🎨 Componentes UI](./docs/COMPONENTS.md)** - Biblioteca de componentes reutilizables
+- **[🔧 API Documentation](./docs/API.md)** - Documentación técnica de APIs
+
+### 🚀 Funcionalidades Futuras
+- **📱 App Móvil**: Notificaciones push en tiempo real
+- **🤖 IA Integrada**: Sugerencias inteligentes de horarios
+- **📱 QR Codes**: Check-in rápido para jugadores
+
+---
 
 ## 🚀 Instalación Rápida
 
