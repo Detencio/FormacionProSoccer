@@ -6,6 +6,8 @@ import { format, isToday, isTomorrow, isYesterday, differenceInDays } from 'date
 import { es } from 'date-fns/locale'
 import EmailReminders from './EmailReminders'
 import AdvancedCharts from './AdvancedCharts'
+import AttendanceManager from './AttendanceManager'
+import EventsManager from './EventsManager'
 
 interface MatchSidebarProps {
   selectedMatch: Match | null
@@ -147,6 +149,16 @@ export default function MatchSidebar({ selectedMatch, onClose, onUpdateMatch }: 
     setActiveTab('events')
   }
 
+  const handleUpdateAttendance = (updatedAttendance: PlayerAttendance[]) => {
+    const updatedMatch = { ...selectedMatch, attendance: updatedAttendance }
+    onUpdateMatch(updatedMatch)
+  }
+
+  const handleUpdateEvents = (updatedEvents: MatchEvent[]) => {
+    const updatedMatch = { ...selectedMatch, events: updatedEvents }
+    onUpdateMatch(updatedMatch)
+  }
+
   const handleViewStats = () => {
     setActiveTab('stats')
   }
@@ -161,7 +173,7 @@ export default function MatchSidebar({ selectedMatch, onClose, onUpdateMatch }: 
   ]
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-white/10 backdrop-blur-xl border-l border-white/20 z-50 overflow-y-auto">
+    <div className="fixed inset-y-0 right-0 w-[420px] bg-white/10 backdrop-blur-xl border-l border-white/20 z-50 overflow-y-auto">
       {/* Header */}
       <div className="p-6 border-b border-white/20">
         <div className="flex items-center justify-between mb-4">
@@ -363,98 +375,17 @@ export default function MatchSidebar({ selectedMatch, onClose, onUpdateMatch }: 
         )}
 
         {activeTab === 'attendance' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">Gestión de Asistencia</h4>
-            
-            {/* Estadísticas de Asistencia */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-3 text-center">
-                <div className="text-green-400 text-2xl font-bold">{attendanceStats.confirmed}</div>
-                <div className="text-green-400 text-xs">Confirmados</div>
-              </div>
-              <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-3 text-center">
-                <div className="text-yellow-400 text-2xl font-bold">{attendanceStats.pending}</div>
-                <div className="text-yellow-400 text-xs">Pendientes</div>
-              </div>
-              <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 text-center">
-                <div className="text-red-400 text-2xl font-bold">{attendanceStats.declined}</div>
-                <div className="text-red-400 text-xs">Rechazados</div>
-              </div>
-            </div>
-
-            {/* Lista de Jugadores */}
-            <div className="space-y-3">
-              <h5 className="text-md font-semibold text-white">Jugadores Invitados</h5>
-              {selectedMatch.attendance && selectedMatch.attendance.length > 0 ? (
-                selectedMatch.attendance.map((attendance) => (
-                  <div key={attendance.playerId} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        {attendance.player.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-white font-medium">{attendance.player.name}</div>
-                        <div className="text-gray-400 text-sm">{attendance.player.position_zone.name_es}</div>
-                      </div>
-                    </div>
-                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                      attendance.status === 'confirmed' ? 'bg-green-600/20 text-green-400' :
-                      attendance.status === 'pending' ? 'bg-yellow-600/20 text-yellow-400' :
-                      'bg-red-600/20 text-red-400'
-                    }`}>
-                      {attendance.status === 'confirmed' ? 'Confirmado' :
-                       attendance.status === 'pending' ? 'Pendiente' : 'Rechazado'}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <div className="text-lg mb-2">No hay jugadores invitados</div>
-                  <div className="text-sm">Invita jugadores al partido para gestionar su asistencia</div>
-                </div>
-              )}
-            </div>
-          </div>
+          <AttendanceManager 
+            match={selectedMatch}
+            onUpdateAttendance={handleUpdateAttendance}
+          />
         )}
 
         {activeTab === 'events' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">Eventos del Partido</h4>
-            
-            {selectedMatch.events && selectedMatch.events.length > 0 ? (
-              <div className="space-y-3">
-                {selectedMatch.events.map((event) => (
-                  <div key={event.id} className="p-3 bg-white/5 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">
-                          {event.type === 'goal' ? '⚽' :
-                           event.type === 'assist' ? '🎯' :
-                           event.type === 'yellow_card' ? '🟨' :
-                           event.type === 'red_card' ? '🟥' :
-                           event.type === 'substitution' ? '🔄' :
-                           event.type === 'injury' ? '🏥' : '📝'}
-                        </span>
-                        <div>
-                          <div className="text-white font-medium">{event.player.name}</div>
-                          <div className="text-gray-400 text-sm">{event.description}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white font-medium">{event.minute}'</div>
-                        <div className="text-gray-400 text-xs">{event.team === 'home' ? 'Local' : 'Visitante'}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <div className="text-lg mb-2">No hay eventos registrados</div>
-                <div className="text-sm">Los eventos aparecerán aquí durante el partido</div>
-              </div>
-            )}
-          </div>
+          <EventsManager 
+            match={selectedMatch}
+            onUpdateEvents={handleUpdateEvents}
+          />
         )}
 
         {activeTab === 'stats' && (

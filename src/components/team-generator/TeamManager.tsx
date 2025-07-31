@@ -47,7 +47,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({
   ]
   
   const averageSkill = allPlayers.length > 0 
-    ? Math.round(allPlayers.reduce((sum, p) => sum + p.skill_level, 0) / allPlayers.length)
+    ? Math.round(allPlayers.reduce((sum, p) => sum + (p.skill_level || 1), 0) / allPlayers.length)
     : 0
 
   return (
@@ -118,7 +118,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({
               <div key={player.id} className="bg-gray-50 rounded-lg p-3">
                 <div className="font-medium text-gray-900">{player.name}</div>
                 <div className="text-sm text-gray-500">
-                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A'} • Nivel {player.skill_level}
+                  {player.position_specific?.abbreviation || player.position_zone?.abbreviation || 'N/A'} • Nivel {player.skill_level || 1}
                 </div>
               </div>
             ))}

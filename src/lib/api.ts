@@ -56,7 +56,7 @@ api.interceptors.response.use(
     console.log('API: Respuesta exitosa:', response.config.url)
     return response
   },
-  (error) => {
+  async (error) => {
     console.error('API: Error en respuesta:', {
       url: error.config?.url,
       status: error.response?.status,
@@ -64,18 +64,91 @@ api.interceptors.response.use(
     })
     
     if (error.response?.status === 401) {
-      // Handle unauthorized access - TEMPORAL: No redirigir automáticamente
-      console.log('API: 401 Unauthorized, pero no redirigiendo automáticamente')
-      // localStorage.removeItem('auth-storage')
-      // Solo redirigir si no estamos ya en login
-      // if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      //   window.location.href = '/login'
-      // }
+      // Intentar refresh token automáticamente
+      try {
+        const authStorage = localStorage.getItem('auth-storage')
+        if (authStorage) {
+          const authData = JSON.parse(authStorage)
+          const refreshToken = authData.state?.refreshToken
+          
+          if (refreshToken) {
+            console.log('API: Intentando refresh token automático')
+            
+            // Importar authService dinámicamente para evitar dependencias circulares
+            const { authService } = await import('@/services/authService')
+            
+            try {
+              const newTokens = await authService.refreshToken(refreshToken)
+              
+              // Actualizar el token en localStorage
+              const updatedAuthData = {
+                ...authData,
+                state: {
+                  ...authData.state,
+                  token: newTokens.access_token,
+                  refreshToken: newTokens.refresh_token
+                }
+              }
+              localStorage.setItem('auth-storage', JSON.stringify(updatedAuthData))
+              
+              // Actualizar el store de Zustand
+              const { useAuthStore } = await import('@/store/authStore')
+              useAuthStore.getState().updateTokens(newTokens.access_token, newTokens.refresh_token)
+              
+              // Reintentar la petición original con el nuevo token
+              const newConfig = {
+                ...error.config,
+                headers: {
+                  ...error.config.headers,
+                  Authorization: `Bearer ${newTokens.access_token}`
+                }
+              }
+              
+              console.log('API: Reintentando petición con nuevo token')
+              return api.request(newConfig)
+              
+            } catch (refreshError) {
+              console.error('API: Error en refresh token automático:', refreshError)
+              // Si el refresh falla, limpiar el localStorage y redirigir a login
+              localStorage.removeItem('auth-storage')
+              const { useAuthStore } = await import('@/store/authStore')
+              useAuthStore.getState().clearUser()
+              if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+                window.location.href = '/login'
+              }
+              return Promise.reject(error)
+            }
+          } else {
+            console.log('API: No hay refresh token válido, redirigiendo a login')
+            localStorage.removeItem('auth-storage')
+            const { useAuthStore } = await import('@/store/authStore')
+            useAuthStore.getState().clearUser()
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+              window.location.href = '/login'
+            }
+            return Promise.reject(error)
+          }
+        } else {
+          console.log('API: No hay auth storage, redirigiendo a login')
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login'
+          }
+          return Promise.reject(error)
+        }
+      } catch (parseError) {
+        console.error('API: Error parsing auth storage:', parseError)
+        localStorage.removeItem('auth-storage')
+        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+        return Promise.reject(error)
+      }
     } else if (error.response?.status === 403) {
       console.log('API: 403 Forbidden - Token inválido o expirado')
       // Para desarrollo, no limpiar el localStorage en 403
       // Solo log para debug
     }
+    
     return Promise.reject(error)
   }
 )

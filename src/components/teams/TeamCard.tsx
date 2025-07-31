@@ -154,8 +154,15 @@ export default function TeamCard({
                         <div className='text-gray-300 text-sm mb-2'>
                           {player.position_zone?.abbreviation || 'N/A'} •{' '}
                           {player.date_of_birth
-                            ? new Date().getFullYear() -
-                              new Date(player.date_of_birth).getFullYear()
+                            ? (() => {
+                                const birthDate = new Date(player.date_of_birth);
+                                const currentDate = new Date();
+                                if (isNaN(birthDate.getTime())) {
+                                  return 'N/A';
+                                }
+                                const age = currentDate.getFullYear() - birthDate.getFullYear();
+                                return isNaN(age) ? 'N/A' : age;
+                              })()
                             : 'N/A'}{' '}
                           años
                         </div>

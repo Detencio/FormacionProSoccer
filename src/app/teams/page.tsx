@@ -8,7 +8,8 @@ import MainLayout from '@/components/Layout/MainLayout'
 import PlayerModal from '@/components/teams/PlayerModal'
 import ProfessionalPlayerCard from '@/components/teams/ProfessionalPlayerCard'
 import PlayerListView from '@/components/teams/PlayerListView'
-import { teamService, Team, Player } from '@/services/teamService'
+import
+ { teamService, Team, Player } from '@/services/teamService'
 
 export default function TeamsPage() {
   const { user, isAuthenticated, token } = useAuthStore()
@@ -146,7 +147,7 @@ export default function TeamsPage() {
           phone: formData.phone,
           nationality: formData.nationality,
           position_zone_id: formData.position_zone_id,
-          jersey_number: parseInt(formData.jersey_number) || undefined,
+          jersey_number: formData.jersey_number && formData.jersey_number.toString().trim() !== '' ? parseInt(formData.jersey_number.toString()) || undefined : undefined,
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
@@ -202,7 +203,7 @@ export default function TeamsPage() {
           email: formData.email,
           phone: formData.phone,
           nationality: formData.country,
-          jersey_number: parseInt(formData.jersey_number) || undefined,
+          jersey_number: formData.jersey_number && formData.jersey_number.toString().trim() !== '' ? parseInt(formData.jersey_number.toString()) || undefined : undefined,
           skill_level: parseInt(formData.skill_level) || 5,
           height: parseInt(formData.height) || undefined,
           weight: parseInt(formData.weight) || undefined,
@@ -557,7 +558,7 @@ export default function TeamsPage() {
                   <div className="text-sm opacity-90">Equipos con jugadores</div>
                 </div>
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
-                  <div className="text-2xl font-bold">{Math.round(teams.reduce((total, team) => total + (team.players?.length || 0), 0) / teams.length)}</div>
+                  <div className="text-2xl font-bold">{teams.length > 0 ? Math.round(teams.reduce((total, team) => total + (team.players?.length || 0), 0) / teams.length) : 0}</div>
                   <div className="text-sm opacity-90">Promedio por equipo</div>
                 </div>
               </div>
@@ -632,7 +633,10 @@ export default function TeamsPage() {
                               <span className="text-sm font-medium text-gray-900">{playerCount}</span>
                               {playerCount > 0 && (
                                 <span className="ml-2 text-xs text-gray-500">
-                                  ({Math.round((playerCount / teams.reduce((total, t) => total + (t.players?.length || 0), 0)) * 100)}%)
+                                  ({(() => {
+                                    const totalPlayers = teams.reduce((total, t) => total + (t.players?.length || 0), 0);
+                                    return totalPlayers > 0 ? Math.round((playerCount / totalPlayers) * 100) : 0;
+                                  })()}%)
                                 </span>
                               )}
                             </div>
@@ -919,7 +923,7 @@ function TeamModal({ isOpen, onClose, onSubmit, team }: any) {
             <input
               type="number"
               value={formData.founded}
-              onChange={(e) => setFormData({...formData, founded: parseInt(e.target.value)})}
+              onChange={(e) => setFormData({...formData, founded: e.target.value ? parseInt(e.target.value) || '' : ''})}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               min="1800"
               max="2025"

@@ -11,6 +11,17 @@ interface ChampionshipManagerProps {
 export default function ChampionshipManager({ championships, onChampionshipUpdate }: ChampionshipManagerProps) {
   // Asegurar que championships sea siempre un array
   const safeChampionships = championships || []
+  
+  // Función para obtener equipos de forma segura
+  const getSafeTeams = (championship: Championship) => {
+    return championship.teams || []
+  }
+  
+  // Función para obtener fixtures de forma segura
+  const getSafeFixtures = (championship: Championship) => {
+    return championship.fixtures || []
+  }
+
   const getStatusColor = (status: Championship['status']) => {
     switch (status) {
       case 'upcoming':
@@ -80,8 +91,8 @@ export default function ChampionshipManager({ championships, onChampionshipUpdat
                   
                   <div className="text-gray-300 text-sm space-y-1">
                     <div>📅 {formatDate(championship.startDate)} - {formatDate(championship.endDate)}</div>
-                    <div>🏆 {championship.teams.length} equipos</div>
-                    <div>⚽ {championship.fixtures.length} partidos</div>
+                    <div>🏆 {getSafeTeams(championship).length} equipos</div>
+                    <div>⚽ {getSafeFixtures(championship).length} partidos</div>
                   </div>
                 </div>
                 

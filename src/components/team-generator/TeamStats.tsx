@@ -10,13 +10,24 @@ interface TeamStatsProps {
 const TeamStats: React.FC<TeamStatsProps> = ({ distribution }) => {
   const calculateTeamStats = (team: { starters: any[], substitutes: any[] }) => {
     const allPlayers = [...team.starters, ...team.substitutes]
-    const avgSkill = allPlayers.reduce((acc, p) => acc + p.skill_level, 0) / allPlayers.length
-    const avgHeight = allPlayers.reduce((acc, p) => acc + p.height, 0) / allPlayers.length
-    const avgWeight = allPlayers.reduce((acc, p) => acc + p.weight, 0) / allPlayers.length
+    
+    // Validar que haya jugadores antes de calcular promedios
+    if (allPlayers.length === 0) {
+      return { 
+        avgSkill: 0, 
+        avgHeight: 0, 
+        avgWeight: 0, 
+        positions: {} 
+      }
+    }
+    
+    const avgSkill = allPlayers.reduce((acc, p) => acc + (p.skill_level || 1), 0) / allPlayers.length
+    const avgHeight = allPlayers.reduce((acc, p) => acc + (p.height || 175), 0) / allPlayers.length
+    const avgWeight = allPlayers.reduce((acc, p) => acc + (p.weight || 70), 0) / allPlayers.length
     
     // Distribución por posición
     const positions = allPlayers.reduce((acc, p) => {
-      const pos = p.position_specific?.abbreviation || p.position_zone.abbreviation
+      const pos = p.position_specific?.abbreviation || p.position_zone?.abbreviation || 'N/A'
       acc[pos] = (acc[pos] || 0) + 1
       return acc
     }, {} as Record<string, number>)
@@ -26,7 +37,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({ distribution }) => {
 
   const homeStats = calculateTeamStats(distribution.homeTeam)
   const awayStats = calculateTeamStats(distribution.awayTeam)
-  const balanceScore = Math.max(0, 100 - Math.abs(homeStats.avgSkill - awayStats.avgSkill) * 20)
+  const balanceScore = Math.max(0, Math.min(100, 100 - Math.abs(homeStats.avgSkill - awayStats.avgSkill) * 20))
 
   const getBalanceColor = (score: number) => {
     if (score >= 80) return 'text-green-600'

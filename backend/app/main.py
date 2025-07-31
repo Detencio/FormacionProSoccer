@@ -56,7 +56,38 @@ def login_with_email(login_data: schemas.UserLogin, db: Session = Depends(get_db
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     access_token = auth.create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer", "user": schemas.UserOut.from_orm(user)}
+    refresh_token = auth.create_refresh_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer", "user": schemas.UserOut.from_orm(user), "refresh_token": refresh_token}
+
+@app.post("/auth/refresh", response_model=schemas.RefreshTokenResponse)
+def refresh_token(refresh_data: schemas.RefreshTokenRequest, db: Session = Depends(get_db)):
+    # Verificar el refresh token
+    payload = auth.verify_token(refresh_data.refresh_token)
+    if not payload or auth.is_token_expired(payload):
+        raise HTTPException(status_code=401, detail="Refresh token inválido o expirado")
+    
+    # Verificar que sea un refresh token
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Token no es un refresh token")
+    
+    # Obtener el usuario
+    email = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+    user = crud.get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+    
+    # Crear nuevos tokens
+    new_access_token = auth.create_access_token(data={"sub": user.email})
+    new_refresh_token = auth.create_refresh_token(data={"sub": user.email})
+    
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+        "refresh_token": new_refresh_token
+    }
 
 from fastapi import Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -606,12 +637,21 @@ def create_championship(championship: schemas.ChampionshipCreate, db: Session = 
     return crud.create_championship(db=db, championship=championship)
 
 @app.get("/championships/", response_model=List[schemas.ChampionshipOut])
-def get_championships(skip: int = 0, limit: int = 100, status: str = None, db: Session = Depends(get_db)):
+def get_championships(skip: int = 0, limit: int = 100, status: str = None, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """Obtener lista de campeonatos"""
-    return crud.get_championships(db=db, skip=skip, limit=limit, status=status)
+    try:
+        print(f"🔍 DEBUG - get_championships llamado con skip={skip}, limit={limit}, status={status}")
+        championships = crud.get_championships(db=db, skip=skip, limit=limit, status=status)
+        print(f"✅ DEBUG - Championships obtenidos: {len(championships)}")
+        return championships
+    except Exception as e:
+        print(f"❌ ERROR - Error en get_championships: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @app.get("/championships/{championship_id}", response_model=schemas.ChampionshipOut)
-def get_championship(championship_id: int, db: Session = Depends(get_db)):
+def get_championship(championship_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """Obtener un campeonato específico"""
     championship = crud.get_championship(db=db, championship_id=championship_id)
     if championship is None:
@@ -619,7 +659,7 @@ def get_championship(championship_id: int, db: Session = Depends(get_db)):
     return championship
 
 @app.get("/championships/{championship_id}/standings/", response_model=List[schemas.ChampionshipTeamOut])
-def get_championship_standings(championship_id: int, db: Session = Depends(get_db)):
+def get_championship_standings(championship_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """Obtener tabla de posiciones de un campeonato"""
     return crud.get_championship_standings(db=db, championship_id=championship_id)
 
@@ -631,12 +671,12 @@ def create_external_team(external_team: schemas.ExternalTeamCreate, db: Session 
     return crud.create_external_team(db=db, external_team=external_team)
 
 @app.get("/external-teams/", response_model=List[schemas.ExternalTeamOut])
-def get_external_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_external_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """Obtener lista de equipos externos"""
     return crud.get_external_teams(db=db, skip=skip, limit=limit)
 
 @app.get("/external-teams/{external_team_id}", response_model=schemas.ExternalTeamOut)
-def get_external_team(external_team_id: int, db: Session = Depends(get_db)):
+def get_external_team(external_team_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """Obtener un equipo externo específico"""
     external_team = crud.get_external_team(db=db, external_team_id=external_team_id)
     if external_team is None:

@@ -121,10 +121,10 @@ export default function PlayerCardModal({ player, onClose }: PlayerCardModalProp
           </div>
 
           {/* Número de camiseta */}
-          {player.jersey_number && (
+          {player.jersey_number && !isNaN(player.jersey_number) && (
             <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-4">
               <div className="text-gray-400 text-sm mb-1">Número de Camiseta</div>
-              <div className="text-white text-2xl font-bold">{player.jersey_number}</div>
+              <div className="text-white text-2xl font-bold">{player.jersey_number.toString()}</div>
             </div>
           )}
 

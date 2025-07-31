@@ -148,7 +148,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
               </svg>
               <div className='absolute inset-0 flex items-center justify-center'>
                 <span className='text-white font-bold text-base'>
-                  {player.skill_level || 1}
+                  {player.skill_level && !isNaN(player.skill_level) ? player.skill_level : 1}
                 </span>
               </div>
             </div>
@@ -232,7 +232,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   {/* Número encima del icono */}
                   <div className='absolute inset-0 flex items-center justify-center'>
                     <span className='text-white font-bold text-xs'>
-                      {player.jersey_number || '10'}
+                      {player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : '10'}
                     </span>
             </div>
           </div>
@@ -358,7 +358,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                   </svg>
             <div className='absolute inset-0 flex items-center justify-center'>
               <span className='text-white font-bold text-lg'>
-                {player.skill_level || 1}
+                {player.skill_level && !isNaN(player.skill_level) ? player.skill_level : 1}
               </span>
             </div>
           </div>
@@ -442,7 +442,7 @@ const ProfessionalPlayerCard: React.FC<ProfessionalPlayerCardProps> = ({
                 {/* Número encima del icono */}
                 <div className='absolute inset-0 flex items-center justify-center'>
                   <span className='text-white font-bold text-sm'>
-                    {player.jersey_number || '10'}
+                    {player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : '10'}
                   </span>
           </div>
               </div>

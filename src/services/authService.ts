@@ -60,7 +60,7 @@ class AuthService {
       return {
         user: userData,
         token: backendResponse.access_token,
-        refreshToken: backendResponse.refresh_token || 'fake-refresh-token'
+        refreshToken: backendResponse.refresh_token || null
       }
     } catch (error: any) {
       console.error('❌ ERROR - Error en login:', error)
@@ -88,11 +88,35 @@ class AuthService {
   }
 
   // Refresh token
-  async refreshToken(refreshToken: string): Promise<AuthResponse> {
+  async refreshToken(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
     try {
-      const response = await api.post('/auth/refresh', { refreshToken })
-      return response.data
+      console.log('🔍 DEBUG - Intentando refresh token')
+      
+      // Validar que el refresh token no sea nulo o vacío
+      if (!refreshToken) {
+        throw new Error('Refresh token inválido')
+      }
+      
+      const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
+      console.log('🔍 DEBUG - Refresh token exitoso')
+      
+      // Validar que la respuesta tenga los campos necesarios
+      if (!response.data?.access_token) {
+        throw new Error('Respuesta de refresh token inválida')
+      }
+      
+      return {
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token || refreshToken
+      }
     } catch (error: any) {
+      console.error('❌ ERROR - Error en refresh token:', error)
+      
+      // Si es un error de red, no reintentar
+      if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
+        throw new Error('Error de conexión. Verifique su conexión a internet.')
+      }
+      
       throw this.handleError(error)
     }
   }

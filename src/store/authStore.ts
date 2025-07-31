@@ -5,15 +5,17 @@ import { User } from '@/types'
 interface AuthState {
   user: User | null
   token: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
 }
 
 interface AuthActions {
-  setUser: (user: User, token?: string) => void
+  setUser: (user: User, token?: string, refreshToken?: string) => void
   clearUser: () => void
   setLoading: (loading: boolean) => void
   updateUser: (user: User) => void
+  updateTokens: (token: string, refreshToken: string) => void
 }
 
 type AuthStore = AuthState & AuthActions
@@ -24,15 +26,17 @@ export const useAuthStore = create<AuthStore>()(
       // State
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
 
       // Actions
-      setUser: (user: User, token?: string) => {
+      setUser: (user: User, token?: string, refreshToken?: string) => {
         console.log('AuthStore: setUser called with:', { user, token })
         const newState = {
           user,
           token: token || null,
+          refreshToken: refreshToken || null,
           isAuthenticated: true,
           isLoading: false,
         }
@@ -51,6 +55,7 @@ export const useAuthStore = create<AuthStore>()(
         const newState = {
           user: null,
           token: null,
+          refreshToken: null,
           isAuthenticated: false,
           isLoading: false,
         }
@@ -71,6 +76,14 @@ export const useAuthStore = create<AuthStore>()(
           user: { ...state.user, ...user },
         }))
       },
+
+      updateTokens: (token: string, refreshToken: string) => {
+        console.log('AuthStore: updateTokens called with:', { token, refreshToken })
+        set((state) => ({
+          token,
+          refreshToken,
+        }))
+      },
     }),
     {
       name: 'auth-storage',
@@ -79,6 +92,7 @@ export const useAuthStore = create<AuthStore>()(
         return {
           user: state.user,
           token: state.token,
+          refreshToken: state.refreshToken,
           isAuthenticated: state.isAuthenticated,
         }
       },
@@ -88,20 +102,18 @@ export const useAuthStore = create<AuthStore>()(
           // Verificar si el estado rehidratado es válido
           // Un estado es válido si tiene user Y token, o si ambos son null (estado limpio)
           const hasUserAndToken = state.user && state.token
-          const isCleanState = !state.user && !state.token
-          const hasFakeToken = state.token === 'fake-jwt-token-for-testing'
-          const isValid = (hasUserAndToken || isCleanState) && !hasFakeToken
+          const isCleanState = !state.user && !state.token && !state.isAuthenticated
+          const isValid = (hasUserAndToken || isCleanState)
           
           console.log('AuthStore: Rehydrated state validation:', {
-            hasUserAndToken,
+            hasUserAndToken: state.token,
             isCleanState,
-            hasFakeToken,
             isValid
           })
           
           // Siempre limpiar si hay token falso o estado inválido
-          if (!isValid || hasFakeToken) {
-            console.log('AuthStore: Invalid rehydrated state or fake token detected, clearing...')
+          if (!isValid) {
+            console.log('AuthStore: Invalid rehydrated state, clearing...')
             state.clearUser()
             // Limpiar también el localStorage
             if (typeof window !== 'undefined') {

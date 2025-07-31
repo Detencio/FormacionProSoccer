@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { Match, MatchSettings, Championship, ExternalTeam } from '@/types'
 import MatchCalendar from '@/components/matches/MatchCalendar'

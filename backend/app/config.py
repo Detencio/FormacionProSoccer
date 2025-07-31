@@ -7,3 +7,4 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./prosoccer.db")
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 día
+REFRESH_TOKEN_EXPIRE_DAYS = 30  # 30 días para refresh token

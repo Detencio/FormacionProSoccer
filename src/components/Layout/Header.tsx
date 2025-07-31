@@ -19,9 +19,20 @@ export default function Header() {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // Agregar event listener de forma segura
+    try {
+      document.addEventListener('mousedown', handleClickOutside);
+    } catch (error) {
+      console.warn('Error adding event listener:', error);
+    }
+    
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      // Remover event listener de forma segura
+      try {
+        document.removeEventListener('mousedown', handleClickOutside);
+      } catch (error) {
+        console.warn('Error removing event listener:', error);
+      }
     };
   }, []);
 
@@ -42,7 +53,6 @@ export default function Header() {
               width={48}
               height={48}
               className='object-cover rounded-lg'
-              style={{ width: 'auto', height: 'auto' }}
               priority
             />
           </div>

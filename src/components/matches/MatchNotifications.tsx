@@ -1,232 +1,248 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Match, Notification } from '@/types'
-import { format, isToday, isTomorrow, differenceInHours } from 'date-fns'
+import { Match } from '@/types'
+import { isToday, isTomorrow, differenceInHours, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface MatchNotificationsProps {
   matches: Match[]
-  onMatchSelect?: (match: Match) => void
+  onMatchSelect: (match: Match) => void
 }
 
 export default function MatchNotifications({ matches, onMatchSelect }: MatchNotificationsProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [showAll, setShowAll] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [activeFilter, setActiveFilter] = useState<'all' | 'today' | 'upcoming' | 'urgent'>('all')
 
   useEffect(() => {
-    // Generar notificaciones basadas en los partidos
-    const generateNotifications = () => {
-      const now = new Date()
-      const newNotifications: Notification[] = []
-
-      matches.forEach(match => {
-        const matchDate = new Date(match.date)
-        const hoursUntil = differenceInHours(matchDate, now)
-
-        // Notificación para partidos de hoy
-        if (isToday(matchDate)) {
-          newNotifications.push({
-            id: `today-${match.id}`,
-            type: 'match_update',
-            title: 'Partido Hoy',
-            message: `${match.title} comienza en ${hoursUntil} horas`,
-            recipientId: 'all',
-            matchId: match.id,
-            read: false,
-            createdAt: now,
-            expiresAt: new Date(matchDate.getTime() + 24 * 60 * 60 * 1000)
-          })
-        }
-
-        // Notificación para partidos de mañana
-        if (isTomorrow(matchDate)) {
-          newNotifications.push({
-            id: `tomorrow-${match.id}`,
-            type: 'match_invitation',
-            title: 'Partido Mañana',
-            message: `${match.title} está programado para mañana`,
-            recipientId: 'all',
-            matchId: match.id,
-            read: false,
-            createdAt: now,
-            expiresAt: new Date(matchDate.getTime() + 24 * 60 * 60 * 1000)
-          })
-        }
-
-        // Notificación para recordatorio de asistencia
-        if (match.attendance && match.attendance.length > 0) {
-          const pendingAttendance = match.attendance.filter(a => a.status === 'pending')
-          if (pendingAttendance.length > 0) {
-            newNotifications.push({
-              id: `attendance-${match.id}`,
-              type: 'attendance_reminder',
-              title: 'Recordatorio de Asistencia',
-              message: `${pendingAttendance.length} jugadores aún no han confirmado asistencia para ${match.title}`,
-              recipientId: 'all',
-              matchId: match.id,
-              read: false,
-              createdAt: now,
-              expiresAt: new Date(matchDate.getTime() - 2 * 60 * 60 * 1000) // 2 horas antes
-            })
-          }
-        }
-      })
-
-      setNotifications(newNotifications)
-    }
-
     generateNotifications()
   }, [matches])
 
-  const unreadNotifications = notifications.filter(n => !n.read)
-  const displayNotifications = showAll ? notifications : unreadNotifications
+  const generateNotifications = () => {
+    const now = new Date()
+    const newNotifications: any[] = []
 
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'match_invitation':
-        return '⚽'
-      case 'attendance_reminder':
-        return '👥'
-      case 'match_update':
-        return '📅'
-      case 'championship_announcement':
-        return '🏆'
-      default:
-        return '📢'
+    matches.forEach(match => {
+      const matchDate = new Date(match.date)
+      const hoursUntil = differenceInHours(matchDate, now)
+
+      // Partidos de hoy
+      if (isToday(matchDate)) {
+        newNotifications.push({
+          id: `today-${match.id}`,
+          type: 'today',
+          title: `Partido de hoy: ${match.title}`,
+          message: `El partido comienza en ${hoursUntil} horas`,
+          match,
+          priority: 'high',
+          icon: '⚽',
+          color: 'text-green-400'
+        })
+      }
+
+      // Partidos de mañana
+      if (isTomorrow(matchDate)) {
+        newNotifications.push({
+          id: `tomorrow-${match.id}`,
+          type: 'upcoming',
+          title: `Partido mañana: ${match.title}`,
+          message: `Recordatorio: Partido programado para mañana`,
+          match,
+          priority: 'medium',
+          icon: '📅',
+          color: 'text-blue-400'
+        })
+      }
+
+      // Recordatorios de asistencia pendiente
+      const pendingAttendance = match.attendance?.filter(a => a.status === 'pending') || []
+      if (pendingAttendance.length > 0 && hoursUntil <= 24) {
+        newNotifications.push({
+          id: `attendance-${match.id}`,
+          type: 'urgent',
+          title: `Asistencia pendiente: ${match.title}`,
+          message: `${pendingAttendance.length} jugadores aún no han confirmado asistencia`,
+          match,
+          priority: 'high',
+          icon: '👥',
+          color: 'text-yellow-400'
+        })
+      }
+
+      // Partidos próximos (en las próximas 48 horas)
+      if (hoursUntil > 0 && hoursUntil <= 48 && !isToday(matchDate) && !isTomorrow(matchDate)) {
+        newNotifications.push({
+          id: `upcoming-${match.id}`,
+          type: 'upcoming',
+          title: `Partido próximo: ${match.title}`,
+          message: `En ${Math.floor(hoursUntil / 24)} días`,
+          match,
+          priority: 'low',
+          icon: '📋',
+          color: 'text-purple-400'
+        })
+      }
+    })
+
+    setNotifications(newNotifications)
+  }
+
+  const filteredNotifications = notifications.filter(notification => {
+    if (activeFilter === 'all') return true
+    return notification.type === activeFilter
+  })
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'border-red-500/30 bg-red-600/10'
+      case 'medium': return 'border-yellow-500/30 bg-yellow-600/10'
+      case 'low': return 'border-blue-500/30 bg-blue-600/10'
+      default: return 'border-gray-500/30 bg-gray-600/10'
     }
   }
 
-  const getNotificationColor = (type: Notification['type']) => {
-    switch (type) {
-      case 'match_invitation':
-        return 'bg-blue-600/20 border-blue-500/30'
-      case 'attendance_reminder':
-        return 'bg-yellow-600/20 border-yellow-500/30'
-      case 'match_update':
-        return 'bg-green-600/20 border-green-500/30'
-      case 'championship_announcement':
-        return 'bg-purple-600/20 border-purple-500/30'
-      default:
-        return 'bg-gray-600/20 border-gray-500/30'
+  const handleNotificationClick = (notification: any) => {
+    onMatchSelect(notification.match)
+  }
+
+  const handleDismissNotification = (notificationId: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId))
+  }
+
+  const getFilterStats = () => {
+    return {
+      all: notifications.length,
+      today: notifications.filter(n => n.type === 'today').length,
+      upcoming: notifications.filter(n => n.type === 'upcoming').length,
+      urgent: notifications.filter(n => n.type === 'urgent').length
     }
   }
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    )
-  }
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
-
-  if (notifications.length === 0) {
-    return (
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Notificaciones</h3>
-        <div className="text-center py-8">
-          <div className="text-gray-400 text-lg mb-2">No hay notificaciones</div>
-          <div className="text-gray-500 text-sm">Las notificaciones aparecerán aquí cuando haya actualizaciones</div>
-        </div>
-      </div>
-    )
-  }
+  const stats = getFilterStats()
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-white">Notificaciones</h3>
-        <div className="flex items-center space-x-3">
-          {unreadNotifications.length > 0 && (
-            <button
-              onClick={markAllAsRead}
-              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              Marcar todas como leídas
-            </button>
-          )}
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            {showAll ? 'Mostrar solo no leídas' : 'Mostrar todas'}
-          </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Notificaciones</h2>
+        <div className="text-gray-400 text-sm">
+          {notifications.length} notificaciones
         </div>
       </div>
 
+      {/* Filtros */}
+      <div className="flex space-x-2">
+        <button
+          onClick={() => setActiveFilter('all')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            activeFilter === 'all' 
+              ? 'bg-white/20 text-white' 
+              : 'bg-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          Todas ({stats.all})
+        </button>
+        <button
+          onClick={() => setActiveFilter('today')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            activeFilter === 'today' 
+              ? 'bg-green-600/20 text-green-400' 
+              : 'bg-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          Hoy ({stats.today})
+        </button>
+        <button
+          onClick={() => setActiveFilter('upcoming')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            activeFilter === 'upcoming' 
+              ? 'bg-blue-600/20 text-blue-400' 
+              : 'bg-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          Próximos ({stats.upcoming})
+        </button>
+        <button
+          onClick={() => setActiveFilter('urgent')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            activeFilter === 'urgent' 
+              ? 'bg-yellow-600/20 text-yellow-400' 
+              : 'bg-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          Urgentes ({stats.urgent})
+        </button>
+      </div>
+
+      {/* Lista de Notificaciones */}
       <div className="space-y-3">
-        {displayNotifications.map(notification => {
-          const match = matches.find(m => m.id === notification.matchId)
-          
-          return (
+        {filteredNotifications.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <div className="text-lg mb-2">No hay notificaciones</div>
+            <div className="text-sm">Las notificaciones aparecerán aquí automáticamente</div>
+          </div>
+        ) : (
+          filteredNotifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 rounded-lg border transition-all duration-300 cursor-pointer hover:border-white/40 ${
-                notification.read ? 'opacity-60' : ''
-              } ${getNotificationColor(notification.type)}`}
-              onClick={() => {
-                markAsRead(notification.id)
-                if (match) {
-                  onMatchSelect?.(match)
-                }
-              }}
+              className={`p-4 rounded-lg border ${getPriorityColor(notification.priority)} hover:bg-white/5 transition-colors cursor-pointer`}
+              onClick={() => handleNotificationClick(notification)}
             >
-              <div className="flex items-start space-x-3">
-                <div className="text-2xl">
-                  {getNotificationIcon(notification.type)}
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-semibold text-white">{notification.title}</h4>
-                    <div className="flex items-center space-x-2">
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                      )}
-                      <span className="text-xs text-gray-400">
-                        {format(new Date(notification.createdAt), 'HH:mm')}
-                      </span>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3">
+                  <span className={`text-xl ${notification.color}`}>
+                    {notification.icon}
+                  </span>
+                  <div className="flex-1">
+                    <div className="text-white font-medium mb-1">
+                      {notification.title}
+                    </div>
+                    <div className="text-gray-300 text-sm mb-2">
+                      {notification.message}
+                    </div>
+                    <div className="text-gray-400 text-xs">
+                      {format(new Date(notification.match.date), 'EEEE d MMMM, HH:mm', { locale: es })}
                     </div>
                   </div>
-                  
-                  <p className="text-gray-300 text-sm mb-2">{notification.message}</p>
-                  
-                  {match && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400">
-                        {format(new Date(match.date), 'EEEE d MMMM, HH:mm', { locale: es })}
-                      </span>
-                      <span className={`px-2 py-1 rounded ${
-                        match.type === 'championship' 
-                          ? 'bg-yellow-600/20 text-yellow-400' 
-                          : match.type === 'external_friendly'
-                          ? 'bg-green-600/20 text-green-400'
-                          : 'bg-blue-600/20 text-blue-400'
-                      }`}>
-                        {match.type === 'championship' ? 'Campeonato' : 
-                         match.type === 'external_friendly' ? 'Amistoso Externo' : 'Amistoso Interno'}
-                      </span>
-                    </div>
-                  )}
                 </div>
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDismissNotification(notification.id)
+                  }}
+                  className="text-gray-400 hover:text-white transition-colors p-1"
+                >
+                  <span className="text-lg">×</span>
+                </button>
               </div>
             </div>
-          )
-        })}
+          ))
+        )}
       </div>
 
-      {notifications.length > 5 && (
-        <div className="mt-4 pt-4 border-t border-white/10 text-center">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            {showAll ? 'Mostrar menos' : `Mostrar ${notifications.length - 5} más`}
-          </button>
+      {/* Estadísticas */}
+      <div className="bg-white/5 rounded-lg p-4">
+        <h3 className="text-white font-semibold mb-3">Resumen de Notificaciones</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-green-400 text-2xl font-bold">{stats.today}</div>
+            <div className="text-gray-400 text-xs">Partidos Hoy</div>
+          </div>
+          <div className="text-center">
+            <div className="text-blue-400 text-2xl font-bold">{stats.upcoming}</div>
+            <div className="text-gray-400 text-xs">Próximos</div>
+          </div>
+          <div className="text-center">
+            <div className="text-yellow-400 text-2xl font-bold">{stats.urgent}</div>
+            <div className="text-gray-400 text-xs">Urgentes</div>
+          </div>
+          <div className="text-center">
+            <div className="text-white text-2xl font-bold">{stats.all}</div>
+            <div className="text-gray-400 text-xs">Total</div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 } 

@@ -53,7 +53,7 @@ export default function RegisterPlayerPage() {
         phone: formData.phone,
         date_of_birth: formData.date_of_birth,
         nationality: formData.country,
-        jersey_number: parseInt(formData.jersey_number) || undefined,
+        jersey_number: formData.jersey_number && formData.jersey_number.toString().trim() !== '' ? parseInt(formData.jersey_number.toString()) || undefined : undefined,
         skill_level: parseInt(formData.skill_level) || 5,
         height: parseInt(formData.height) || undefined,
         weight: parseInt(formData.weight) || undefined,
@@ -212,7 +212,7 @@ export default function RegisterPlayerPage() {
                       {(team.players || []).slice(0, 3).map((player: any) => (
                         <div key={player.id} className="flex justify-between items-center text-sm">
                           <span className="text-gray-700">{player.name}</span>
-                          <span className="text-gray-500">#{player.jersey_number}</span>
+                          <span className="text-gray-500">#{player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : 'N/A'}</span>
                         </div>
                       ))}
                       {(team.players || []).length > 3 && (

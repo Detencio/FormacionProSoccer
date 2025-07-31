@@ -81,7 +81,7 @@ const PlayerPreviewModal: React.FC<PlayerPreviewModalProps> = ({
                 <span className={`px-3 py-1 ${getPositionColor(position)} rounded text-sm font-bold text-white`}>
                   {position}
                 </span>
-                <span className="text-gray-300 text-sm">#{player.jersey_number || 'N/A'}</span>
+                <span className="text-gray-300 text-sm">#{player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : 'N/A'}</span>
               </div>
             </div>
 

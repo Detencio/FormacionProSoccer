@@ -45,7 +45,7 @@ export default function DebugPage() {
       role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date()
-    }, 'fake-token-123')
+    }, 'real-token-from-backend')
     alert('Usuario establecido manualmente')
   }
 

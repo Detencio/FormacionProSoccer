@@ -10,7 +10,13 @@ export const metadata: Metadata = {
   authors: [{ name: 'ProSoccer Team' }],
   icons: {
     icon: '/favicon.ico',
-    apple: '/logo.PNG',
+    apple: {
+      url: '/logo.PNG',
+      sizes: '180x180',
+      type: 'image/png',
+      width: 180,
+      height: 180,
+    },
   },
 };
 

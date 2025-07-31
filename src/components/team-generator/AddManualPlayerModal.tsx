@@ -119,9 +119,9 @@ export default function AddManualPlayerModal({ isOpen, onClose, onAddPlayer }: A
           created_at: new Date().toISOString()
         }
       },
-      jersey_number: formData.jersey_number ? parseInt(formData.jersey_number.toString()) : undefined,
-      height: formData.height ? parseInt(formData.height.toString()) : undefined,
-      weight: formData.weight ? parseInt(formData.weight.toString()) : undefined,
+      jersey_number: formData.jersey_number && formData.jersey_number.toString().trim() !== '' ? parseInt(formData.jersey_number.toString()) : undefined,
+      height: formData.height && formData.height.toString().trim() !== '' ? parseInt(formData.height.toString()) : undefined,
+      weight: formData.weight && formData.weight.toString().trim() !== '' ? parseInt(formData.weight.toString()) : undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       is_guest: true

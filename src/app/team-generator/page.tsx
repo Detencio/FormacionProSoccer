@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { Player } from '@/types'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { Player, TeamDistribution } from '@/types'
 import { useTeamGenerator } from '@/hooks/useTeamGenerator'
 import { useAuthStore } from '@/store/authStore'
 import PlayerList from '@/components/team-generator/PlayerList'
 import TeamManager from '@/components/team-generator/TeamManager'
+import TeamFormation from '@/components/team-generator/TeamFormation'
+import TeamStats from '@/components/team-generator/TeamStats'
 import AddManualPlayerModal from '@/components/team-generator/AddManualPlayerModal'
 import PlayerPreviewModal from '@/components/team-generator/PlayerPreviewModal'
 import DebugInfo from '@/components/team-generator/DebugInfo'
@@ -13,300 +15,8 @@ import { teamGeneratorService } from '@/services/teamGeneratorService'
 import MainLayout from '@/components/Layout/MainLayout'
 import { usePathname } from 'next/navigation'
 
-// Datos mock para pruebas
-const mockPlayers: Player[] = [
-  {
-    id: 1,
-    name: 'Juan Pérez',
-    email: 'juan@example.com',
-    phone: '+56912345678',
-    skill_level: 4,
-    user_id: 1,
-    position_zone_id: 1,
-    is_active: true,
-    position_zone: { 
-      id: 1, 
-      abbreviation: 'DEF', 
-      name_es: 'Defensa', 
-      name_en: 'Defender',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 1, 
-      abbreviation: 'DFC', 
-      name_es: 'Defensa Central', 
-      name_en: 'Center Back',
-      zone_id: 1,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 1, abbreviation: 'DEF', name_es: 'Defensa', name_en: 'Defender', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 2,
-    name: 'Carlos López',
-    email: 'carlos@example.com',
-    phone: '+56987654321',
-    skill_level: 5,
-    user_id: 2,
-    position_zone_id: 2,
-    is_active: true,
-    position_zone: { 
-      id: 2, 
-      abbreviation: 'MED', 
-      name_es: 'Mediocampista', 
-      name_en: 'Midfielder',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 2, 
-      abbreviation: 'MC', 
-      name_es: 'Mediocentro', 
-      name_en: 'Center Midfielder',
-      zone_id: 2,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 2, abbreviation: 'MED', name_es: 'Mediocampista', name_en: 'Midfielder', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 3,
-    name: 'Miguel Rodríguez',
-    email: 'miguel@example.com',
-    phone: '+56911223344',
-    skill_level: 3,
-    user_id: 3,
-    position_zone_id: 3,
-    is_active: true,
-    position_zone: { 
-      id: 3, 
-      abbreviation: 'DEL', 
-      name_es: 'Delantero', 
-      name_en: 'Forward',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 3, 
-      abbreviation: 'DC', 
-      name_es: 'Delantero Centro', 
-      name_en: 'Center Forward',
-      zone_id: 3,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 3, abbreviation: 'DEL', name_es: 'Delantero', name_en: 'Forward', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 4,
-    name: 'Andrés Silva',
-    email: 'andres@example.com',
-    phone: '+56955667788',
-    skill_level: 6,
-    user_id: 4,
-    position_zone_id: 4,
-    is_active: true,
-    position_zone: { 
-      id: 4, 
-      abbreviation: 'POR', 
-      name_es: 'Portero', 
-      name_en: 'Goalkeeper',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: null as any,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 5,
-    name: 'Roberto Martínez',
-    email: 'roberto@example.com',
-    phone: '+56999887766',
-    skill_level: 7,
-    user_id: 5,
-    position_zone_id: 1,
-    is_active: true,
-    position_zone: { 
-      id: 1, 
-      abbreviation: 'DEF', 
-      name_es: 'Defensa', 
-      name_en: 'Defender',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 4, 
-      abbreviation: 'LD', 
-      name_es: 'Lateral Derecho', 
-      name_en: 'Right Back',
-      zone_id: 1,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 1, abbreviation: 'DEF', name_es: 'Defensa', name_en: 'Defender', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 6,
-    name: 'Diego González',
-    email: 'diego@example.com',
-    phone: '+56933445566',
-    skill_level: 8,
-    user_id: 6,
-    position_zone_id: 2,
-    is_active: true,
-    position_zone: { 
-      id: 2, 
-      abbreviation: 'MED', 
-      name_es: 'Mediocampista', 
-      name_en: 'Midfielder',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 5, 
-      abbreviation: 'MCD', 
-      name_es: 'Mediocentro Defensivo', 
-      name_en: 'Defensive Midfielder',
-      zone_id: 2,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 2, abbreviation: 'MED', name_es: 'Mediocampista', name_en: 'Midfielder', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 7,
-    name: 'Fernando Herrera',
-    email: 'fernando@example.com',
-    phone: '+56977889900',
-    skill_level: 6,
-    user_id: 7,
-    position_zone_id: 1,
-    is_active: true,
-    position_zone: { 
-      id: 1, 
-      abbreviation: 'DEF', 
-      name_es: 'Defensa', 
-      name_en: 'Defender',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 6, 
-      abbreviation: 'LI', 
-      name_es: 'Lateral Izquierdo', 
-      name_en: 'Left Back',
-      zone_id: 1,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 1, abbreviation: 'DEF', name_es: 'Defensa', name_en: 'Defender', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 8,
-    name: 'Luis Morales',
-    email: 'luis@example.com',
-    phone: '+56911223344',
-    skill_level: 5,
-    user_id: 8,
-    position_zone_id: 2,
-    is_active: true,
-    position_zone: { 
-      id: 2, 
-      abbreviation: 'MED', 
-      name_es: 'Mediocampista', 
-      name_en: 'Midfielder',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 7, 
-      abbreviation: 'MD', 
-      name_es: 'Volante por la Derecha', 
-      name_en: 'Right Winger',
-      zone_id: 2,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 2, abbreviation: 'MED', name_es: 'Mediocampista', name_en: 'Midfielder', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 9,
-    name: 'Pedro Ramírez',
-    email: 'pedro@example.com',
-    phone: '+56955667788',
-    skill_level: 4,
-    user_id: 9,
-    position_zone_id: 3,
-    is_active: true,
-    position_zone: { 
-      id: 3, 
-      abbreviation: 'DEL', 
-      name_es: 'Delantero', 
-      name_en: 'Forward',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 8, 
-      abbreviation: 'ED', 
-      name_es: 'Extremo Derecho', 
-      name_en: 'Right Winger',
-      zone_id: 3,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 3, abbreviation: 'DEL', name_es: 'Delantero', name_en: 'Forward', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 10,
-    name: 'Alejandro Torres',
-    email: 'alejandro@example.com',
-    phone: '+56999887766',
-    skill_level: 7,
-    user_id: 10,
-    position_zone_id: 3,
-    is_active: true,
-    position_zone: { 
-      id: 3, 
-      abbreviation: 'DEL', 
-      name_es: 'Delantero', 
-      name_en: 'Forward',
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    position_specific: { 
-      id: 9, 
-      abbreviation: 'EI', 
-      name_es: 'Extremo Izquierdo', 
-      name_en: 'Left Winger',
-      zone_id: 3,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      zone: { id: 3, abbreviation: 'DEL', name_es: 'Delantero', name_en: 'Forward', is_active: true, created_at: new Date().toISOString() }
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
+
+
 
 export default function TeamGenerator() {
   const { user, isAuthenticated } = useAuthStore()
@@ -427,8 +137,8 @@ export default function TeamGenerator() {
       } catch (error) {
         console.error('Error cargando jugadores:', error)
         setError('Error al cargar jugadores del servidor')
-        // Fallback a datos mock si hay error
-        setAvailablePlayers(mockPlayers)
+        // No usar datos mock, mantener array vacío
+        setAvailablePlayers([])
       } finally {
         setLoadingPlayers(false)
       }
@@ -440,39 +150,52 @@ export default function TeamGenerator() {
   // Combinar jugadores reales con jugadores manuales
   const allPlayers = useMemo(() => [...availablePlayers, ...manualPlayers], [availablePlayers, manualPlayers])
   
-  // Funciones para guardar y recuperar equipos
-  const loadSavedTeams = useCallback(() => {
-    const savedTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
-    return savedTeams.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  // Funciones para guardar y recuperar equipos (usando API)
+  const loadSavedTeams = useCallback(async () => {
+    try {
+      // TODO: Implementar cuando el backend esté listo
+      // const response = await teamGeneratorService.getSavedTeams()
+      // return response.data || []
+      return []
+    } catch (error) {
+      console.error('Error cargando equipos guardados:', error)
+      return []
+    }
   }, [])
 
-  const saveGeneratedTeams = useCallback((teams: any, metadata: any) => {
-    const savedTeams = {
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      teams,
-      metadata: {
-        ...metadata,
-        gameType,
-        formation,
-        selectedPlayers: selectedPlayers.map(p => p.id),
-        manualPlayers: manualPlayers.map(p => p.id)
+  const saveGeneratedTeams = useCallback(async (teams: any, metadata: any) => {
+    try {
+      const savedTeams = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        teams,
+        metadata: {
+          ...metadata,
+          gameType,
+          formation,
+          selectedPlayers: selectedPlayers.map(p => p.id),
+          manualPlayers: manualPlayers.map(p => p.id)
+        }
       }
+      
+      // TODO: Implementar cuando el backend esté listo
+      // await teamGeneratorService.saveTeams(savedTeams)
+      console.log('Teams saved:', savedTeams)
+      return savedTeams.id
+    } catch (error) {
+      console.error('Error guardando equipos:', error)
+      return null
     }
-    
-    const existingTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
-    existingTeams.push(savedTeams)
-    localStorage.setItem('savedTeams', JSON.stringify(existingTeams))
-    
-    console.log('Teams saved:', savedTeams)
-    return savedTeams.id
   }, [gameType, formation, selectedPlayers, manualPlayers])
 
-  const deleteSavedTeam = useCallback((teamId: number) => {
-    const savedTeams = JSON.parse(localStorage.getItem('savedTeams') || '[]')
-    const filteredTeams = savedTeams.filter((team: any) => team.id !== teamId)
-    localStorage.setItem('savedTeams', JSON.stringify(filteredTeams))
-    console.log('Team deleted:', teamId)
+  const deleteSavedTeam = useCallback(async (teamId: number) => {
+    try {
+      // TODO: Implementar cuando el backend esté listo
+      // await teamGeneratorService.deleteSavedTeam(teamId)
+      console.log('Team deleted:', teamId)
+    } catch (error) {
+      console.error('Error eliminando equipo:', error)
+    }
   }, [])
 
 
@@ -516,37 +239,99 @@ export default function TeamGenerator() {
       formation,
       manualPlayers: manualPlayers.map(p => p.id)
     }
-    localStorage.setItem('teamGeneratorConfig', JSON.stringify(config))
+    // localStorage.setItem('teamGeneratorConfig', JSON.stringify(config)) // Eliminado
   }, [gameType, formation, manualPlayers.map(p => p.id).join(',')])
 
   // Cargar configuración guardada (solo una vez al montar)
   useEffect(() => {
-    const savedConfig = localStorage.getItem('teamGeneratorConfig')
-    if (savedConfig) {
-      try {
-        const config = JSON.parse(savedConfig)
-        // NO cargar jugadores seleccionados automáticamente
-        // if (config.selectedPlayers && availablePlayers.length > 0) {
-        //   const players = allPlayers.filter(p => config.selectedPlayers.includes(p.id))
-        //   setSelectedPlayers(players)
-        // }
-        if (config.gameType) setGameType(config.gameType as "5v5" | "7v7" | "11v11")
-        if (config.formation) setFormation(config.formation as any)
-        if (config.manualPlayers) {
-          // Los jugadores manuales se manejan por separado
-          console.log('Configuración de jugadores manuales cargada')
-        }
-      } catch (error) {
-        console.error('Error loading saved config:', error)
-      }
-    }
+    // const savedConfig = localStorage.getItem('teamGeneratorConfig') // Eliminado
+    // if (savedConfig) {
+    //   try {
+    //     const config = JSON.parse(savedConfig)
+    //     // NO cargar jugadores seleccionados automáticamente
+    //     // if (config.selectedPlayers && availablePlayers.length > 0) {
+    //     //   const players = allPlayers.filter(p => config.selectedPlayers.includes(p.id))
+    //     //   setSelectedPlayers(players)
+    //     // }
+    //     if (config.gameType) setGameType(config.gameType as "5v5" | "7v7" | "11v11")
+    //     if (config.formation) setFormation(config.formation as any)
+    //     if (config.manualPlayers) {
+    //       // Los jugadores manuales se manejan por separado
+    //       console.log('Configuración de jugadores manuales cargada')
+    //     }
+    //   } catch (error) {
+    //     console.error('Error loading saved config:', error)
+    //   }
+    // }
   }, [availablePlayers.length]) // Solo cuando cambie la cantidad de jugadores disponibles
 
   // Cargar equipos guardados
   useEffect(() => {
-    const teams = loadSavedTeams()
-    setSavedTeams(teams)
+    const loadTeams = async () => {
+      const teams = await loadSavedTeams()
+      setSavedTeams(teams)
+    }
+    
+    loadTeams()
   }, [loadSavedTeams])
+
+  // Generar equipos automáticamente cuando cambien los jugadores seleccionados
+  useEffect(() => {
+    if (selectedPlayers.length >= 10 && !isGenerating) {
+      const generateTeamsAsync = async () => {
+        try {
+          const teams = await generateTeams()
+          const metadata = {
+            timestamp: new Date().toISOString(),
+            playerCount: selectedPlayers.length,
+            gameType,
+            formation,
+            autoGenerated: true
+          }
+          
+          const savedId = await saveGeneratedTeams(teams, metadata)
+          setCurrentGeneratedTeams({ ...(teams as any), savedId })
+          
+          // Actualizar lista de equipos guardados
+          const updatedTeams = await loadSavedTeams()
+          setSavedTeams(updatedTeams || [])
+          
+          showNotification('success', 'Equipos generados automáticamente')
+        } catch (error) {
+          console.error('Error generando equipos automáticamente:', error)
+          showNotification('error', 'Error generando equipos')
+        }
+      }
+      
+      generateTeamsAsync()
+    }
+  }, [selectedPlayers.length, generateTeams, distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
+
+  const handleSaveTeams = useCallback(async () => {
+    if (distribution && distribution.homeTeam && distribution.awayTeam) {
+      const metadata = {
+        timestamp: new Date().toISOString(),
+        playerCount: selectedPlayers.length,
+        gameType,
+        formation,
+        autoGenerated: false
+      }
+      
+      try {
+        const savedId = await saveGeneratedTeams(distribution, metadata)
+        setCurrentGeneratedTeams({ ...distribution, savedId })
+        
+        // Actualizar lista de equipos guardados
+        const updatedTeams = await loadSavedTeams()
+        setSavedTeams(updatedTeams)
+        
+        showNotification('success', 'Equipos guardados correctamente')
+      } catch (error) {
+        console.error('Error guardando equipos:', error)
+        showNotification('error', 'Error guardando equipos')
+      }
+    }
+  }, [distribution, selectedPlayers.length, gameType, formation, saveGeneratedTeams, loadSavedTeams, showNotification])
 
   const handleGameTypeChange = useCallback((newGameType: string) => {
     setGameType(newGameType as "5v5" | "7v7" | "11v11")
@@ -556,56 +341,42 @@ export default function TeamGenerator() {
     setFormation(defaultFormation as any)
   }, [])
 
-  const handleGenerateTeams = useCallback(() => {
+  const handleGenerateTeams = useCallback(async () => {
     console.log('handleGenerateTeams called, selectedPlayers:', selectedPlayers.length)
     if (selectedPlayers.length === 0) {
       alert('Selecciona al menos un jugador para generar equipos')
       return
     }
     console.log('Calling generateTeams...')
-    generateTeams()
     
-    // Guardar equipos generados automáticamente
-    const teams = distribution
-    if (teams && teams.homeTeam && teams.awayTeam) {
-      const metadata = {
-        gameType,
-        formation: formation?.name || '4-4-2',
-        totalPlayers: selectedPlayers.length,
-        manualPlayersCount: manualPlayers.length
+    try {
+      await generateTeams()
+      
+      // Guardar equipos generados automáticamente
+      const teams = distribution
+      if (teams && teams.homeTeam && teams.awayTeam) {
+        const metadata = {
+          gameType,
+          formation: formation?.name || '4-4-2',
+          totalPlayers: selectedPlayers.length,
+          manualPlayersCount: manualPlayers.length
+        }
+        
+        const savedId = await saveGeneratedTeams(teams, metadata)
+        setCurrentGeneratedTeams({ ...teams, savedId })
+        
+        // Actualizar lista de equipos guardados
+        const updatedTeams = await loadSavedTeams()
+        setSavedTeams(updatedTeams)
+        
+        console.log('Teams generated and saved with ID:', savedId)
+        showNotification('success', 'Equipos generados correctamente')
       }
-      
-      const savedId = saveGeneratedTeams(teams, metadata)
-      setCurrentGeneratedTeams({ ...teams, savedId })
-      
-      // Actualizar lista de equipos guardados
-      const updatedTeams = loadSavedTeams()
-      setSavedTeams(updatedTeams)
-      
-      console.log('Teams generated and saved with ID:', savedId)
+    } catch (error) {
+      console.error('Error generando equipos:', error)
+      showNotification('error', 'Error generando equipos')
     }
-  }, [selectedPlayers.length, generateTeams, distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
-
-  const handleSaveTeams = useCallback(() => {
-    if (distribution && distribution.homeTeam && distribution.awayTeam) {
-      const metadata = {
-        gameType,
-        formation: formation?.name || '4-4-2',
-        totalPlayers: selectedPlayers.length,
-        manualPlayersCount: manualPlayers.length
-      }
-      
-      const savedId = saveGeneratedTeams(distribution, metadata)
-      setCurrentGeneratedTeams({ ...distribution, savedId })
-      
-      // Actualizar lista de equipos guardados
-      const updatedTeams = loadSavedTeams()
-      setSavedTeams(updatedTeams)
-      
-      console.log('Teams manually saved with ID:', savedId)
-      alert('Equipos guardados exitosamente!')
-    }
-  }, [distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
+  }, [distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams, generateTeams, showNotification])
 
   const generateTeamsImage = useCallback((teams: any, metadata: any) => {
     // Crear un canvas para generar la imagen
@@ -785,7 +556,7 @@ export default function TeamGenerator() {
     console.log('handleClear called')
     clearSelection()
     setManualPlayers([])
-    localStorage.removeItem('teamGeneratorConfig')
+    // localStorage.removeItem('teamGeneratorConfig') // Eliminado
   }, [clearSelection])
 
   const handleAddManualPlayer = useCallback((player: Player) => {
@@ -897,18 +668,18 @@ export default function TeamGenerator() {
   // Limpiar configuración guardada al abrir el módulo (solo una vez)
   useEffect(() => {
     // Limpiar jugadores seleccionados guardados para evitar pre-selección
-    const savedConfig = localStorage.getItem('teamGeneratorConfig')
-    if (savedConfig) {
-      try {
-        const config = JSON.parse(savedConfig)
-        // Remover jugadores seleccionados de la configuración guardada
-        const { selectedPlayers, ...cleanConfig } = config
-        localStorage.setItem('teamGeneratorConfig', JSON.stringify(cleanConfig))
-        console.log('Configuración de jugadores seleccionados limpiada')
-      } catch (error) {
-        console.error('Error limpiando configuración:', error)
-      }
-    }
+    // const savedConfig = localStorage.getItem('teamGeneratorConfig') // Eliminado
+    // if (savedConfig) {
+    //   try {
+    //     const config = JSON.parse(savedConfig)
+    //     // Remover jugadores seleccionados de la configuración guardada
+    //     const { selectedPlayers, ...cleanConfig } = config
+    //     localStorage.setItem('teamGeneratorConfig', JSON.stringify(cleanConfig))
+    //     console.log('Configuración de jugadores seleccionados limpiada')
+    //   } catch (error) {
+    //     console.error('Error limpiando configuración:', error)
+    //   }
+    // }
   }, []) // Solo se ejecuta una vez al montar el componente
 
   return (
@@ -1292,9 +1063,10 @@ export default function TeamGenerator() {
                           📤 Compartir
                         </button>
                         <button
-                          onClick={() => {
-                            deleteSavedTeam(savedTeam.id)
-                            setSavedTeams(loadSavedTeams())
+                          onClick={async () => {
+                            await deleteSavedTeam(savedTeam.id)
+                            const updatedTeams = await loadSavedTeams()
+                            setSavedTeams(updatedTeams || [])
                           }}
                           className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-xs"
                         >

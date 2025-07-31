@@ -130,7 +130,7 @@ const PlayerCard: React.FC<PlayerCardProps> = React.memo(
                 >
                   {position}
                 </span>
-                <span className='text-gray-300 text-xs'>#{player.jersey_number || 'N/A'}</span>
+                <span className='text-gray-300 text-xs'>#{player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : 'N/A'}</span>
               </div>
             </div>
 

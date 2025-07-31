@@ -180,15 +180,33 @@ export default function TeamFormation({
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      // Agregar event listeners de forma segura
+      const handleMouseMoveSafe = (e: MouseEvent) => {
+        if (isDragging) {
+          handleMouseMove(e)
+        }
+      }
+      
+      const handleMouseUpSafe = (e: MouseEvent) => {
+        if (isDragging) {
+          handleMouseUp(e)
+        }
+      }
+      
+      document.addEventListener('mousemove', handleMouseMoveSafe)
+      document.addEventListener('mouseup', handleMouseUpSafe)
       
       document.body.style.cursor = 'grabbing'
       document.body.style.userSelect = 'none'
       
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
+        // Limpiar event listeners de forma segura
+        try {
+          document.removeEventListener('mousemove', handleMouseMoveSafe)
+          document.removeEventListener('mouseup', handleMouseUpSafe)
+        } catch (error) {
+          console.warn('Error removing event listeners:', error)
+        }
         
         document.body.style.cursor = 'default'
         document.body.style.userSelect = 'auto'

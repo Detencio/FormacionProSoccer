@@ -133,7 +133,7 @@ const PlayerListView: React.FC<PlayerListViewProps> = ({
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900">{player.name}</div>
-                        <div className="text-sm text-gray-500">#{player.jersey_number || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">#{player.jersey_number && !isNaN(player.jersey_number) ? player.jersey_number.toString() : 'N/A'}</div>
                       </div>
                     </div>
                   </td>

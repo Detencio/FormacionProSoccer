@@ -57,6 +57,13 @@
 - **Creación avanzada** de partidos con validación
 - **Lista de partidos** con filtros y búsqueda
 
+### 🔐 **Sistema de Autenticación** ⭐ _NUEVO_
+
+- **Refresh tokens automáticos** - Renovación transparente de sesiones
+- **Interceptores inteligentes** - Manejo automático de tokens expirados
+- **Seguridad mejorada** - Tokens duales (access + refresh)
+- **Experiencia sin interrupciones** - No más errores de "Signature has expired"
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
@@ -88,6 +95,7 @@
 - **[📧 Email Best Practices](./docs/EMAIL_BEST_PRACTICES.md)** - Mejores prácticas para comunicaciones
 - **[🎨 Componentes UI](./docs/COMPONENTS.md)** - Biblioteca de componentes reutilizables
 - **[🔧 API Documentation](./docs/API.md)** - Documentación técnica de APIs
+- **[🔐 Sistema de Autenticación](./docs/AUTH_REFRESH_TOKEN_IMPLEMENTATION.md)** - Refresh tokens y seguridad mejorada
 
 ### 🚀 Funcionalidades Futuras
 - **📱 App Móvil**: Notificaciones push en tiempo real
