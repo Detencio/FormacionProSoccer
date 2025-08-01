@@ -67,11 +67,11 @@ export const useTeamGenerator = () => {
   }, [])
 
   // Generar equipos
-  const generateTeams = useCallback(() => {
+  const generateTeams = useCallback(async () => {
     console.log('generateTeams called')
     if (selectedPlayers.length < 2) {
       setError('Se necesitan al menos 2 jugadores para generar equipos')
-      return
+      return null
     }
 
     setIsGenerating(true)
@@ -82,8 +82,10 @@ export const useTeamGenerator = () => {
       const currentFormation = formation || getDefaultFormation(gameType)
       const newDistribution = calculateTeamDistribution(selectedPlayers, gameType, currentFormation)
       setDistribution(newDistribution)
+      return newDistribution
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al generar equipos')
+      return null
     } finally {
       setIsGenerating(false)
     }

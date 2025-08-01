@@ -14,8 +14,6 @@ export const metadata: Metadata = {
       url: '/logo.PNG',
       sizes: '180x180',
       type: 'image/png',
-      width: 180,
-      height: 180,
     },
   },
 };

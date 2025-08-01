@@ -179,20 +179,18 @@ export default function TeamsPage() {
         
         await teamService.updatePlayer(editingPlayer.id, updateData);
         
-        // Recargar equipos desde el backend
-        const updatedTeams = await teamService.getTeams();
+        // Actualizar solo el jugador específico en el estado local
+        setTeams(prevTeams => 
+          prevTeams.map(team => ({
+            ...team,
+            players: team.players?.map(player => 
+              player.id === editingPlayer.id 
+                ? { ...player, ...updateData }
+                : player
+            ) || []
+          }))
+        );
         
-        // Verificar los datos de Chalo G específicamente
-        const chaloG = updatedTeams.flatMap(team => team.players || []).find(p => p.name === 'Chalo G');
-        if (chaloG) {
-          console.log('  - height:', chaloG.height);
-          console.log('  - nationality:', chaloG.nationality);
-          console.log('  - position_specific_id:', chaloG.position_specific_id);
-          console.log('  - rit:', chaloG.rit);
-          console.log('  - tir:', chaloG.tir);
-        }
-        
-        setTeams(updatedTeams);
       } else {
         
         const createData: any = {
@@ -228,12 +226,17 @@ export default function TeamsPage() {
           createData.date_of_birth = formData.date_of_birth;
         }
         
-        await teamService.createPlayer(createData);
+        const newPlayer = await teamService.createPlayer(createData);
+        
+        // Agregar el nuevo jugador al estado local
+        setTeams(prevTeams => 
+          prevTeams.map(team => 
+            team.id === selectedTeamId 
+              ? { ...team, players: [...(team.players || []), newPlayer] }
+              : team
+          )
+        );
       }
-      
-      // Recargar equipos desde el backend
-      const updatedTeams = await teamService.getTeams();
-      setTeams(updatedTeams);
       
       setShowPlayerModal(false);
       setEditingPlayer(null);
@@ -273,7 +276,9 @@ export default function TeamsPage() {
   const getFilteredPlayers = () => {
     if (selectedFilterTeam) {
       const team = teams.find(t => t.id === selectedFilterTeam)
-      return team?.players || []
+      const teamPlayers = team?.players || []
+      // Ordenar por ID para mantener orden estable
+      return teamPlayers.sort((a: any, b: any) => a.id - b.id)
     }
     if (showAllPlayers) {
       const allPlayers = teams.flatMap((team: any) => 

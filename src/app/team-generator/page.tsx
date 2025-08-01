@@ -58,6 +58,7 @@ export default function TeamGenerator() {
   const [showPlayerPreviewModal, setShowPlayerPreviewModal] = useState(false)
   const [selectedPlayerForPreview, setSelectedPlayerForPreview] = useState<Player | null>(null)
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+  const [isSelectingRandom, setIsSelectingRandom] = useState(false)
 
   // Función para mostrar notificaciones
   const showNotification = useCallback((type: 'success' | 'error' | 'info', message: string) => {
@@ -277,7 +278,7 @@ export default function TeamGenerator() {
 
   // Generar equipos automáticamente cuando cambien los jugadores seleccionados
   useEffect(() => {
-    if (selectedPlayers.length >= 10 && !isGenerating) {
+    if (selectedPlayers.length >= 10 && !isGenerating && !distribution) {
       const generateTeamsAsync = async () => {
         try {
           const teams = await generateTeams()
@@ -305,7 +306,7 @@ export default function TeamGenerator() {
       
       generateTeamsAsync()
     }
-  }, [selectedPlayers.length, generateTeams, distribution, gameType, formation, selectedPlayers.length, manualPlayers.length, saveGeneratedTeams, loadSavedTeams])
+  }, [selectedPlayers.length, isGenerating, distribution, generateTeams, gameType, formation, saveGeneratedTeams, loadSavedTeams, showNotification])
 
   const handleSaveTeams = useCallback(async () => {
     if (distribution && distribution.homeTeam && distribution.awayTeam) {
@@ -645,18 +646,51 @@ export default function TeamGenerator() {
 
   const handleSelectRandom = useCallback((count: number) => {
     console.log('handleSelectRandom called for count:', count)
+    
+    // Prevenir múltiples llamadas simultáneas
+    if (isSelectingRandom) {
+      console.log('Selección aleatoria ya en progreso, ignorando llamada')
+      return
+    }
+    
+    setIsSelectingRandom(true)
+    
+    // Prevenir selección si ya hay suficientes jugadores
+    if (selectedPlayers.length >= 20) {
+      showNotification('info', 'Ya tienes suficientes jugadores seleccionados')
+      setIsSelectingRandom(false)
+      return
+    }
+    
     const availablePlayers = allPlayers.filter(player => 
       !selectedPlayers.some(p => p.id === player.id)
     )
     
-    if (availablePlayers.length === 0) return
+    if (availablePlayers.length === 0) {
+      showNotification('info', 'No hay más jugadores disponibles para seleccionar')
+      setIsSelectingRandom(false)
+      return
+    }
     
     const randomCount = Math.min(count, availablePlayers.length)
-    const shuffled = [...availablePlayers].sort(() => 0.5 - Math.random())
+    
+    // Usar un algoritmo de mezcla más eficiente
+    const shuffled = [...availablePlayers]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    
     const randomPlayers = shuffled.slice(0, randomCount)
     
+    console.log(`Seleccionando ${randomPlayers.length} jugadores aleatoriamente`)
     setSelectedPlayers(prev => [...prev, ...randomPlayers])
-  }, [allPlayers, selectedPlayers])
+    
+    // Resetear el flag después de un breve delay
+    setTimeout(() => {
+      setIsSelectingRandom(false)
+    }, 500)
+  }, [allPlayers, selectedPlayers, showNotification, isSelectingRandom])
 
   // Manejar errores del hook
   useEffect(() => {
@@ -861,15 +895,15 @@ export default function TeamGenerator() {
             </div>
           </div>
           
-          <div className="flex gap-4">
-            <button
-              onClick={handleGenerateTeams}
-              disabled={selectedPlayers.length === 0}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
-            >
-              <span>⚙️</span>
-              Generar Equipos
-            </button>
+                      <div className="flex gap-4">
+              <button
+                onClick={handleGenerateTeams}
+                disabled={selectedPlayers.length === 0 || isGenerating}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+              >
+                <span>{isGenerating ? '⏳' : '⚙️'}</span>
+                {isGenerating ? 'Generando...' : 'Generar Equipos'}
+              </button>
             <button
               onClick={handleSaveTeams}
               className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
@@ -1176,21 +1210,24 @@ export default function TeamGenerator() {
                 <span className="text-sm text-gray-600 font-medium">Selección aleatoria:</span>
                 <button
                   onClick={() => handleSelectRandom(5)}
-                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                  disabled={isSelectingRandom}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium"
                 >
-                  🎲 5 Jugadores
+                  {isSelectingRandom ? '⏳' : '🎲'} 5 Jugadores
                 </button>
                 <button
                   onClick={() => handleSelectRandom(10)}
-                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                  disabled={isSelectingRandom}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium"
                 >
-                  🎲 10 Jugadores
+                  {isSelectingRandom ? '⏳' : '🎲'} 10 Jugadores
                 </button>
                 <button
                   onClick={() => handleSelectRandom(15)}
-                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-xs font-medium"
+                  disabled={isSelectingRandom}
+                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium"
                 >
-                  🎲 15 Jugadores
+                  {isSelectingRandom ? '⏳' : '🎲'} 15 Jugadores
                 </button>
               </div>
               
