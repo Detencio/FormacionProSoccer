@@ -54,7 +54,7 @@ const menuItems: MenuItem[] = [
     description: 'Gestión de equipos y jugadores',
   },
   {
-    name: 'Partidos',
+    name: 'Calendario',
     href: '/matches',
     icon: (
       <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

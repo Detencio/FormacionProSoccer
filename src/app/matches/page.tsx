@@ -28,15 +28,15 @@ export default function MatchesPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('🔄 Cargando datos del módulo de partidos...')
+        console.log('🔄 Cargando datos del módulo de calendario...')
         
         // Cargar partidos (sin autenticación por ahora)
         try {
           const matchesData = await matchService.getMatches()
           setMatches(matchesData)
-          console.log('✅ Partidos cargados:', matchesData.length)
+          console.log('✅ Eventos cargados:', matchesData.length)
         } catch (error) {
-          console.log('⚠️ No se pudieron cargar partidos (requiere auth):', error)
+                      console.log('⚠️ No se pudieron cargar eventos (requiere auth):', error)
           // Usar datos de ejemplo si no hay autenticación
           setMatches([
             {
@@ -302,7 +302,7 @@ export default function MatchesPage() {
 
   const tabs = [
     { id: 'calendar', label: 'Calendario', icon: '📅' },
-    { id: 'list', label: 'Lista de Partidos', icon: '⚽' },
+    { id: 'list', label: 'Lista de Eventos', icon: '⚽' },
     { id: 'stats', label: 'Estadísticas', icon: '📊' },
     { id: 'notifications', label: 'Notificaciones', icon: '🔔' },
     { id: 'championships', label: 'Campeonatos', icon: '🏆' },
@@ -314,7 +314,7 @@ export default function MatchesPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-green-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando módulo de partidos...</p>
+                        <p className="text-white text-lg">Cargando módulo de calendario...</p>
         </div>
       </div>
     )
@@ -332,8 +332,8 @@ export default function MatchesPage() {
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-white">Gestión de Partidos</h1>
-                <p className="text-gray-300 mt-1">Organiza y gestiona todos los partidos del club</p>
+                <h1 className="text-3xl font-bold text-white">Gestión de Calendario</h1>
+                <p className="text-gray-300 mt-1">Organiza y gestiona todos los eventos del club</p>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -341,7 +341,7 @@ export default function MatchesPage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Buscar partidos..."
+                    placeholder="Buscar eventos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
@@ -353,7 +353,7 @@ export default function MatchesPage() {
                   onClick={() => setShowCreateModal(true)}
                   className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
-                  + Crear Partido
+                  + Crear Evento
                 </button>
               </div>
             </div>
